@@ -222,6 +222,7 @@ void CreatureStatsView::onAbilityScoreChanged(int value)
 
 void CreatureStatsView::onAcNaturalChanged(int value)
 {
+    Q_UNUSED(value);
     if (!creature_) { return; }
     creature_->combat_info.ac_natural_bonus = ui->acNatural->value();
     updateArmorClass();
@@ -229,6 +230,7 @@ void CreatureStatsView::onAcNaturalChanged(int value)
 
 void CreatureStatsView::onMoveRateChanged(int idx)
 {
+    Q_UNUSED(idx);
     if (!creature_) { return; }
 
     auto val = ui->moveRateCombo->currentData().toInt();
@@ -237,6 +239,7 @@ void CreatureStatsView::onMoveRateChanged(int idx)
 
 void CreatureStatsView::onPerceptionChanged(int idx)
 {
+    Q_UNUSED(idx);
     if (!creature_) { return; }
 
     auto val = ui->perceptionCombo->currentData().toInt();

@@ -82,7 +82,7 @@ void PlaceableProperties::basicsLoad()
     }
     auto fac = addPropertyEnum("Faction", obj_->faction, std::move(qfactions));
     prop_func_map_.insert(fac, [this](QtProperty* prop) {
-        obj_->hardness = static_cast<uint32_t>(enums()->value(prop));
+        obj_->hardness = static_cast<uint8_t>(enums()->value(prop));
     });
     grp_basic->addSubProperty(fac);
 
@@ -133,13 +133,13 @@ void PlaceableProperties::conversationLoad()
 {
     QtProperty* grp_conv = addGroup("Conversation");
     auto prop = addPropertyString("Dialog", obj_->conversation, resref_regex);
-    prop_func_map_.insert(prop, [this](QtProperty* prop) {
-        obj_->conversation = nw::Resref{strings()->value(prop).toStdString()};
+    prop_func_map_.insert(prop, [this](QtProperty* p) {
+        obj_->conversation = nw::Resref{strings()->value(p).toStdString()};
     });
     grp_conv->addSubProperty(prop);
     prop = addPropertyBool("Interruptable", obj_->interruptable);
-    prop_func_map_.insert(prop, [this](QtProperty* prop) {
-        obj_->interruptable = bools()->value(prop);
+    prop_func_map_.insert(prop, [this](QtProperty* p) {
+        obj_->interruptable = bools()->value(p);
     });
     grp_conv->addSubProperty(prop);
     editor()->addProperty(grp_conv);
@@ -304,9 +304,8 @@ void PlaceableProperties::trapsLoad()
     }
     trap_type_ = addPropertyEnum("Type", *obj_->trap.type, trap_names, trap_data);
     prop_func_map_.insert(trap_type_, [this](QtProperty* prop) {
-        int data = enums()->data(prop).toInt();
-        LOG_F(INFO, "trap type data: {}", data);
-        obj_->trap.type = nw::TrapType::make(data);
+        int value = enums()->data(prop).toInt();
+        obj_->trap.type = nw::TrapType::make(value);
     });
 
     grp_trap->addSubProperty(trap_type_);

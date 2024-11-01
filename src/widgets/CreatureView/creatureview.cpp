@@ -27,7 +27,7 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
 
     // Disable splitter movement for now, it's too easy to create weird results
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << width * 1.5 / 8 << width * 4.5 / 8 << width * 2 / 8);
+    ui->splitter->setSizes(QList<int>() << int(width * 1.5 / 8) << int(width * 4.5 / 8) << int(width * 2 / 8));
     ui->splitter->handle(1)->setDisabled(true);
     ui->splitter->handle(2)->setDisabled(true);
     ui->tabWidget->addTab(new CreatureStatsView(creature, this), "Statistics");
