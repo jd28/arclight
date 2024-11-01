@@ -17,6 +17,8 @@ add_library(CreatureView STATIC
     creatureappearanceview.h
     creatureappearanceview.cpp
     creatureappearanceview.ui
+
+    resources.qrc
 )
 
 target_compile_definitions(CreatureView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
