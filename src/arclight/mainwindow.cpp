@@ -172,11 +172,11 @@ void MainWindow::loadTreeviews()
     connect(treeview_load_watcher_, &QFutureWatcher<QList<AbstractTreeModel*>>::finished, this, &MainWindow::onTreeviewsLoaded);
 
     treeview_load_future_ = QtConcurrent::run([views = this->project_treeviews_] {
-        QList<AbstractTreeModel*> result;
+        QList<AbstractTreeModel*> res;
         for (auto it : views) {
-            result.push_back(it->loadModel());
+            res.push_back(it->loadModel());
         }
-        return result;
+        return res;
     });
     treeview_load_watcher_->setFuture(treeview_load_future_);
 }
@@ -184,8 +184,14 @@ void MainWindow::loadTreeviews()
 void MainWindow::open(const QString& path)
 {
     QFileInfo fi(path);
-    module_path_ = fi.absolutePath();
     auto abspath = fi.absoluteFilePath();
+    if (fi.suffix().compare(".mod", Qt::CaseInsensitive) == 0) {
+        module_path_ = fi.absolutePath() + "/temp.0/";
+        nw::Erf mod_erf{abspath.toStdString()};
+        mod_erf.extract_by_glob("*", module_path_.toStdString());
+    } else {
+        module_path_ = fi.absolutePath();
+    }
 
     if (recentProjects_.contains(abspath)) {
         recentProjects_.removeOne(abspath);
@@ -295,7 +301,7 @@ void MainWindow::onActionOpen(bool checked)
 {
     Q_UNUSED(checked);
 
-    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo *.ifo.json)");
+    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.mod *.ifo *.ifo.json)");
     if (path.isEmpty()) { return; }
     open(path);
 }
