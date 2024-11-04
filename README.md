@@ -94,7 +94,11 @@ class selection to 8 classes as NWN:EE allows.
 
 Feat selection with handy fuzzy searching.
 
-![stats](screenshots/creature-view-feats.png)
+![feats](screenshots/creature-view-feats.png)
+
+### Creature View - Inventory
+
+![inventory](screenshots/creature-inventory-view-2024-11-04.png)
 
 ### Dialog View
 

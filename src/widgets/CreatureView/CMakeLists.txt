@@ -2,26 +2,32 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(CreatureView STATIC
+    creatureappearanceview.cpp
+    creatureappearanceview.h
+    creatureappearanceview.ui
+    creatureequipview.cpp
+    creatureequipview.h
+    creatureequipview.ui
     creaturefeatselector.cpp
     creaturefeatselector.h
     creaturefeatselector.ui
-    creaturefeatselectormodel.h
     creaturefeatselectormodel.cpp
     creaturefeatselectormodel.h
+    creaturefeatselectormodel.h
+    creatureinventorypanel.cpp
+    creatureinventorypanel.h
+    creatureinventorypanel.ui
+    creatureinventoryview.cpp
+    creatureinventoryview.h
+    creatureinventoryview.ui
+    creaturestatsview.cpp
+    creaturestatsview.h
+    creaturestatsview.ui
     creatureview.cpp
     creatureview.h
     creatureview.ui
-    creaturestatsview.h
-    creaturestatsview.cpp
-    creaturestatsview.ui
-    creatureappearanceview.h
-    creatureappearanceview.cpp
-    creatureappearanceview.ui
-    creatureequipview.h
-    creatureequipview.cpp
-    creatureequipview.ui
-    inventoryslot.h
     inventoryslot.cpp
+    inventoryslot.h
 
     resources.qrc
 )
@@ -49,6 +55,6 @@ target_link_libraries(CreatureView PRIVATE
     Qt6::OpenGL
     Qt6::OpenGLWidgets
     nw
-    renderer    
+    renderer
     VariableTableView
 )

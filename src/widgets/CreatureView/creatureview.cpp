@@ -1,4 +1,5 @@
 #include "creatureview.h"
+#include "creatureinventorypanel.h"
 #include "ui_creatureview.h"
 
 #include "VariableTableView/vartabledialog.h"
@@ -36,9 +37,10 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     auto appearance = new CreatureAppearanceView(creature, this);
     ui->tabWidget->addTab(appearance, "Appearance");
     connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onDataChanged);
-    auto equips = new CreatureEquipView(this);
-    equips->setCreature(creature);
-    ui->tabWidget->addTab(equips, "Inventory");
+
+    auto inv = new CreatureInventoryPanel(this);
+    inv->setCreature(creature);
+    ui->tabWidget->addTab(inv, "Inventory");
 
     ui->portraitEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
 
