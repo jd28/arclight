@@ -3,6 +3,7 @@
 
 #include "VariableTableView/vartabledialog.h"
 #include "creatureappearanceview.h"
+#include "creatureequipview.h"
 #include "creaturefeatselector.h"
 #include "creaturestatsview.h"
 
@@ -35,6 +36,9 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     auto appearance = new CreatureAppearanceView(creature, this);
     ui->tabWidget->addTab(appearance, "Appearance");
     connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onDataChanged);
+    auto equips = new CreatureEquipView(this);
+    equips->setCreature(creature);
+    ui->tabWidget->addTab(equips, "Inventory");
 
     ui->portraitEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
 
@@ -236,6 +240,7 @@ void CreatureView::onClassAddClicked(bool checked)
 
 void CreatureView::onClassChanged(int index)
 {
+    Q_UNUSED(index);
     if (!creature_) { return; }
 
     auto combobox = qobject_cast<QComboBox*>(sender());

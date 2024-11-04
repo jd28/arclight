@@ -17,6 +17,11 @@ add_library(CreatureView STATIC
     creatureappearanceview.h
     creatureappearanceview.cpp
     creatureappearanceview.ui
+    creatureequipview.h
+    creatureequipview.cpp
+    creatureequipview.ui
+    inventoryslot.h
+    inventoryslot.cpp
 
     resources.qrc
 )

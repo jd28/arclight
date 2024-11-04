@@ -93,6 +93,7 @@ void MainWindow::loadCallbacks()
             }
             auto utc = new nw::Creature();
             nw::deserialize(utc, gff.toplevel(), nw::SerializationProfile::blueprint);
+            utc->instantiate();
             return new CreatureView(utc, this);
         });
 
