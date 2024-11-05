@@ -1,10 +1,13 @@
-#include "items.h"
+#include "objects.h"
 
 #include "nw/formats/Image.hpp"
-#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Item.hpp"
+#include "nw/objects/ObjectHandle.hpp"
 
+#include <QByteArray>
+#include <QDataStream>
+#include <QIODevice>
 #include <QImage>
 #include <QPainter>
 
@@ -83,4 +86,35 @@ QImage item_to_image(const nw::Item* item, bool female)
     }
 
     return QImage();
+}
+
+nw::ObjectHandle deserialize_obj_handle(const QByteArray& data)
+{
+    QDataStream stream(data);
+
+    quint32 id;
+    quint8 type;
+    quint32 version;
+
+    stream >> id;
+    stream >> type;
+    stream >> version;
+
+    nw::ObjectHandle res;
+    res.id = static_cast<nw::ObjectID>(id);
+    res.type = static_cast<nw::ObjectType>(type);
+    res.version = version & 0xFFFFFF;
+    return res;
+}
+
+QByteArray serialize_obj_handle(nw::ObjectHandle hndl)
+{
+    QByteArray res;
+    QDataStream stream(&res, QIODevice::WriteOnly);
+
+    stream << static_cast<quint32>(hndl.id);
+    stream << static_cast<quint8>(hndl.type);
+    stream << static_cast<quint32>(hndl.version); // Use only lower 24 bits of the version
+
+    return res;
 }

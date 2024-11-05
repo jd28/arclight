@@ -1,7 +1,7 @@
 #include "creatureinventoryview.h"
 #include "ui_creatureinventoryview.h"
 
-#include "../util/items.h"
+#include "../util/objects.h"
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"

@@ -1,6 +1,6 @@
 #include "inventoryslot.h"
 
-#include "../util/items.h"
+#include "../util/objects.h"
 
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Item.hpp"

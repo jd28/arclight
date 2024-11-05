@@ -31,7 +31,9 @@ add_library(arclight-widgets STATIC
     TlkSelector/tlkselector.ui
 
     util/restypeicons.cpp
-    util/items.cpp
+    util/restypeicons.h
+    util/objects.cpp
+    util/objects.h
 
     checkboxdelegate.h
     checkboxdelegate.cpp
