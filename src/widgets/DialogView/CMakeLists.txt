@@ -13,6 +13,9 @@ add_library(DialogView STATIC
 
 target_include_directories(DialogView PRIVATE
     ./
+)
+
+target_include_directories(DialogView SYSTEM PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/sqlite-3.45.2
     ${CMAKE_SOURCE_DIR}/external/rollnw/external/minizip/include
@@ -20,6 +23,7 @@ target_include_directories(DialogView PRIVATE
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
     ${CMAKE_SOURCE_DIR}/external/
 )
+
 
 target_link_libraries(DialogView PRIVATE
     nw

@@ -3,7 +3,7 @@ add_library(LanguageMenu STATIC
     LanguageMenu.h
 )
 
-target_include_directories(LanguageMenu PRIVATE
+target_include_directories(LanguageMenu SYSTEM PRIVATE
     ${CMAKE_SOURCE_DIR}/external/rollnw/external
     ${CMAKE_SOURCE_DIR}/external/rollnw/lib
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon
