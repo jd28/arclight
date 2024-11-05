@@ -5,16 +5,104 @@
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
+#include "nw/kernel/Objects.hpp"
+#include "nw/objects/Creature.hpp"
+#include "nw/objects/Item.hpp"
 
-#include <nw/objects/Creature.hpp>
-#include <nw/objects/Item.hpp>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
 
+InventoryTable::InventoryTable(QWidget* parent)
+    : QTableView(parent)
+{
+    setDragEnabled(true);
+    setAcceptDrops(true);
+    setDropIndicatorShown(true);
+    setSelectionBehavior(QAbstractItemView::SelectRows);
+}
+
+void InventoryTable::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        QModelIndex index = indexAt(event->pos());
+        auto idx = model()->index(index.row(), 0, index.parent());
+        if (index.isValid()) {
+            QMimeData* mimeData = new QMimeData();
+            nw::Item* item = reinterpret_cast<nw::Item*>(idx.internalPointer());
+            LOG_F(INFO, "item id: {}", uint32_t(item->handle().id));
+            mimeData->setData("application/x-inventory-item", serialize_obj_handle(item->handle()));
+
+            QPixmap img = model()->data(idx, Qt::DecorationRole).value<QPixmap>();
+            QPoint hotspot = QPoint(img.width() / 2, img.height() / 2);
+
+            QDrag* drag = new QDrag(this);
+            drag->setMimeData(mimeData);
+            drag->setPixmap(img);
+            drag->setHotSpot(hotspot);
+            drag->exec(Qt::MoveAction);
+        }
+    }
+    QTableView::mousePressEvent(event);
+}
+
+void InventoryTable::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->source() == this) {
+        event->ignore();
+    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
+        event->acceptProposedAction();
+    }
+}
+
+void InventoryTable::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->source() == this) {
+        event->ignore();
+    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
+        event->acceptProposedAction();
+    }
+}
+
+void InventoryTable::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat("application/x-equip-item")) {
+        QByteArray itemData = event->mimeData()->data("application/x-equip-item");
+        auto item_handle = deserialize_obj_handle(itemData);
+        auto item = nw::kernel::objects().get<nw::Item>(item_handle);
+        if (!item) { return; }
+
+        auto m = static_cast<InventoryModel*>(model());
+        int i = 0;
+        for (const auto& it : m->creature()->equipment.equips) {
+            if (it.is<nw::Item*>() && it.as<nw::Item*>() == item) { break; }
+            ++i;
+        }
+
+        auto slot = static_cast<nw::EquipSlot>(1 << i);
+        emit unequipItem(item, slot);
+
+        m->addItem(item);
+        resizeRowsToContents();
+        event->acceptProposedAction();
+    }
+}
+
+QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent) const
+{
+    if (!hasIndex(row, column, parent))
+        return QModelIndex();
+
+    nw::Item* item = creature_->inventory.items[row].item.as<nw::Item*>();
+    return createIndex(row, column, item);
+}
 // == InventoryItemDelegate ===================================================
 // ============================================================================
 
 InventoryItemDelegate::InventoryItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
+    // Create a QModelIndex with the pointer as the internal data
 }
 
 void InventoryItemDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
@@ -131,9 +219,29 @@ Qt::ItemFlags InventoryModel::flags(const QModelIndex& index) const
 
 void InventoryModel::addItem(nw::Item* item)
 {
-    // beginInsertRows(QModelIndex(), items.size(), items.size());
-    //        items.append({image, name, stackSize, stackable});
-    // endInsertRows();
+    beginInsertRows(QModelIndex(), int(creature_->inventory.items.size()), int(creature_->inventory.items.size()));
+    nw::InventoryItem ii;
+    ii.item = item;
+    creature_->inventory.items.push_back(ii);
+    endInsertRows();
+}
+
+nw::Creature* InventoryModel::creature() const noexcept
+{
+    return creature_;
+}
+
+void InventoryModel::removeItem(nw::Item* item)
+{
+    auto it = std::find_if(creature_->inventory.items.begin(), creature_->inventory.items.end(),
+        [item](const nw::InventoryItem& ii) { return ii.item == item; });
+
+    if (it != std::end(creature_->inventory.items)) {
+        int index = int(std::distance(creature_->inventory.items.begin(), it));
+        beginRemoveRows(QModelIndex(), index, index);
+        creature_->inventory.items.erase(it);
+        endRemoveRows();
+    }
 }
 
 // == CreatureInventoryView ===================================================
@@ -146,11 +254,17 @@ CreatureInventoryView::CreatureInventoryView(QWidget* parent)
     ui->setupUi(this);
     ui->add->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
     ui->remove->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
+    connect(ui->remove, &QPushButton::clicked, this, &CreatureInventoryView::onRemove);
 }
 
 CreatureInventoryView::~CreatureInventoryView()
 {
     delete ui;
+}
+
+void CreatureInventoryView::connectSlots(CreatureEquipView* equips)
+{
+    connect(ui->inventoryView, &InventoryTable::unequipItem, equips, &CreatureEquipView::unequipItem);
 }
 
 void CreatureInventoryView::setCreature(nw::Creature* creature)
@@ -167,4 +281,34 @@ void CreatureInventoryView::setCreature(nw::Creature* creature)
     ui->inventoryView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
     ui->inventoryView->resizeRowsToContents();
     ui->inventoryView->setSelectionBehavior(QAbstractItemView::SelectRows);
+}
+
+void CreatureInventoryView::removeItemFromInventory(nw::Item* item)
+{
+    model_->removeItem(item);
+}
+
+void CreatureInventoryView::addItemToInventory(nw::Item* item)
+{
+    model_->addItem(item);
+}
+
+void CreatureInventoryView::onRemove(bool checked)
+{
+    Q_UNUSED(checked);
+    if (!model_) { return; }
+
+    auto selmodel = ui->inventoryView->selectionModel();
+    if (!selmodel) { return; }
+
+    auto indices = selmodel->selectedRows();
+    std::sort(indices.rbegin(), indices.rend());
+
+    for (const auto& index : indices) {
+        if (index.isValid()) {
+            auto item = reinterpret_cast<nw::Item*>(index.internalPointer());
+            model_->removeItem(item);
+            nw::kernel::objects().destroy(item->handle());
+        }
+    }
 }

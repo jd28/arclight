@@ -1,8 +1,11 @@
 #include "creatureequipview.h"
 #include "ui_creatureequipview.h"
 
+#include "creatureinventoryview.h"
+
 #include "nw/objects/Creature.hpp"
 #include "nw/objects/Item.hpp"
+#include "nw/profiles/nwn1/functions.hpp"
 
 #include <QByteArray>
 #include <QImage>
@@ -74,74 +77,137 @@ CreatureEquipView::~CreatureEquipView()
     delete ui;
 }
 
-void CreatureEquipView::setCreature(nw::Creature* creature)
+void CreatureEquipView::connectSlots(CreatureInventoryView* inventory)
 {
+#define CONNECT_SLOTS(name)                                                                                                 \
+    connect(ui->name, &InventorySlot::addItemToInventory, inventory, &CreatureInventoryView::addItemToInventory);           \
+    connect(ui->name, &InventorySlot::removeItemFromInventory, inventory, &CreatureInventoryView::removeItemFromInventory); \
+    connect(ui->name, &InventorySlot::equipItem, this, &CreatureEquipView::equipItem);                                      \
+    connect(ui->name, &InventorySlot::unequipItem, this, &CreatureEquipView::unequipItem)
+
+    CONNECT_SLOTS(slotRight);
+    CONNECT_SLOTS(slotArmor);
+    CONNECT_SLOTS(slotArrow);
+    CONNECT_SLOTS(slotSling);
+    CONNECT_SLOTS(slotBolt);
+    CONNECT_SLOTS(slotLeft);
+    CONNECT_SLOTS(slotBelt);
+    CONNECT_SLOTS(slotHelmet);
+    CONNECT_SLOTS(slotGloves);
+    CONNECT_SLOTS(slotRing1);
+    CONNECT_SLOTS(slotRing2);
+    CONNECT_SLOTS(slotAmulet);
+    CONNECT_SLOTS(slotCloak);
+    CONNECT_SLOTS(slotBoots);
+    CONNECT_SLOTS(slotCreature1);
+    CONNECT_SLOTS(slotCreature2);
+    CONNECT_SLOTS(slotCreature3);
+
+#undef CONNECT_SLOTS
+}
+
+void CreatureEquipView::updateEquips()
+{
+    if (!creature_) { return; }
     for (size_t i = 0; i < 18; ++i) {
         nw::EquipIndex idx = static_cast<nw::EquipIndex>(i);
-
-        if (creature->equipment.equips[i].is<nw::Item*>()) {
-            auto it = creature->equipment.equips[i].as<nw::Item*>();
+        if (creature_->equipment.equips[i].is<nw::Item*>()) {
+            auto it = creature_->equipment.equips[i].as<nw::Item*>();
             switch (idx) {
             default:
                 break;
-
             case nw::EquipIndex::head:
+                ui->slotHelmet->setCreature(creature_);
                 ui->slotHelmet->setItem(it);
                 break;
             case nw::EquipIndex::chest:
+                ui->slotArmor->setCreature(creature_);
                 ui->slotArmor->setItem(it);
                 break;
             case nw::EquipIndex::boots:
+                ui->slotBoots->setCreature(creature_);
                 ui->slotBoots->setItem(it);
                 break;
             case nw::EquipIndex::arms:
+                ui->slotGloves->setCreature(creature_);
                 ui->slotGloves->setItem(it);
                 break;
             case nw::EquipIndex::righthand:
+                ui->slotRight->setCreature(creature_);
                 ui->slotRight->setItem(it);
                 break;
             case nw::EquipIndex::lefthand:
+                ui->slotLeft->setCreature(creature_);
                 ui->slotLeft->setItem(it);
                 break;
             case nw::EquipIndex::cloak:
+                ui->slotCloak->setCreature(creature_);
                 ui->slotCloak->setItem(it);
                 break;
             case nw::EquipIndex::leftring:
+                ui->slotRing2->setCreature(creature_);
                 ui->slotRing2->setItem(it);
                 break;
             case nw::EquipIndex::rightring:
+                ui->slotRing1->setCreature(creature_);
                 ui->slotRing1->setItem(it);
                 break;
             case nw::EquipIndex::neck:
+                ui->slotAmulet->setCreature(creature_);
                 ui->slotAmulet->setItem(it);
                 break;
             case nw::EquipIndex::belt:
+                ui->slotBolt->setCreature(creature_);
                 ui->slotBolt->setItem(it);
                 break;
             case nw::EquipIndex::arrows:
+                ui->slotArrow->setCreature(creature_);
                 ui->slotArrow->setItem(it);
                 break;
             case nw::EquipIndex::bullets:
+                ui->slotSling->setCreature(creature_);
                 ui->slotSling->setItem(it);
                 break;
             case nw::EquipIndex::bolts:
+                ui->slotBolt->setCreature(creature_);
                 ui->slotBolt->setItem(it);
                 break;
             case nw::EquipIndex::creature_left:
+                ui->slotCreature1->setCreature(creature_);
                 ui->slotCreature1->setItem(it);
                 break;
             case nw::EquipIndex::creature_right:
+                ui->slotCreature2->setCreature(creature_);
                 ui->slotCreature2->setItem(it);
                 break;
             case nw::EquipIndex::creature_bite:
+                ui->slotCreature3->setCreature(creature_);
                 ui->slotCreature3->setItem(it);
                 break;
             case nw::EquipIndex::creature_skin:
+                ui->slotCreatureSkin->setCreature(creature_);
                 ui->slotCreatureSkin->setItem(it);
                 break;
             }
         }
     }
+}
 
+void CreatureEquipView::setCreature(nw::Creature* creature)
+{
     creature_ = creature;
+    updateEquips();
+}
+
+void CreatureEquipView::equipItem(nw::Item* item, nw::EquipSlot slot)
+{
+    nwn1::equip_item(creature_, item, nw::equip_slot_to_index(slot));
+    updateEquips();
+}
+
+void CreatureEquipView::unequipItem(nw::Item* item, nw::EquipSlot slot)
+{
+    Q_UNUSED(item);
+    nwn1::unequip_item(creature_, nw::equip_slot_to_index(slot));
+    updateEquips();
 }

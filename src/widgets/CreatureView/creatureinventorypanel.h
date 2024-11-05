@@ -5,6 +5,8 @@
 
 namespace nw {
 struct Creature;
+enum struct EquipSlot;
+struct Item;
 }
 
 namespace Ui {

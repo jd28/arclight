@@ -21,7 +21,7 @@
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
-       <widget class="QTableView" name="inventoryView"/>
+       <widget class="InventoryTable" name="inventoryView"/>
       </item>
      </layout>
     </widget>
@@ -80,6 +80,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>InventoryTable</class>
+   <extends>QTableView</extends>
+   <header>creatureinventoryview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

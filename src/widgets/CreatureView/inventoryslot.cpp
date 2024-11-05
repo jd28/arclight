@@ -2,14 +2,82 @@
 
 #include "../util/objects.h"
 
+#include "nw/kernel/Objects.hpp"
+#include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Item.hpp"
+#include "nw/profiles/nwn1/functions.hpp"
 
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
 #include <QPainter>
 
 InventorySlot::InventorySlot(QWidget* parent)
     : QLabel(parent)
 {
+    this->setAcceptDrops(true);
+}
+
+void InventorySlot::dragEnterEvent(QDragEnterEvent* event)
+{
+    QByteArray ba;
+
+    if (event->mimeData()->hasFormat("application/x-inventory-item")) {
+        ba = event->mimeData()->data("application/x-inventory-item");
+    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
+        ba = event->mimeData()->data("application/x-equip-item");
+    }
+    if (ba.size() == 0) { return; }
+
+    auto item_handle = deserialize_obj_handle(ba);
+    nw::Item* item = nw::kernel::objects().get<nw::Item>(item_handle);
+    if (!item || item == item_) { return; }
+    if (nwn1::can_equip_item(creature_, item, nw::equip_slot_to_index(slot_))) {
+        event->acceptProposedAction();
+    }
+}
+
+void InventorySlot::dropEvent(QDropEvent* event)
+{
+    QByteArray ba;
+    bool inv = false;
+    if (event->mimeData()->hasFormat("application/x-inventory-item")) {
+        ba = event->mimeData()->data("application/x-inventory-item");
+        inv = true;
+    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
+        ba = event->mimeData()->data("application/x-equip-item");
+    }
+    if (ba.size() == 0) { return; }
+
+    auto item_handle = deserialize_obj_handle(ba);
+    auto item = nw::kernel::objects().get<nw::Item>(item_handle);
+    if (!item || item == item_) { return; }
+
+    if (item_) {
+        emit unequipItem(item_, slot_);
+        if (inv) { emit addItemToInventory(item_); }
+    }
+
+    emit equipItem(item, slot_);
+    if (inv) { emit removeItemFromInventory(item); }
+    event->acceptProposedAction();
+    setItem(item);
+}
+
+void InventorySlot::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton && item_) {
+        QMimeData* mimeData = new QMimeData();
+        // Optionally, include item data such as item ID or index
+        mimeData->setData("application/x-equip-item", serialize_obj_handle(item_->handle()));
+
+        QDrag* drag = new QDrag(this);
+        drag->setMimeData(mimeData);
+        drag->setHotSpot(event->pos());
+        drag->setPixmap(pixmap());
+        drag->exec(Qt::MoveAction);
+    }
 }
 
 void InventorySlot::setDefaults(QPixmap image, QString tip)
@@ -27,11 +95,16 @@ nw::Item* InventorySlot::item() const noexcept
     return item_;
 }
 
-void InventorySlot::setItem(nw::Item* item, bool female)
+void InventorySlot::setCreature(nw::Creature* creature)
+{
+    creature_ = creature;
+}
+
+void InventorySlot::setItem(nw::Item* item)
 {
     item_ = nullptr;
     if (item) {
-        auto img = item_to_image(item, female);
+        auto img = item_to_image(item, creature_->gender == 1);
         if (!img.isNull()) {
             item_ = item;
             setPixmap(prepareImage(QPixmap::fromImage(img)));
