@@ -6,7 +6,9 @@
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
+
 #include "nw/kernel/Objects.hpp"
+#include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
 #include "nw/objects/Item.hpp"
 
@@ -95,6 +97,8 @@ QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent
         return QModelIndex();
 
     nw::Item* item = creature_->inventory.items[row].item.as<nw::Item*>();
+    if (!item) { return QModelIndex(); }
+
     return createIndex(row, column, item);
 }
 // == InventoryItemDelegate ===================================================
@@ -190,7 +194,12 @@ QVariant InventoryModel::data(const QModelIndex& index, int role) const
         return QVariant();
     }
 
+    if (!creature_->inventory.items[index.row()].item.is<nw::Item*>()) {
+        return {};
+    }
+
     const auto item = creature_->inventory.items[index.row()].item.as<nw::Item*>();
+    if (!item) { return {}; }
 
     switch (index.column()) {
     case 0:
@@ -286,12 +295,15 @@ void CreatureInventoryView::setCreature(nw::Creature* creature)
 
 void CreatureInventoryView::removeItemFromInventory(nw::Item* item)
 {
+    CHECK_F(!!item, "item is null");
     model_->removeItem(item);
 }
 
 void CreatureInventoryView::addItemToInventory(nw::Item* item)
 {
+    CHECK_F(!!item, "item is null");
     model_->addItem(item);
+    ui->inventoryView->resizeRowsToContents();
 }
 
 void CreatureInventoryView::onRemove(bool checked)
@@ -305,7 +317,7 @@ void CreatureInventoryView::onRemove(bool checked)
     auto indices = selmodel->selectedRows();
     std::sort(indices.rbegin(), indices.rend());
 
-    for (const auto& index : indices) {
+    foreach (const auto& index, indices) {
         if (index.isValid()) {
             auto item = reinterpret_cast<nw::Item*>(index.internalPointer());
             model_->removeItem(item);

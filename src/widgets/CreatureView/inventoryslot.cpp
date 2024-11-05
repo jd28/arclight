@@ -55,12 +55,12 @@ void InventorySlot::dropEvent(QDropEvent* event)
     if (!item || item == item_) { return; }
 
     if (item_) {
-        emit unequipItem(item_, slot_);
         if (inv) { emit addItemToInventory(item_); }
+        emit unequipItem(item_, slot_);
     }
 
-    emit equipItem(item, slot_);
     if (inv) { emit removeItemFromInventory(item); }
+    emit equipItem(item, slot_);
     event->acceptProposedAction();
     setItem(item);
 }

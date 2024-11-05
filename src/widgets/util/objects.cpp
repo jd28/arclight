@@ -1,7 +1,7 @@
 #include "objects.h"
 
 #include "nw/formats/Image.hpp"
-#include "nw/kernel/TwoDACache.hpp"
+#include "nw/kernel/Rules.hpp"
 #include "nw/objects/Item.hpp"
 #include "nw/objects/ObjectHandle.hpp"
 
@@ -13,15 +13,10 @@
 
 QImage item_to_image(const nw::Item* item, bool female)
 {
-    auto* bi2da = nw::kernel::twodas().get("baseitems");
-    auto int_type = bi2da->get<int32_t>(*item->baseitem, "ModelType");
-    nw::ItemModelType type;
-
-    if (int_type) {
-        type = static_cast<nw::ItemModelType>(*int_type);
-    } else {
-        return QImage();
-    }
+    if (!item) { return QImage{}; }
+    auto bi = nw::kernel::rules().baseitems.get(item->baseitem);
+    if (!bi) { return QImage{}; }
+    nw::ItemModelType type = bi->model_type;
 
     if (type == nw::ItemModelType::simple || type == nw::ItemModelType::layered) {
         auto icon = item->get_icon_by_part();
