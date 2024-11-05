@@ -40,7 +40,7 @@ void DoorProperties::savesLoad()
     prop_func_map_.insert(saves.back(), [this](QtProperty* prop) {
         obj_->saves.will = static_cast<int16_t>(ints()->value(prop));
     });
-    for (auto s : saves) {
+    foreach (auto& s, saves) {
         grp_saves->addSubProperty(s);
     }
     editor()->addProperty(grp_saves);
@@ -83,7 +83,7 @@ void DoorProperties::basicsLoad()
     }
     auto fac = addPropertyEnum("Faction", obj_->faction, std::move(qfactions));
     prop_func_map_.insert(fac, [this](QtProperty* prop) {
-        obj_->hardness = static_cast<uint32_t>(enums()->value(prop));
+        obj_->hardness = static_cast<uint8_t>(enums()->value(prop));
     });
     grp_basic->addSubProperty(fac);
 
@@ -112,13 +112,13 @@ void DoorProperties::conversationLoad()
 {
     QtProperty* grp_conv = addGroup("Conversation");
     auto prop = addPropertyString("Dialog", obj_->conversation, resref_regex);
-    prop_func_map_.insert(prop, [this](QtProperty* prop) {
-        obj_->conversation = nw::Resref{strings()->value(prop).toStdString()};
+    prop_func_map_.insert(prop, [this](QtProperty* p) {
+        obj_->conversation = nw::Resref{strings()->value(p).toStdString()};
     });
     grp_conv->addSubProperty(prop);
     prop = addPropertyBool("Interruptable", obj_->interruptable);
-    prop_func_map_.insert(prop, [this](QtProperty* prop) {
-        obj_->interruptable = bools()->value(prop);
+    prop_func_map_.insert(prop, [this](QtProperty* p) {
+        obj_->interruptable = bools()->value(p);
     });
     grp_conv->addSubProperty(prop);
     editor()->addProperty(grp_conv);
@@ -253,7 +253,7 @@ void DoorProperties::scriptsLoad()
         obj_->scripts.on_user_defined = nw::Resref{strings()->value(prop).toStdString()};
     });
 
-    for (auto s : scripts) {
+    foreach (auto& s, scripts) {
         grp_script->addSubProperty(s);
     }
     editor()->addProperty(grp_script);
@@ -302,9 +302,8 @@ void DoorProperties::trapsLoad()
     }
     trap_type_ = addPropertyEnum("Type", *obj_->trap.type, trap_names, trap_data);
     prop_func_map_.insert(trap_type_, [this](QtProperty* prop) {
-        int data = enums()->data(prop).toInt();
-        LOG_F(INFO, "trap type data: {}", data);
-        obj_->trap.type = nw::TrapType::make(data);
+        int type = enums()->data(prop).toInt();
+        obj_->trap.type = nw::TrapType::make(type);
     });
 
     grp_trap->addSubProperty(trap_type_);
