@@ -11,3 +11,4 @@ target_link_libraries(arclight-external PRIVATE
 )
 
 add_subdirectory(rollnw)
+add_subdirectory(qtpropertybrowser)
