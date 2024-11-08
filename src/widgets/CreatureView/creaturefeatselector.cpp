@@ -29,5 +29,10 @@ CreatureFeatSelector::~CreatureFeatSelector()
     delete ui;
 }
 
+CreatureFeatSelectorModel* CreatureFeatSelector::model() const
+{
+    return model_;
+}
+
 // == Slots ===================================================================
 // ============================================================================

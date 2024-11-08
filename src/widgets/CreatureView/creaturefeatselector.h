@@ -21,6 +21,8 @@ public:
     explicit CreatureFeatSelector(nw::Creature* creature, QWidget* parent = nullptr);
     ~CreatureFeatSelector();
 
+    CreatureFeatSelectorModel* model() const;
+
 private:
     Ui::CreatureFeatSelector* ui;
     CreatureFeatSelectorModel* model_ = nullptr;

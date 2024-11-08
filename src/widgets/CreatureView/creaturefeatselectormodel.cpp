@@ -75,11 +75,13 @@ QVariant CreatureFeatSelectorModel::headerData(int section, Qt::Orientation orie
 
 int CreatureFeatSelectorModel::rowCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return int(nw::kernel::rules().feats.entries.size());
 }
 
 int CreatureFeatSelectorModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 3;
 }
 
@@ -128,6 +130,7 @@ Qt::ItemFlags CreatureFeatSelectorModel::flags(const QModelIndex& index) const
 
 bool CreatureFeatSelectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+    Q_UNUSED(role);
     if (!index.isValid() || index.column() != 2) {
         return false;
     }
@@ -139,6 +142,6 @@ bool CreatureFeatSelectorModel::setData(const QModelIndex& index, const QVariant
     } else {
         creature_->stats.remove_feat(nw::Feat::make(index.row()));
     }
-
+    emit featsChanged();
     return true;
 }

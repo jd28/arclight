@@ -1,11 +1,12 @@
 #include "creatureview.h"
-#include "creatureinventorypanel.h"
 #include "ui_creatureview.h"
 
 #include "VariableTableView/vartabledialog.h"
 #include "creatureappearanceview.h"
 #include "creatureequipview.h"
 #include "creaturefeatselector.h"
+#include "creaturefeatselectormodel.h"
+#include "creatureinventorypanel.h"
 #include "creaturestatsview.h"
 
 #include "ZFontIcon/ZFontIcon.h"
@@ -32,8 +33,12 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     ui->splitter->setSizes(QList<int>() << int(width * 1.5 / 8) << int(width * 4.5 / 8) << width * 2 / 8);
     ui->splitter->handle(1)->setDisabled(true);
     ui->splitter->handle(2)->setDisabled(true);
-    ui->tabWidget->addTab(new CreatureStatsView(creature, this), "Statistics");
-    ui->tabWidget->addTab(new CreatureFeatSelector(creature, this), "Feats");
+    auto stats = new CreatureStatsView(creature, this);
+    ui->tabWidget->addTab(stats, "Statistics");
+    auto feats = new CreatureFeatSelector(creature, this);
+    connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
+    ui->tabWidget->addTab(feats, "Feats");
+
     auto appearance = new CreatureAppearanceView(creature, this);
     ui->tabWidget->addTab(appearance, "Appearance");
     connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onDataChanged);
