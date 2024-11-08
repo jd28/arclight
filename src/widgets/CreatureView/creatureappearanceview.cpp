@@ -118,6 +118,7 @@ CreatureAppearanceView::~CreatureAppearanceView()
 
 void CreatureAppearanceView::onAppearanceChange(int index)
 {
+    Q_UNUSED(index);
     if (!creature_) { return; }
     creature_->appearance.id = static_cast<uint16_t>(ui->appearance->currentData(Qt::UserRole).toInt());
     emit dataChanged();
