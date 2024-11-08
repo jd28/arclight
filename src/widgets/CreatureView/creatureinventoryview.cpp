@@ -33,7 +33,6 @@ void InventoryTable::mousePressEvent(QMouseEvent* event)
         if (index.isValid()) {
             QMimeData* mimeData = new QMimeData();
             nw::Item* item = reinterpret_cast<nw::Item*>(idx.internalPointer());
-            LOG_F(INFO, "item id: {}", uint32_t(item->handle().id));
             mimeData->setData("application/x-inventory-item", serialize_obj_handle(item->handle()));
 
             QPixmap img = model()->data(idx, Qt::DecorationRole).value<QPixmap>();
@@ -229,11 +228,11 @@ Qt::ItemFlags InventoryModel::flags(const QModelIndex& index) const
 
 void InventoryModel::addItem(nw::Item* item)
 {
-    beginInsertRows(QModelIndex(), int(creature_->inventory.items.size()), int(creature_->inventory.items.size()));
-    nw::InventoryItem ii;
-    ii.item = item;
-    creature_->inventory.items.push_back(ii);
-    endInsertRows();
+    if (creature_->inventory.can_add_item(item)) {
+        beginInsertRows(QModelIndex(), int(creature_->inventory.items.size()), int(creature_->inventory.items.size()));
+        creature_->inventory.add_item(item);
+        endInsertRows();
+    }
 }
 
 nw::Creature* InventoryModel::creature() const noexcept
@@ -249,7 +248,7 @@ void InventoryModel::removeItem(nw::Item* item)
     if (it != std::end(creature_->inventory.items)) {
         int index = int(std::distance(creature_->inventory.items.begin(), it));
         beginRemoveRows(QModelIndex(), index, index);
-        creature_->inventory.items.erase(it);
+        creature_->inventory.remove_item(item);
         endRemoveRows();
     }
 }

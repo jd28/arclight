@@ -102,6 +102,7 @@ void CreatureEquipView::connectSlots(CreatureInventoryView* inventory)
     CONNECT_SLOTS(slotCreature1);
     CONNECT_SLOTS(slotCreature2);
     CONNECT_SLOTS(slotCreature3);
+    CONNECT_SLOTS(slotCreatureSkin);
 
 #undef CONNECT_SLOTS
 }
