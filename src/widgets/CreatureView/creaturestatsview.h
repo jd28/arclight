@@ -19,7 +19,6 @@ public:
     ~CreatureStatsView();
 
     void updateAbilities();
-    void updateAll();
     void updateArmorClass();
     void updateHitPoints();
     void updateSaves();
@@ -30,6 +29,7 @@ public slots:
     void onMoveRateChanged(int idx);
     void onPerceptionChanged(int idx);
     void onSkillChanged(int row, int col);
+    void updateAll();
 
 private:
     Ui::CreatureStatsView* ui;
