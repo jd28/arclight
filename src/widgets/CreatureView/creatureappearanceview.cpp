@@ -1,6 +1,8 @@
 #include "creatureappearanceview.h"
 #include "ui_creatureappearanceview.h"
 
+#include "../util/strings.h"
+
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
@@ -34,7 +36,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
 
         string = appearances.entries[i].label;
 
-        ui->appearance->addItem(QString::fromStdString(string), int(i));
+        ui->appearance->addItem(to_qstring(string), int(i));
         if (creature->appearance.id == i) {
             LOG_F(INFO, "setting appearance: {}", idx);
             ui->appearance->setCurrentIndex(idx);
@@ -52,7 +54,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
         auto string = nw::kernel::strings().get(phenotypes.entries[i].name_ref);
         if (string.empty()) { continue; }
 
-        ui->phenotype->addItem(QString::fromStdString(string), int(i));
+        ui->phenotype->addItem(to_qstring(string), int(i));
         if (creature->appearance.phenotype == int(i)) {
             ui->phenotype->setCurrentIndex(idx);
         }
@@ -77,7 +79,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     idx = 1;
     for (size_t i = 1; i < wingmodel_2da->rows(); ++i) {
         if (!wingmodel_2da->get_to(i, "LABEL", temp) || temp.empty()) { continue; }
-        ui->wings->addItem(QString::fromStdString(temp), int(i));
+        ui->wings->addItem(to_qstring(temp), int(i));
         if (creature->appearance.wings == uint32_t(idx)) {
             ui->wings->setCurrentIndex(idx);
         }
@@ -94,7 +96,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     idx = 1;
     for (size_t i = 1; i < tailmodel_2da->rows(); ++i) {
         if (!tailmodel_2da->get_to(i, "LABEL", temp) || temp.empty()) { continue; }
-        ui->tails->addItem(QString::fromStdString(temp), int(i));
+        ui->tails->addItem(to_qstring(temp), int(i));
         if (creature->appearance.tail == uint32_t(idx)) {
             ui->tails->setCurrentIndex(idx);
         }

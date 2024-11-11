@@ -2,6 +2,8 @@
 
 #include <nw/log.hpp>
 
+#include "../util/strings.h"
+
 TlkModel::TlkModel(nw::Tlk* tlk, QObject* parent)
     : QAbstractTableModel(parent)
     , tlk_{tlk}
@@ -16,7 +18,7 @@ int TlkModel::columnCount(const QModelIndex& /*parent*/) const
 QVariant TlkModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole) {
-        return QString::fromStdString(tlk_->get(static_cast<uint32_t>(index.row())));
+        return to_qstring(tlk_->get(static_cast<uint32_t>(index.row())));
     }
 
     return {};

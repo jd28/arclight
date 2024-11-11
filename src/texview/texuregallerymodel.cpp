@@ -1,5 +1,7 @@
 #include "texuregallerymodel.h"
 
+#include "widgets/util/strings.h"
+
 #include "nw/formats/Image.hpp"
 #include "nw/formats/Plt.hpp"
 #include "nw/log.hpp"
@@ -117,7 +119,7 @@ QVariant TexureGalleryModel::data(const QModelIndex& index, int role) const
     } else if (role == Qt::SizeHintRole) {
         return QSize(128, 150);
     } else if (role == Qt::DisplayRole) {
-        return QString::fromStdString(labels_[index.row()].filename());
+        return to_qstring(labels_[index.row()].filename());
     } else if (role == Qt::TextAlignmentRole) {
         return (Qt::AlignBottom | Qt::AlignHCenter).toInt();
     } else if (role == Qt::ToolTipRole) {
@@ -125,7 +127,7 @@ QVariant TexureGalleryModel::data(const QModelIndex& index, int role) const
         if (it == std::end(cache_)) {
             return {};
         }
-        return QString::fromStdString(fmt::format("{}x{}", it->second.width(), it->second.height()));
+        return to_qstring(fmt::format("{}x{}", it->second.width(), it->second.height()));
     }
     return QVariant();
 }

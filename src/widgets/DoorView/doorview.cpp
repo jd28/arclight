@@ -2,6 +2,7 @@
 #include "ui_doorview.h"
 
 #include "../strreftextedit.h"
+#include "../util/strings.h"
 #include "doorgeneralview.h"
 
 #include "nw/kernel/TwoDACache.hpp"
@@ -26,7 +27,7 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     description->setLocstring(obj->description);
     ui->tabWidget->addTab(description, "Description");
     auto comments = new QTextEdit(this);
-    comments->setText(QString::fromStdString(obj_->common.comment));
+    comments->setText(to_qstring(obj_->common.comment));
     ui->tabWidget->addTab(comments, "Comments");
 
     connect(ui->openGLWidget, &BasicModelView::initialized, this, &DoorView::loadModel);

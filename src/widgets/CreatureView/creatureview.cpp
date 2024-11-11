@@ -8,6 +8,7 @@
 #include "creaturefeatselectormodel.h"
 #include "creatureinventorypanel.h"
 #include "creaturestatsview.h"
+#include "util/strings.h"
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
@@ -91,7 +92,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
                 QRect rect(0, 0, 64, 100); // This is specific to medium portraits
                 qi = qi.copy(rect);
                 ui->labelPortraitImage->setPixmap(QPixmap::fromImage(qi));
-                ui->portraitLineEdit->setText(QString::fromStdString("po_" + *base));
+                ui->portraitLineEdit->setText(to_qstring("po_" + *base));
             }
         }
     } else {
@@ -102,7 +103,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
     for (size_t i = 0; i < nw::kernel::rules().races.entries.size(); ++i) {
         if (nw::kernel::rules().races.entries[i].name != 0xFFFFFFFF) {
             auto name = nw::kernel::strings().get(nw::kernel::rules().races.entries[i].name);
-            race_list.append({QString::fromStdString(name), int(i)});
+            race_list.append({to_qstring(name), int(i)});
         }
     }
 
@@ -123,7 +124,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
     for (size_t i = 0; i < nw::kernel::rules().classes.entries.size(); ++i) {
         if (nw::kernel::rules().classes.entries[i].name != 0xFFFFFFFF) {
             auto name = nw::kernel::strings().get(nw::kernel::rules().classes.entries[i].name);
-            class_list.append({QString::fromStdString(name), int(i)});
+            class_list.append({to_qstring(name), int(i)});
         }
     }
 
@@ -166,7 +167,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
             }
             if (auto name_id = packages_2da->get<int32_t>(i, "Name")) {
                 auto name = nw::kernel::strings().get(uint32_t(*name_id));
-                package_list.append({QString::fromStdString(name), int(i)});
+                package_list.append({to_qstring(name), int(i)});
             }
         }
     }

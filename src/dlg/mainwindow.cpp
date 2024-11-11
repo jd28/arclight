@@ -4,6 +4,7 @@
 #include "DialogView/dialogmodel.h"
 #include "DialogView/dialogview.h"
 #include "fontchooserdialog.h"
+#include "widgets/util/strings.h"
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/log.hpp"
@@ -33,8 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (i < recentFiles_.size()) {
             ui->menuRecent->addAction(act);
             act->setData(recentFiles_[i]);
-            act->setText(QString::fromStdString(
-                fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
+            act->setText(to_qstring(fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         } else {
             ui->menuRecent->addAction(act);
             act->setVisible(false);
@@ -206,7 +206,7 @@ void MainWindow::updateRecent(const QString& path)
 
     for (int i = 0; i < recentFiles_.size(); ++i) {
         recentActions_[i]->setData(recentFiles_[i]);
-        recentActions_[i]->setText(QString::fromStdString(
+        recentActions_[i]->setText(to_qstring(
             fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         recentActions_[i]->setVisible(true);
     }

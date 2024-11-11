@@ -4,6 +4,7 @@
 #include "qtpropertybrowser/qtpropertybrowser.h"
 #include "qtpropertybrowser/qtpropertymanager.h"
 #include "qtpropertybrowser/qttreepropertybrowser.h"
+#include "util/strings.h"
 
 #include "nw/resources/Resref.hpp"
 
@@ -68,12 +69,12 @@ QtProperty* PropertiesView::addPropertyString(QString name, const QString& value
 
 QtProperty* PropertiesView::addPropertyString(QString name, const std::string& value, QRegularExpression regex, QCompleter* completer)
 {
-    return addPropertyString(std::move(name), QString::fromStdString(value), std::move(regex), completer);
+    return addPropertyString(std::move(name), to_qstring(value), std::move(regex), completer);
 }
 
 QtProperty* PropertiesView::addPropertyString(QString name, const nw::Resref& value, QRegularExpression regex, QCompleter* completer)
 {
-    return addPropertyString(std::move(name), QString::fromStdString(value.string()), std::move(regex), completer);
+    return addPropertyString(std::move(name), to_qstring(value.string()), std::move(regex), completer);
 }
 
 QtBoolPropertyManager* PropertiesView::bools() const

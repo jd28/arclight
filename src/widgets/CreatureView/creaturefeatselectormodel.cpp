@@ -1,5 +1,7 @@
 #include "creaturefeatselectormodel.h"
 
+#include "../util/strings.h"
+
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 
@@ -94,7 +96,7 @@ QVariant CreatureFeatSelectorModel::data(const QModelIndex& index, int role) con
 
     if (role == Qt::DisplayRole) {
         if (index.column() == 0) {
-            return QString::fromStdString(nw::kernel::strings().get(feat->name));
+            return to_qstring(nw::kernel::strings().get(feat->name));
         } else if (index.column() == 1) {
             switch (feat->tools_categories) {
             default:

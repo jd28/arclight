@@ -1,6 +1,7 @@
 #include "inventoryslot.h"
 
 #include "../util/objects.h"
+#include "../util/strings.h"
 
 #include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Rules.hpp"
@@ -108,7 +109,7 @@ void InventorySlot::setItem(nw::Item* item)
         if (!img.isNull()) {
             item_ = item;
             setPixmap(prepareImage(QPixmap::fromImage(img)));
-            setToolTip(QString::fromStdString(nw::kernel::strings().get(item->common.name)));
+            setToolTip(to_qstring(nw::kernel::strings().get(item->common.name)));
         }
     }
     if (!item_) {

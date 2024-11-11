@@ -1,6 +1,7 @@
 #include "ContainerModel.hpp"
 
 #include "../util/restypeicons.h"
+#include "../util/strings.h"
 
 extern "C" {
 #include <fzy/match.h>
@@ -129,7 +130,7 @@ void ContainerModel::addFiles(const QStringList& files)
             bool yes = false;
             if (!yes_to_all) {
                 auto b = QMessageBox::question(nullptr, "Overwrite File",
-                    QString::fromStdString(fmt::format("'{}' already exists, would you like to overwrite?", r.filename())),
+                    to_qstring(fmt::format("'{}' already exists, would you like to overwrite?", r.filename())),
                     QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll);
                 yes_to_all = b == QMessageBox::YesToAll;
                 yes = b == QMessageBox::Yes;
@@ -172,7 +173,7 @@ void ContainerModel::mergeFiles(const QStringList& files)
                     bool yes = false;
                     if (!yes_to_all) {
                         auto b = QMessageBox::question(nullptr, "Overwrite File",
-                            QString::fromStdString(fmt::format("'{}' already exists, would you like to overwrite?", rd.name.filename())),
+                            to_qstring(fmt::format("'{}' already exists, would you like to overwrite?", rd.name.filename())),
                             QMessageBox::Yes | QMessageBox::No | QMessageBox::YesToAll);
                         yes_to_all = b == QMessageBox::YesToAll;
                         yes = b == QMessageBox::Yes;
@@ -239,7 +240,7 @@ QVariant ContainerModel::data(const QModelIndex& index, int role) const
         default:
             return {};
         case 0:
-            return QString::fromStdString(resources_[row].name.filename());
+            return to_qstring(resources_[row].name.filename());
         case 1:
             return static_cast<int>(resources_[row].size);
         }
@@ -300,7 +301,7 @@ QMimeData* ContainerModel::mimeData(const QModelIndexList& indexes) const
         auto name = resources_[row].name.filename();
         container_->extract_by_glob(name, container_->working_directory());
         auto fn = nw::path_to_string(container_->working_directory() / name);
-        auto url = QUrl::fromLocalFile(QString::fromStdString(fn));
+        auto url = QUrl::fromLocalFile(to_qstring(fn));
         if (!urls.contains(url)) {
             urls << url;
         }

@@ -1,6 +1,8 @@
 #include "arealistview.h"
 #include "proxymodels.h"
 
+#include "util/strings.h"
+
 #include "nw/kernel/Resources.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Area.hpp"
@@ -22,11 +24,12 @@ AreaListItem::AreaListItem(nw::Area* area, AreaListItem* parent)
 
 QVariant AreaListItem::data(int column, int role) const
 {
+    Q_UNUSED(role);
     if (column != 0) { return {}; }
     if (!path_.isEmpty()) {
         return path_;
     } else if (area_) {
-        return QString::fromStdString(nw::kernel::strings().get(area_->name));
+        return to_qstring(nw::kernel::strings().get(area_->name));
     }
     return {};
 }
@@ -43,6 +46,7 @@ AreaListModel::AreaListModel(nw::Module* module, QString path, QObject* parent)
 
 int AreaListModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

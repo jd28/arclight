@@ -14,6 +14,7 @@
 #include "widgets/arealistview.h"
 #include "widgets/explorerview.h"
 #include "widgets/projectview.h"
+#include "widgets/util/strings.h"
 
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Objects.hpp"
@@ -49,7 +50,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (i < recentProjects_.size()) {
             ui->menuRecentProjects->addAction(act);
             act->setData(recentProjects_[i]);
-            act->setText(QString::fromStdString(
+            act->setText(to_qstring(
                 fmt::format("&{} - {}", i + 1, recentProjects_[i].toStdString())));
         } else {
             ui->menuRecentProjects->addAction(act);
@@ -203,7 +204,7 @@ void MainWindow::open(const QString& path)
 
     for (int i = 0; i < recentProjects_.size(); ++i) {
         recentActions_[i]->setData(recentProjects_[i]);
-        recentActions_[i]->setText(QString::fromStdString(
+        recentActions_[i]->setText(to_qstring(
             fmt::format("&{} - {}", i + 1, recentProjects_[i].toStdString())));
         recentActions_[i]->setVisible(true);
     }
@@ -321,7 +322,7 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
     if (it == std::end(type_to_view_)) { return; }
 
     auto view = it->second(item->res_);
-    auto idx = ui->tabWidget->addTab(view, QString::fromStdString(item->res_.filename()));
+    auto idx = ui->tabWidget->addTab(view, to_qstring(item->res_.filename()));
     ui->tabWidget->setTabsClosable(true);
     ui->tabWidget->setCurrentIndex(idx);
 }

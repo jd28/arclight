@@ -2,6 +2,7 @@
 #include "ui_placeablegeneralview.h"
 
 #include "../VariableTableView/vartabledialog.h"
+#include "../util/strings.h"
 #include "placeableproperties.h"
 
 #include "nw/formats/Image.hpp"
@@ -45,8 +46,8 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
     }
 
     ui->name->setLocString(obj->common.name);
-    ui->tag->setText(QString::fromStdString(std::string(obj->tag().view())));
-    ui->resref->setText(QString::fromStdString(obj->common.resref.string()));
+    ui->tag->setText(to_qstring(obj->tag().view()));
+    ui->resref->setText(to_qstring(obj->common.resref.view()));
     ui->resref->setEnabled(obj->common.resref.empty());
     ui->inventory->setEnabled(obj->has_inventory);
     ui->properties->setObject(obj_);
@@ -61,7 +62,7 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
         if (plcs[i].name != 0xFFFFFFFF) {
             name = nw::kernel::strings().get(plcs[i].name);
         }
-        ui->appearance->addItem(QString::fromStdString(name), int(i));
+        ui->appearance->addItem(to_qstring(name), int(i));
         if (i == obj_->appearance) {
             ui->appearance->setCurrentIndex(int(added));
         }

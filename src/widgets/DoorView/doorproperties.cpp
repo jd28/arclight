@@ -3,6 +3,7 @@
 #include "../qtpropertybrowser/qteditorfactory.h"
 #include "../qtpropertybrowser/qtpropertybrowser.h"
 #include "../qtpropertybrowser/qtpropertymanager.h"
+#include "../util/strings.h"
 
 #include "nw/kernel/FactionSystem.hpp"
 #include "nw/kernel/Rules.hpp"
@@ -13,7 +14,7 @@
 
 #include <limits>
 
-static QRegularExpression resref_regex("^[a-z_]{1,16}$");
+static QRegularExpression resref_regex("^[a-z_]{0,16}$");
 
 DoorProperties::DoorProperties(QWidget* parent)
     : PropertiesView{parent}
@@ -79,7 +80,7 @@ void DoorProperties::basicsLoad()
     QtProperty* grp_basic = addGroup("Basic");
     QStringList qfactions;
     for (const auto& fac : nw::kernel::factions().all()) {
-        qfactions << QString::fromStdString(fac);
+        qfactions << to_qstring(fac);
     }
     auto fac = addPropertyEnum("Faction", obj_->faction, std::move(qfactions));
     prop_func_map_.insert(fac, [this](QtProperty* prop) {
@@ -297,7 +298,7 @@ void DoorProperties::trapsLoad()
     auto& traps = nw::kernel::rules().traps.entries;
     for (size_t i = 0; i < traps.size(); ++i) {
         if (!traps[i].valid()) { continue; }
-        trap_names << QString::fromStdString(nw::kernel::strings().get(traps[i].name));
+        trap_names << to_qstring(nw::kernel::strings().get(traps[i].name));
         trap_data << int(i);
     }
     trap_type_ = addPropertyEnum("Type", *obj_->trap.type, trap_names, trap_data);

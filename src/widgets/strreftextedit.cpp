@@ -1,6 +1,8 @@
 #include "strreftextedit.h"
 #include "ui_strreftextedit.h"
 
+#include "util/strings.h"
+
 #include "nw/kernel/Strings.hpp"
 
 StrrefTextEdit::StrrefTextEdit(QWidget* parent)
@@ -65,11 +67,11 @@ void StrrefTextEdit::updateTextEdit()
     if (ui->strrefShow->isChecked()) {
         auto string = nw::kernel::strings().get(locstring_.strref(), ui->feminine->isChecked());
         ui->textEdit->setDisabled(true);
-        ui->textEdit->setText(QString::fromStdString(string));
+        ui->textEdit->setText(to_qstring(string));
     } else {
         auto string = locstring_.get(lang_, ui->feminine->isChecked());
         ui->textEdit->setEnabled(true);
-        ui->textEdit->setText(QString::fromStdString(string));
+        ui->textEdit->setText(to_qstring(string));
         ui->textEdit->setDisabled(false);
     }
     ui->textEdit->blockSignals(false);

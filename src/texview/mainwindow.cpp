@@ -4,6 +4,7 @@
 #include "nw/log.hpp"
 
 #include "texuregallerymodel.h"
+#include "widgets/util/strings.h"
 
 #include <QFileDialog>
 #include <QImage>
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (i < recentFiles_.size()) {
             ui->menuRecent->addAction(act);
             act->setData(recentFiles_[i]);
-            act->setText(QString::fromStdString(
+            act->setText(to_qstring(
                 fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         } else {
             ui->menuRecent->addAction(act);
@@ -60,7 +61,7 @@ void MainWindow::open(const QString& path)
 
     for (int i = 0; i < recentFiles_.size(); ++i) {
         recentActions_[i]->setData(recentFiles_[i]);
-        recentActions_[i]->setText(QString::fromStdString(
+        recentActions_[i]->setText(to_qstring(
             fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         recentActions_[i]->setVisible(true);
     }

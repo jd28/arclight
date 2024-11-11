@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "LanguageMenu/LanguageMenu.h"
+#include "widgets/util/strings.h"
 
 #include <nw/log.hpp>
 #include <nw/resources/Erf.hpp>
@@ -29,8 +30,7 @@ MainWindow::MainWindow(QWidget* parent)
         if (i < recentFiles_.size()) {
             ui_->menuRecent->addAction(act);
             act->setData(recentFiles_[i]);
-            act->setText(QString::fromStdString(
-                fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
+            act->setText(to_qstring(fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         } else {
             ui_->menuRecent->addAction(act);
             act->setVisible(false);
@@ -89,7 +89,7 @@ void MainWindow::open(const QString& path)
 
     nw::Container* c = new nw::Erf(p);
     currentContainer_ = new ContainerView(c, 2);
-    int idx = ui_->containerTabWidget->addTab(currentContainer_, QString::fromStdString(c->name()));
+    int idx = ui_->containerTabWidget->addTab(currentContainer_, to_qstring(c->name()));
     ui_->containerTabWidget->setTabsClosable(true);
     ui_->containerTabWidget->setCurrentIndex(idx);
 
@@ -102,7 +102,7 @@ void MainWindow::open(const QString& path)
 
     for (int i = 0; i < recentFiles_.size(); ++i) {
         recentActions_[i]->setData(recentFiles_[i]);
-        recentActions_[i]->setText(QString::fromStdString(
+        recentActions_[i]->setText(to_qstring(
             fmt::format("&{} - {}", i + 1, recentFiles_[i].toStdString())));
         recentActions_[i]->setVisible(true);
     }
@@ -296,7 +296,7 @@ void MainWindow::writeSettings()
     QSettings settings("jmd", "erfherder");
     settings.beginWriteArray("Recent Files", static_cast<int>(recentFiles_.size()));
     int i = 0;
-    for (const auto& f : recentFiles_) {
+    foreach (const auto& f, recentFiles_) {
         settings.setArrayIndex(i++);
         settings.setValue("file", f);
     }
@@ -332,9 +332,9 @@ void MainWindow::setModifiedTabName(bool modified)
     auto name = current()->container()->name();
     if (modified) {
         ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
-            QString::fromStdString(name.empty() ? "untitled*" : name + "*"));
+            to_qstring(name.empty() ? "untitled*" : name + "*"));
     } else {
         ui_->containerTabWidget->setTabText(ui_->containerTabWidget->currentIndex(),
-            QString::fromStdString(name));
+            to_qstring(name));
     }
 }

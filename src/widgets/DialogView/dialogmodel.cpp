@@ -1,5 +1,7 @@
 #include "dialogmodel.h"
 
+#include "../util/strings.h"
+
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Strings.hpp"
 
@@ -9,8 +11,6 @@
 #include <QFont>
 #include <QIODevice>
 #include <QMimeData>
-
-#include <algorithm>
 
 // == DialogItem ==============================================================
 // ============================================================================
@@ -36,7 +36,7 @@ QVariant DialogItem::data(int column, int role) const
     default:
         return QVariant();
     case 0:
-        return QString::fromStdString(nw::kernel::strings().get(n->text, model_->feminine_)).trimmed();
+        return to_qstring(nw::kernel::strings().get(n->text, model_->feminine_)).trimmed();
     }
 }
 
@@ -113,6 +113,7 @@ bool DialogModel::canDropMimeData(const QMimeData* mimeData, Qt::DropAction acti
 
 int DialogModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 
@@ -151,6 +152,7 @@ bool DialogModel::dropMimeData(const QMimeData* mimeData, Qt::DropAction action,
 {
     Q_ASSERT(action == Qt::MoveAction);
     Q_UNUSED(column);
+    Q_UNUSED(row);
 
     if (!mimeData->hasFormat("application/x-dialogitem")) {
         return false;
@@ -227,6 +229,9 @@ Qt::ItemFlags DialogModel::flags(const QModelIndex& index) const
 
 QVariant DialogModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(section);
+    Q_UNUSED(orientation);
+    Q_UNUSED(role);
     return QVariant();
 }
 

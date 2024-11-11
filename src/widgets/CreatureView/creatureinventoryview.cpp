@@ -2,6 +2,7 @@
 #include "ui_creatureinventoryview.h"
 
 #include "../util/objects.h"
+#include "../util/strings.h"
 #include "creatureequipview.h"
 
 #include "ZFontIcon/ZFontIcon.h"
@@ -208,7 +209,7 @@ QVariant InventoryModel::data(const QModelIndex& index, int role) const
         break;
     case 1:
         if (role == Qt::DisplayRole) {
-            return QString::fromStdString(nw::kernel::strings().get(item->common.name));
+            return to_qstring(nw::kernel::strings().get(item->common.name));
         }
         break;
     case 2:

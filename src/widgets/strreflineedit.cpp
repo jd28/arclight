@@ -5,6 +5,8 @@
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
 
+#include "util/strings.h"
+
 StrrefLineEdit::StrrefLineEdit(nw::LocString value, QWidget* parent)
     : StrrefLineEdit(parent)
 {
@@ -23,7 +25,7 @@ StrrefLineEdit::StrrefLineEdit(QWidget* parent)
 void StrrefLineEdit::setLocString(nw::LocString value)
 {
     value_ = std::move(value);
-    setText(QString::fromStdString(nw::kernel::strings().get(value_)));
+    setText(to_qstring(nw::kernel::strings().get(value_)));
 }
 
 void StrrefLineEdit::onActionTriggered()

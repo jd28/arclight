@@ -5,6 +5,7 @@
 
 #include "nw/objects/LocalData.hpp"
 
+#include "../util/strings.h"
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
 
@@ -30,7 +31,7 @@ VariableTableModel::VariableTableModel(nw::LocalData* locals, QObject* parent)
     for (const auto& localvar : *locals_) {
         VarTableItem* loc = new VarTableItem;
 
-        loc->name = QString::fromStdString(localvar.first);
+        loc->name = to_qstring(localvar.first);
         if (localvar.second.flags.test(nw::LocalVarType::integer)) {
             loc->type = nw::LocalVarType::integer;
             loc->data = localvar.second.integer;
@@ -39,7 +40,7 @@ VariableTableModel::VariableTableModel(nw::LocalData* locals, QObject* parent)
 
         if (localvar.second.flags.test(nw::LocalVarType::string)) {
             loc->type = nw::LocalVarType::string;
-            loc->data = QString::fromStdString(localvar.second.string);
+            loc->data = to_qstring(localvar.second.string);
             qlocals_.push_back(loc);
         }
 
@@ -58,11 +59,13 @@ VariableTableModel::~VariableTableModel()
 
 int VariableTableModel::rowCount(const QModelIndex& parent) const
 {
-    return qlocals_.size();
+    Q_UNUSED(parent);
+    return static_cast<int>(qlocals_.size());
 }
 
 int VariableTableModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 3;
 }
 
@@ -120,6 +123,7 @@ QVariant VariableTableModel::data(const QModelIndex& index, int role) const
 
 QVariant VariableTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(orientation);
     if (role != Qt::DisplayRole) {
         return QVariant();
     }
@@ -138,6 +142,7 @@ QVariant VariableTableModel::headerData(int section, Qt::Orientation orientation
 
 QModelIndex VariableTableModel::index(int row, int column, const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return createIndex(row, column, qlocals_[row]);
 }
 
@@ -156,6 +161,7 @@ const QList<VarTableItem*>& VariableTableModel::modified_variables() const
 
 bool VariableTableModel::setData(const QModelIndex& idx, const QVariant& value, int role)
 {
+    Q_UNUSED(role);
     if (!idx.isValid()) { return false; }
     auto ptr = static_cast<VarTableItem*>(idx.internalPointer());
 

@@ -1,6 +1,7 @@
 #include "dialogview.h"
 #include "ui_dialogview.h"
 
+#include "../util/strings.h"
 #include "dialogmodel.h"
 #include "dialogtreeview.h"
 
@@ -55,7 +56,7 @@ void DialogView::loadItem(DialogItem* item)
     current_item_ = nullptr;
 
     // Action Script
-    ui->actionScript->setText(QString::fromStdString(item->ptr_ ? item->ptr_->node->script_action.string() : ""));
+    ui->actionScript->setText(to_qstring(item->ptr_ ? item->ptr_->node->script_action.view() : ""));
     ui->actionScript->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Actions Param Table
@@ -65,14 +66,14 @@ void DialogView::loadItem(DialogItem* item)
         ui->actionParams->setRowCount(int(item->ptr_->node->action_params.size()));
         ui->actionParams->setColumnCount(2);
         for (size_t r = 0; r < item->ptr_->node->action_params.size(); ++r) {
-            ui->actionParams->setItem(int(r), 0, new QTableWidgetItem(QString::fromStdString(item->ptr_->node->action_params[r].first)));
-            ui->actionParams->setItem(int(r), 1, new QTableWidgetItem(QString::fromStdString(item->ptr_->node->action_params[r].second)));
+            ui->actionParams->setItem(int(r), 0, new QTableWidgetItem(to_qstring(item->ptr_->node->action_params[r].first)));
+            ui->actionParams->setItem(int(r), 1, new QTableWidgetItem(to_qstring(item->ptr_->node->action_params[r].second)));
         }
     }
     ui->actionParams->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Action Sound
-    ui->actionSound->setText(item->ptr_ ? QString::fromStdString(item->ptr_->node->sound.string()) : "");
+    ui->actionSound->setText(item->ptr_ ? to_qstring(item->ptr_->node->sound.view()) : "");
     ui->actionSound->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Action Animation
@@ -143,7 +144,7 @@ void DialogView::loadItem(DialogItem* item)
     }
 
     // Condition script
-    ui->conditionScript->setText(QString::fromStdString(item->ptr_ ? item->ptr_->script_appears.string() : ""));
+    ui->conditionScript->setText(to_qstring(item->ptr_ ? item->ptr_->script_appears.view() : ""));
     ui->conditionScript->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Condition Param Table
@@ -153,20 +154,20 @@ void DialogView::loadItem(DialogItem* item)
         ui->conditionParams->setRowCount(int(item->ptr_->condition_params.size()));
         ui->conditionParams->setColumnCount(2);
         for (size_t r = 0; r < item->ptr_->condition_params.size(); ++r) {
-            ui->conditionParams->setItem(int(r), 0, new QTableWidgetItem(QString::fromStdString(item->ptr_->condition_params[r].first)));
-            ui->conditionParams->setItem(int(r), 1, new QTableWidgetItem(QString::fromStdString(item->ptr_->condition_params[r].second)));
+            ui->conditionParams->setItem(int(r), 0, new QTableWidgetItem(to_qstring(item->ptr_->condition_params[r].first)));
+            ui->conditionParams->setItem(int(r), 1, new QTableWidgetItem(to_qstring(item->ptr_->condition_params[r].second)));
         }
     }
     ui->conditionParams->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Dialog Text
     ui->dialogTextEdit->setCurrentFont(font_);
-    ui->dialogTextEdit->setText(item->ptr_ ? QString::fromStdString(item->ptr_->node->text.get(lang_, feminine_)) : "");
+    ui->dialogTextEdit->setText(item->ptr_ ? to_qstring(item->ptr_->node->text.get(lang_, feminine_)) : "");
     ui->dialogTextEdit->setDisabled(!item->ptr_ || item->ptr_->is_link);
 
     // Exit Scripts
-    ui->abortLineEdit->setText(QString::fromStdString(item->ptr_ ? item->ptr_->parent->script_abort.string() : ""));
-    ui->endLineEdit->setText(QString::fromStdString(item->ptr_ ? item->ptr_->parent->script_end.string() : ""));
+    ui->abortLineEdit->setText(to_qstring(item->ptr_ ? item->ptr_->parent->script_abort.view() : ""));
+    ui->endLineEdit->setText(to_qstring(item->ptr_ ? item->ptr_->parent->script_end.view() : ""));
 
     // Speaker Table
     if (!item->ptr_ || !item->ptr_->is_link) {
@@ -193,9 +194,9 @@ void DialogView::loadItem(DialogItem* item)
         ui->commentText->setText("");
     }
     else if (item->ptr_->is_link) {
-        ui->commentText->setText(QString::fromStdString(item->ptr_->comment));
+        ui->commentText->setText(to_qstring(item->ptr_->comment));
     } else {
-        ui->commentText->setText(QString::fromStdString(item->ptr_->node->comment));
+        ui->commentText->setText(to_qstring(item->ptr_->node->comment));
     }
     ui->commentText->setDisabled(!item->ptr_);
 
@@ -335,7 +336,7 @@ void DialogView::setupUi()
     auto get_scripts = [&scripts](const nw::Resource& res) {
         // Note: we only care about compiled scripts (for now).
         if (res.type != nw::ResourceType::ncs) { return; }
-        scripts << QString::fromStdString(res.resref.string());
+        scripts << to_qstring(res.resref.string());
     };
 
     nw::kernel::resman().visit(get_scripts);
@@ -350,7 +351,7 @@ void DialogView::setupUi()
     QStringList sounds;
     auto get_sounds = [&sounds](const nw::Resource& res) {
         if (!nw::ResourceType::check_category(nw::ResourceType::sound, res.type)) { return; }
-        sounds << QString::fromStdString(res.resref.string());
+        sounds << to_qstring(res.resref.view());
     };
 
     nw::kernel::resman().visit(get_sounds);
@@ -518,9 +519,9 @@ void DialogView::onActionSoundClicked()
         if (std::strncmp(bytes, "BMU V1.0", 8) == 0) {
             bytes += 8;
         }
-        url = QString::fromStdString(rdata.name.resref.string()) + ".mp3";
+        url = to_qstring(rdata.name.resref.view()) + ".mp3";
     } else {
-        url = QString::fromStdString(rdata.name.filename());
+        url = to_qstring(rdata.name.filename());
     }
 
     QByteArray ba{bytes, size};

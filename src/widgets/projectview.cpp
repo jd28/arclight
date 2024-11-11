@@ -7,6 +7,7 @@ extern "C" {
 #include "ZFontIcon/ZFont_fa6.h"
 #include "nw/kernel/Objects.hpp"
 #include "util/restypeicons.h"
+#include "util/strings.h"
 
 #include "nw/util/scope_exit.hpp"
 
@@ -24,47 +25,47 @@ inline QString read_object_name(const QString& path)
     if (res_.type == nw::ResourceType::uti) {
         auto name = nw::Item::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::utc) {
         auto name = nw::Creature::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::are) {
         auto name = nw::Area::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::utd) {
         auto name = nw::Door::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::ute) {
         auto name = nw::Encounter::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::utm) {
         auto name = nw::Store::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::utp) {
         auto name = nw::Placeable::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::uts) {
         auto name = nw::Sound::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     } else if (res_.type == nw::ResourceType::utt) {
         auto name = nw::Trigger::get_name_from_file(path.toStdString());
         if (!name.empty()) {
-            return QString::fromStdString(name);
+            return to_qstring(name);
         }
     }
 
@@ -108,7 +109,7 @@ QVariant ProjectItem::data(int column, int role) const
     } else if (role == Qt::DecorationRole) {
         if (!is_folder_) {
             auto path = module_->get_canonical_path(res_);
-            if (!comparePaths(QString::fromStdString(path), path_)) {
+            if (!comparePaths(to_qstring(path), path_)) {
                 return ZFontIcon::icon(Fa6::FAMILY, Fa6::SOLID, Fa6::fa_circle_exclamation, Qt::red);
             }
             return restypeToIcon(res_.type);
@@ -118,11 +119,11 @@ QVariant ProjectItem::data(int column, int role) const
         }
     } else if (role == Qt::ToolTipRole) {
         if (!is_folder_) {
-            auto path = QString::fromStdString(module_->get_canonical_path(res_));
+            auto path = to_qstring(module_->get_canonical_path(res_));
             if (!comparePaths(path, path_)) {
                 return QString("%1 is shadowed by %2").arg(path_, path);
             } else {
-                return QString::fromStdString(res_.filename());
+                return to_qstring(res_.filename());
             }
         }
     }
@@ -135,7 +136,7 @@ QVariant ProjectItem::data(int column, int role) const
 ProjectModel::ProjectModel(nw::StaticDirectory* module, QObject* parent)
     : AbstractTreeModel{parent}
     , module_{module}
-    , path_{QString::fromStdString(module_->path())}
+    , path_{to_qstring(module_->path())}
 {
     if (!setupDatabase()) {
         throw std::runtime_error("failed to open arclight meta database");
@@ -144,6 +145,7 @@ ProjectModel::ProjectModel(nw::StaticDirectory* module, QObject* parent)
 
 int ProjectModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

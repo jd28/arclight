@@ -1,5 +1,7 @@
 #include "explorerview.h"
 
+#include "util/strings.h"
+
 #include "nw/kernel/Resources.hpp"
 #include "nw/resources/ResourceType.hpp"
 
@@ -148,54 +150,54 @@ ExplorerItem::ExplorerItem(QString name, AbstractTreeItem* parent)
 
 ExplorerItem::ExplorerItem(nw::Container* container, AbstractTreeItem* parent)
     : AbstractTreeItem(0, parent)
-    , name_{QString::fromStdString(container->name())}
+    , name_{to_qstring(container->name())}
     , container_{container}
     , kind_{ExplorerItemKind::container}
 {
     absl::flat_hash_map<std::string_view, ExplorerItem*> map{
-        {resclass_misc, new ExplorerItem(QString::fromStdString(resclass_misc), this)},
-        {resclass_sound, new ExplorerItem(QString::fromStdString(resclass_sound), this)},
-        {resclass_texture, new ExplorerItem(QString::fromStdString(resclass_texture), this)},
-        {resclass_gamedata, new ExplorerItem(QString::fromStdString(resclass_gamedata), this)},
-        {resclass_texture_info, new ExplorerItem(QString::fromStdString(resclass_texture_info), this)},
-        {resclass_config, new ExplorerItem(QString::fromStdString(resclass_config), this)},
-        {resclass_image, new ExplorerItem(QString::fromStdString(resclass_image), this)},
-        {resclass_model, new ExplorerItem(QString::fromStdString(resclass_model), this)},
-        {resclass_ui, new ExplorerItem(QString::fromStdString(resclass_ui), this)},
-        {resclass_script, new ExplorerItem(QString::fromStdString(resclass_script), this)},
-        {resclass_cscript, new ExplorerItem(QString::fromStdString(resclass_cscript), this)},
-        {resclass_dialog, new ExplorerItem(QString::fromStdString(resclass_dialog), this)},
-        {resclass_blueprint_palette, new ExplorerItem(QString::fromStdString(resclass_blueprint_palette), this)},
-        {resclass_bp_waypoint, new ExplorerItem(QString::fromStdString(resclass_bp_waypoint), this)},
-        {resclass_bp_trigger, new ExplorerItem(QString::fromStdString(resclass_bp_trigger), this)},
-        {resclass_bp_sound, new ExplorerItem(QString::fromStdString(resclass_bp_sound), this)},
-        {resclass_bp_placeable, new ExplorerItem(QString::fromStdString(resclass_bp_placeable), this)},
-        {resclass_bp_item, new ExplorerItem(QString::fromStdString(resclass_bp_item), this)},
-        {resclass_bp_encounter, new ExplorerItem(QString::fromStdString(resclass_bp_encounter), this)},
-        {resclass_bp_door, new ExplorerItem(QString::fromStdString(resclass_bp_door), this)},
-        {resclass_bp_creature, new ExplorerItem(QString::fromStdString(resclass_bp_creature), this)},
-        {resclass_bp_merchant, new ExplorerItem(QString::fromStdString(resclass_bp_merchant), this)},
-        {resclass_sound_set, new ExplorerItem(QString::fromStdString(resclass_sound_set), this)},
-        {resclass_textures_plt, new ExplorerItem(QString::fromStdString(resclass_textures_plt), this)},
-        {resclass_model_walk_door, new ExplorerItem(QString::fromStdString(resclass_model_walk_door), this)},
-        {resclass_model_walk_place, new ExplorerItem(QString::fromStdString(resclass_model_walk_place), this)},
-        {resclass_model_walk_tile, new ExplorerItem(QString::fromStdString(resclass_model_walk_tile), this)},
-        {resclass_area, new ExplorerItem(QString::fromStdString(resclass_area), this)},
-        {resclass_module, new ExplorerItem(QString::fromStdString(resclass_module), this)},
-        {resclass_plot, new ExplorerItem(QString::fromStdString(resclass_plot), this)},
-        {resclass_texture_dds, new ExplorerItem(QString::fromStdString(resclass_texture_dds), this)},
-        {resclass_dscript, new ExplorerItem(QString::fromStdString(resclass_dscript), this)},
-        {resclass_model_pheno, new ExplorerItem(QString::fromStdString(resclass_model_pheno), this)},
-        {resclass_texture_minimap, new ExplorerItem(QString::fromStdString(resclass_texture_minimap), this)},
-        {resclass_texture_portrait, new ExplorerItem(QString::fromStdString(resclass_texture_portrait), this)},
-        {resclass_texture_iconinv, new ExplorerItem(QString::fromStdString(resclass_texture_iconinv), this)},
-        {resclass_texture_iconfeat, new ExplorerItem(QString::fromStdString(resclass_texture_iconfeat), this)},
-        {resclass_texture_iconspell, new ExplorerItem(QString::fromStdString(resclass_texture_iconspell), this)},
-        {resclass_texture_iconskill, new ExplorerItem(QString::fromStdString(resclass_texture_iconskill), this)},
-        {resclass_texture_iconother, new ExplorerItem(QString::fromStdString(resclass_texture_iconother), this)},
-        {resclass_texture_iconscroll, new ExplorerItem(QString::fromStdString(resclass_texture_iconscroll), this)},
-        {resclass_shader, new ExplorerItem(QString::fromStdString(resclass_shader), this)},
-        {resclass_material, new ExplorerItem(QString::fromStdString(resclass_material), this)},
+        {resclass_misc, new ExplorerItem(to_qstring(resclass_misc), this)},
+        {resclass_sound, new ExplorerItem(to_qstring(resclass_sound), this)},
+        {resclass_texture, new ExplorerItem(to_qstring(resclass_texture), this)},
+        {resclass_gamedata, new ExplorerItem(to_qstring(resclass_gamedata), this)},
+        {resclass_texture_info, new ExplorerItem(to_qstring(resclass_texture_info), this)},
+        {resclass_config, new ExplorerItem(to_qstring(resclass_config), this)},
+        {resclass_image, new ExplorerItem(to_qstring(resclass_image), this)},
+        {resclass_model, new ExplorerItem(to_qstring(resclass_model), this)},
+        {resclass_ui, new ExplorerItem(to_qstring(resclass_ui), this)},
+        {resclass_script, new ExplorerItem(to_qstring(resclass_script), this)},
+        {resclass_cscript, new ExplorerItem(to_qstring(resclass_cscript), this)},
+        {resclass_dialog, new ExplorerItem(to_qstring(resclass_dialog), this)},
+        {resclass_blueprint_palette, new ExplorerItem(to_qstring(resclass_blueprint_palette), this)},
+        {resclass_bp_waypoint, new ExplorerItem(to_qstring(resclass_bp_waypoint), this)},
+        {resclass_bp_trigger, new ExplorerItem(to_qstring(resclass_bp_trigger), this)},
+        {resclass_bp_sound, new ExplorerItem(to_qstring(resclass_bp_sound), this)},
+        {resclass_bp_placeable, new ExplorerItem(to_qstring(resclass_bp_placeable), this)},
+        {resclass_bp_item, new ExplorerItem(to_qstring(resclass_bp_item), this)},
+        {resclass_bp_encounter, new ExplorerItem(to_qstring(resclass_bp_encounter), this)},
+        {resclass_bp_door, new ExplorerItem(to_qstring(resclass_bp_door), this)},
+        {resclass_bp_creature, new ExplorerItem(to_qstring(resclass_bp_creature), this)},
+        {resclass_bp_merchant, new ExplorerItem(to_qstring(resclass_bp_merchant), this)},
+        {resclass_sound_set, new ExplorerItem(to_qstring(resclass_sound_set), this)},
+        {resclass_textures_plt, new ExplorerItem(to_qstring(resclass_textures_plt), this)},
+        {resclass_model_walk_door, new ExplorerItem(to_qstring(resclass_model_walk_door), this)},
+        {resclass_model_walk_place, new ExplorerItem(to_qstring(resclass_model_walk_place), this)},
+        {resclass_model_walk_tile, new ExplorerItem(to_qstring(resclass_model_walk_tile), this)},
+        {resclass_area, new ExplorerItem(to_qstring(resclass_area), this)},
+        {resclass_module, new ExplorerItem(to_qstring(resclass_module), this)},
+        {resclass_plot, new ExplorerItem(to_qstring(resclass_plot), this)},
+        {resclass_texture_dds, new ExplorerItem(to_qstring(resclass_texture_dds), this)},
+        {resclass_dscript, new ExplorerItem(to_qstring(resclass_dscript), this)},
+        {resclass_model_pheno, new ExplorerItem(to_qstring(resclass_model_pheno), this)},
+        {resclass_texture_minimap, new ExplorerItem(to_qstring(resclass_texture_minimap), this)},
+        {resclass_texture_portrait, new ExplorerItem(to_qstring(resclass_texture_portrait), this)},
+        {resclass_texture_iconinv, new ExplorerItem(to_qstring(resclass_texture_iconinv), this)},
+        {resclass_texture_iconfeat, new ExplorerItem(to_qstring(resclass_texture_iconfeat), this)},
+        {resclass_texture_iconspell, new ExplorerItem(to_qstring(resclass_texture_iconspell), this)},
+        {resclass_texture_iconskill, new ExplorerItem(to_qstring(resclass_texture_iconskill), this)},
+        {resclass_texture_iconother, new ExplorerItem(to_qstring(resclass_texture_iconother), this)},
+        {resclass_texture_iconscroll, new ExplorerItem(to_qstring(resclass_texture_iconscroll), this)},
+        {resclass_shader, new ExplorerItem(to_qstring(resclass_shader), this)},
+        {resclass_material, new ExplorerItem(to_qstring(resclass_material), this)},
     };
 
     for (const auto& rd : container_->all()) {
@@ -226,7 +228,7 @@ ExplorerItem::ExplorerItem(nw::Container* container, AbstractTreeItem* parent)
 
 ExplorerItem::ExplorerItem(nw::ResourceDescriptor res, AbstractTreeItem* parent)
     : AbstractTreeItem(0, parent)
-    , name_{QString::fromStdString(res.name.filename())}
+    , name_{to_qstring(res.name.filename())}
     , descriptor_{res}
     , kind_{ExplorerItemKind::resource}
 {
@@ -234,6 +236,7 @@ ExplorerItem::ExplorerItem(nw::ResourceDescriptor res, AbstractTreeItem* parent)
 
 QVariant ExplorerItem::data(int column, int role) const
 {
+    Q_UNUSED(column);
     if (role == Qt::DisplayRole) {
         return name_;
     }
@@ -251,6 +254,7 @@ ExplorerModel::ExplorerModel(QObject* parent)
 
 int ExplorerModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent);
     return 1;
 }
 

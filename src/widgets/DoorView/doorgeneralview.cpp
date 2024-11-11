@@ -2,11 +2,12 @@
 #include "ui_doorgeneralview.h"
 
 #include "../VariableTableView/vartabledialog.h"
+#include "../util/strings.h"
 #include "doorproperties.h"
 
 #include "nw/formats/Image.hpp"
 #include "nw/kernel/Resources.hpp"
-#include "nw/kernel/Rules.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Door.hpp"
 
@@ -45,8 +46,8 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, QWidget* parent)
     }
 
     ui->name->setLocString(obj->common.name);
-    ui->tag->setText(QString::fromStdString(std::string(obj->tag().view())));
-    ui->resref->setText(QString::fromStdString(obj->common.resref.string()));
+    ui->tag->setText(to_qstring(obj->tag().view()));
+    ui->resref->setText(to_qstring(obj->common.resref.view()));
     ui->resref->setEnabled(obj->common.resref.empty());
     ui->properties->setObject(obj_);
 
@@ -57,7 +58,7 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, QWidget* parent)
         int added = 0;
         for (size_t i = 0; i < doortypes->rows(); ++i) {
             if (!doortypes->get_to(i, "StringRefGame", name)) { continue; }
-            ui->appearance->addItem(QString::fromStdString(nw::kernel::strings().get(uint32_t(name))), int(i));
+            ui->appearance->addItem(to_qstring(nw::kernel::strings().get(uint32_t(name))), int(i));
             ++i;
             if (obj_->appearance == i) {
                 ui->appearance->setCurrentIndex(added);
@@ -76,7 +77,7 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, QWidget* parent)
         int added = 0;
         for (size_t i = 0; i < genericdoors->rows(); ++i) {
             if (!genericdoors->get_to(i, "Name", name)) { continue; }
-            ui->generic->addItem(QString::fromStdString(nw::kernel::strings().get(uint32_t(name))), int(i));
+            ui->generic->addItem(to_qstring(nw::kernel::strings().get(uint32_t(name))), int(i));
             ++i;
             if (obj_->generic_type == i) {
                 ui->generic->setCurrentIndex(added);

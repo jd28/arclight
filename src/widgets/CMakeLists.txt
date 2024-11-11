@@ -33,6 +33,8 @@ add_library(arclight-widgets STATIC
     util/restypeicons.h
     util/objects.cpp
     util/objects.h
+    util/strings.cpp
+    util/strings.h
 
     checkboxdelegate.h
     checkboxdelegate.cpp
