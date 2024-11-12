@@ -48,9 +48,9 @@ QtProperty* PropertiesView::addPropertyInt(QString name, int value, std::optiona
 QtProperty* PropertiesView::addPropertyEnum(QString name, int value, QStringList enums, QList<QVariant> data)
 {
     auto prop = enums_->addProperty(std::move(name));
-    enums_->setValue(prop, value);
     enums_->setEnumNames(prop, std::move(enums));
     enums_->setEnumData(prop, std::move(data));
+    enums_->setValue(prop, value);
     return prop;
 }
 
