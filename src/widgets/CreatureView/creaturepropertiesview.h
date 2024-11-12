@@ -32,10 +32,12 @@ private:
 
     void loadProperties();
     void loadAbilities();
+    void loadInterface();
     void loadSaves();
     void loadScripts();
     void loadSkills();
     void loadAdvanced();
+    void loadBasic();
 };
 
 #endif // CREATUREPROPERTIESVIEW_H
