@@ -17,10 +17,10 @@
    <item>
     <widget class="QScrollArea" name="scrollArea_2">
      <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
+      <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
      </property>
      <property name="sizeAdjustPolicy">
-      <enum>QAbstractScrollArea::AdjustToContents</enum>
+      <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>
@@ -30,15 +30,15 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>604</width>
-        <height>636</height>
+        <width>594</width>
+        <height>626</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
        <item>
         <widget class="QSplitter" name="splitter">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <widget class="QWidget" name="widget" native="true">
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -51,9 +51,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-79</y>
-                <width>365</width>
-                <height>689</height>
+                <y>0</y>
+                <width>312</width>
+                <height>1001</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -250,23 +250,6 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="label_7">
-                 <property name="text">
-                  <string>Race</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="race"/>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_8">
-                 <property name="text">
-                  <string>Subrace</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QWidget" name="widget_6" native="true">
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <property name="leftMargin">
@@ -281,9 +264,6 @@
                   <property name="bottomMargin">
                    <number>0</number>
                   </property>
-                  <item>
-                   <widget class="QLineEdit" name="subrace"/>
-                  </item>
                  </layout>
                 </widget>
                </item>
@@ -554,7 +534,7 @@
                   <item>
                    <spacer name="horizontalSpacer">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>
@@ -581,7 +561,7 @@
                   <item>
                    <spacer name="horizontalSpacer_2">
                     <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
+                     <enum>Qt::Orientation::Horizontal</enum>
                     </property>
                     <property name="sizeHint" stdset="0">
                      <size>

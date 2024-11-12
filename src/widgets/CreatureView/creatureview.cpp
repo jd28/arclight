@@ -109,27 +109,6 @@ void CreatureView::loadCreature(nw::Creature* creature)
         LOG_F(ERROR, "Failed to load portraits.2da");
     }
 
-    QList<QPair<QString, int>> race_list;
-    for (size_t i = 0; i < nw::kernel::rules().races.entries.size(); ++i) {
-        if (nw::kernel::rules().races.entries[i].name != 0xFFFFFFFF) {
-            auto name = nw::kernel::strings().get(nw::kernel::rules().races.entries[i].name);
-            race_list.append({to_qstring(name), int(i)});
-        }
-    }
-
-    std::sort(race_list.begin(), race_list.end(), [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    int race_index = 0;
-    for (int i = 0; i < race_list.size(); ++i) {
-        ui->race->addItem(race_list[i].first, race_list[i].second);
-        if (creature->race == nw::Race::make(race_list[i].second)) {
-            race_index = i;
-        }
-    }
-    ui->race->setCurrentIndex(race_index);
-
     QList<QPair<QString, int>> class_list;
     for (size_t i = 0; i < nw::kernel::rules().classes.entries.size(); ++i) {
         if (nw::kernel::rules().classes.entries[i].name != 0xFFFFFFFF) {
@@ -143,7 +122,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
     });
 
     for (size_t i = 0; i < nw::LevelStats::max_classes; ++i) {
-        // auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
+        auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
         auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
         auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
 
@@ -159,6 +138,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
             combobox->setCurrentIndex(class_index);
             spinbox->setValue(creature->levels.entries[i].level);
             ++current_classes_;
+            widget->setHidden(false);
         } else if (i != 0) {
             spinbox->setDisabled(true);
         }
