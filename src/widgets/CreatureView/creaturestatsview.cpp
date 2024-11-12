@@ -1,6 +1,8 @@
 #include "creaturestatsview.h"
 #include "ui_creaturestatsview.h"
 
+#include "../util/strings.h"
+
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
@@ -15,12 +17,6 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
 {
     ui->setupUi(this);
 
-    for (int i = 0; i < 6; ++i) {
-        auto score = ui->abilityGroup->findChild<QSpinBox*>(QString("abilitySpinBox_%1").arg(i));
-        score->setProperty("ability", i);
-        connect(score, &QSpinBox::valueChanged, this, &CreatureStatsView::onAbilityScoreChanged);
-    }
-
     updateAbilities();
     updateArmorClass();
     connect(ui->acNatural, &QSpinBox::valueChanged, this, &CreatureStatsView::onAcNaturalChanged);
@@ -31,7 +27,7 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
         for (size_t i = 0; i < skills_2da->rows(); ++i) {
             if (auto name_id = skills_2da->get<int32_t>(i, "Name")) {
                 auto name = nw::kernel::strings().get(*name_id);
-                skill_list.append({QString::fromStdString(name), int(i)});
+                skill_list.append({to_qstring(name), int(i)});
             }
         }
     }
@@ -45,7 +41,8 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
         auto x = new QTableWidgetItem(name);
         x->setFlags(x->flags() & ~Qt::ItemIsEditable);
         ui->tableWidget->setItem(row, 0, x);
-        auto y = new QTableWidgetItem(QString::number(nwn1::get_skill_rank(creature_, nw::Skill::make(id), nullptr, true)));
+        auto y = new QTableWidgetItem(QString::number(nwn1::get_skill_rank(creature_, nw::Skill::make(id))));
+        y->setFlags(y->flags() & ~Qt::ItemIsEditable);
         y->setData(Qt::UserRole, id);
         ui->tableWidget->setItem(row, 1, y);
         ++row;
@@ -53,45 +50,8 @@ CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 
-    connect(ui->tableWidget, &QTableWidget::cellChanged, this, &CreatureStatsView::onSkillChanged);
-
-    auto ranges_2da = nw::kernel::twodas().get("ranges");
-    int ranges_idx = -1;
-    if (ranges_2da) {
-        for (size_t i = 0; i < ranges_2da->rows(); ++i) {
-            int name;
-            if (ranges_2da->get_to(i, "Name", name)) {
-                auto string = nw::kernel::strings().get(uint32_t(name));
-                ui->perceptionCombo->addItem(QString::fromStdString(string), int(i));
-                if (i == creature_->perception_range) {
-                    ranges_idx = ui->perceptionCombo->count() - 1;
-                }
-            }
-        }
-    }
-    if (ranges_idx != -1) { ui->perceptionCombo->setCurrentIndex(ranges_idx); }
-    ui->perceptionCombo->model()->sort(0);
-    connect(ui->perceptionCombo, &QComboBox::currentIndexChanged, this, &CreatureStatsView::onPerceptionChanged);
-
-    auto creaturespeed_2da = nw::kernel::twodas().get("creaturespeed");
-    int creaturespeed_idx = -1;
-    if (creaturespeed_2da) {
-        for (size_t i = 0; i < creaturespeed_2da->rows(); ++i) {
-            int name;
-            if (creaturespeed_2da->get_to(i, "Name", name)) {
-                auto string = nw::kernel::strings().get(uint32_t(name));
-                ui->moveRateCombo->addItem(QString::fromStdString(string), int(i));
-                if (int32_t(i) == creature_->walkrate) {
-                    creaturespeed_idx = ui->moveRateCombo->count() - 1;
-                }
-            }
-        }
-    }
-    if (creaturespeed_idx != -1) { ui->moveRateCombo->setCurrentIndex(creaturespeed_idx); }
-    ui->moveRateCombo->model()->sort(0);
-    connect(ui->moveRateCombo, &QComboBox::currentIndexChanged, this, &CreatureStatsView::onMoveRateChanged);
-
     updateHitPoints();
+    connect(ui->hpBase, &QSpinBox::valueChanged, this, &CreatureStatsView::onHitpointBaseChanged);
 }
 
 CreatureStatsView::~CreatureStatsView()
@@ -105,6 +65,7 @@ void CreatureStatsView::updateAll()
     updateArmorClass();
     updateHitPoints();
     updateSaves();
+    updateSkills();
 }
 
 void CreatureStatsView::updateAbilities()
@@ -112,22 +73,25 @@ void CreatureStatsView::updateAbilities()
     auto race = nw::kernel::rules().races.get(creature_->race);
 
     for (int i = 0; i < 6; ++i) {
-        int base = nwn1::get_ability_score(creature_, nw::Ability::make(i), true);
-        int mod = nwn1::get_ability_modifier(creature_, nw::Ability::make(i), true);
         int race_mod = 0;
         if (race) { race_mod = race->ability_modifiers[i]; }
 
-        auto score = ui->abilityGroup->findChild<QSpinBox*>(QString("abilitySpinBox_%1").arg(i));
-        score->setValue(base - race_mod);
+        int total = nwn1::get_ability_score(creature_, nw::Ability::make(i));
+
+        auto score = ui->abilityGroup->findChild<QLineEdit*>(QString("ability_%1").arg(i));
+        score->setText(QString::number(creature_->stats.abilities_[i]));
 
         auto race1 = ui->abilityGroup->findChild<QLineEdit*>(QString("abilityRaceLineEdit_%1").arg(i));
         race1->setText(QString::number(race_mod));
 
-        auto total = ui->abilityGroup->findChild<QLineEdit*>(QString("abilityTotalLineEdit_%1").arg(i));
-        total->setText(QString::number(base));
+        auto bonus = ui->abilityGroup->findChild<QLineEdit*>(QString("abilityBonus_%1").arg(i));
+        bonus->setText(QString::number(total - race_mod - creature_->stats.abilities_[i]));
+
+        auto totalw = ui->abilityGroup->findChild<QLineEdit*>(QString("abilityTotalLineEdit_%1").arg(i));
+        totalw->setText(QString::number(total));
 
         auto modifier = ui->abilityGroup->findChild<QLineEdit*>(QString("abilityModLineEdit_%1").arg(i));
-        modifier->setText(QString::number(mod));
+        modifier->setText(QString::number(nwn1::get_ability_modifier(creature_, nw::Ability::make(i))));
     }
 }
 
@@ -150,7 +114,7 @@ void CreatureStatsView::updateHitPoints()
 
 void CreatureStatsView::updateSaves()
 {
-    for (auto skill : {nwn1::saving_throw_fort, nwn1::saving_throw_reflex, nwn1::saving_throw_will}) {
+    for (auto save : {nwn1::saving_throw_fort, nwn1::saving_throw_reflex, nwn1::saving_throw_will}) {
         int base = 0;
         int bonus = 0;
         int mod = 0;
@@ -162,7 +126,7 @@ void CreatureStatsView::updateSaves()
             int level = creature_->levels.entries[i].level;
 
             if (id == nw::Class::invalid()) { break; }
-            switch (*skill) {
+            switch (*save) {
             default:
                 break;
             case *nwn1::saving_throw_fort:
@@ -177,7 +141,7 @@ void CreatureStatsView::updateSaves()
             }
         }
 
-        switch (*skill) {
+        switch (*save) {
         default:
             continue;
         case *nwn1::saving_throw_fort:
@@ -194,64 +158,42 @@ void CreatureStatsView::updateSaves()
             break;
         }
 
-        auto save_base = ui->savesGroup->findChild<QLineEdit*>(QString("saveBase_%1").arg(*skill));
+        auto save_base = ui->savesGroup->findChild<QLineEdit*>(QString("saveBase_%1").arg(*save));
         save_base->setText(QString::number(base));
 
-        auto save_mod = ui->savesGroup->findChild<QLineEdit*>(QString("saveModifier_%1").arg(*skill));
+        auto save_mod = ui->savesGroup->findChild<QLineEdit*>(QString("saveModifier_%1").arg(*save));
         save_mod->setText(QString::number(mod));
 
-        auto save_bonus = ui->savesGroup->findChild<QSpinBox*>(QString("savesBonus_%1").arg(*skill));
-        save_bonus->setValue(bonus);
+        auto save_bonus = ui->savesGroup->findChild<QLineEdit*>(QString("saveBonus_%1").arg(*save));
+        save_bonus->setText(QString::number(bonus));
 
-        auto save_total = ui->savesGroup->findChild<QLineEdit*>(QString("saveTotal_%1").arg(*skill));
-        save_total->setText(QString::number(base + mod + bonus));
+        auto save_total = ui->savesGroup->findChild<QLineEdit*>(QString("saveTotal_%1").arg(*save));
+        save_total->setText(QString::number(nwn1::saving_throw(creature_, save)));
+    }
+}
+
+void CreatureStatsView::updateSkills()
+{
+    for (int i = 0; i < ui->tableWidget->rowCount(); ++i) {
+        auto it = ui->tableWidget->item(i, 1);
+        auto skill = nw::Skill::make(it->data(Qt::UserRole).toInt());
+        it->setText(QString::number(nwn1::get_skill_rank(creature_, skill)));
     }
 }
 
 // == Public Slots ============================================================
 // ============================================================================
 
-void CreatureStatsView::onAbilityScoreChanged(int value)
-{
-    auto score = qobject_cast<QSpinBox*>(sender());
-    auto abil = score->property("ability").toInt();
-    creature_->stats.set_ability_score(nw::Ability::make(abil), value);
-
-    updateAll();
-}
-
 void CreatureStatsView::onAcNaturalChanged(int value)
 {
-    Q_UNUSED(value);
     if (!creature_) { return; }
-    creature_->combat_info.ac_natural_bonus = ui->acNatural->value();
+    creature_->combat_info.ac_natural_bonus = value;
     updateArmorClass();
 }
 
-void CreatureStatsView::onMoveRateChanged(int idx)
+void CreatureStatsView::onHitpointBaseChanged(int value)
 {
-    Q_UNUSED(idx);
     if (!creature_) { return; }
-
-    auto val = ui->moveRateCombo->currentData().toInt();
-    creature_->walkrate = val;
-}
-
-void CreatureStatsView::onPerceptionChanged(int idx)
-{
-    Q_UNUSED(idx);
-    if (!creature_) { return; }
-
-    auto val = ui->perceptionCombo->currentData().toInt();
-    creature_->perception_range = uint8_t(val);
-}
-
-void CreatureStatsView::onSkillChanged(int row, int col)
-{
-    if (col != 1) { return; }
-    auto item = ui->tableWidget->item(row, col);
-    auto skill = nw::Skill::make(item->data(Qt::UserRole).toInt());
-    auto value = item->data(Qt::DisplayRole).toInt();
-    creature_->stats.set_skill_rank(skill, value);
-    updateAll();
+    creature_->hp = static_cast<int16_t>(value);
+    updateHitPoints();
 }

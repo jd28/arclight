@@ -83,6 +83,12 @@ Camera Controls:
 
 A view of NWN containers.  See erfheder above.
 
+### Creature View - Properties
+
+The place to edit most things about a creature.  NOTE: Not yet complete.
+
+![props](screenshots/creture-view-props-2024-11-11.png)
+
 ### Creature View - Stats
 
 To those familiar, this is essentially a copy of axs' modified toolset layout.  Expanded

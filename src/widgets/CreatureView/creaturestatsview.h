@@ -22,13 +22,11 @@ public:
     void updateArmorClass();
     void updateHitPoints();
     void updateSaves();
+    void updateSkills();
 
 public slots:
-    void onAbilityScoreChanged(int value);
     void onAcNaturalChanged(int value);
-    void onMoveRateChanged(int idx);
-    void onPerceptionChanged(int idx);
-    void onSkillChanged(int row, int col);
+    void onHitpointBaseChanged(int value);
     void updateAll();
 
 private:

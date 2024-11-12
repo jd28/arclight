@@ -1,4 +1,5 @@
 #include "creatureview.h"
+#include "creaturepropertiesview.h"
 #include "ui_creatureview.h"
 
 #include "VariableTableView/vartabledialog.h"
@@ -7,6 +8,7 @@
 #include "creaturefeatselector.h"
 #include "creaturefeatselectormodel.h"
 #include "creatureinventorypanel.h"
+#include "creaturepropertiesview.h"
 #include "creaturestatsview.h"
 #include "util/strings.h"
 
@@ -31,11 +33,19 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
 
     // Disable splitter movement for now, it's too easy to create weird results
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << int(width * 1.5 / 8) << int(width * 4.5 / 8) << width * 2 / 8);
+    ui->splitter->setSizes(QList<int>() << int(width * 1.5 / 8) << int(width * 4.0 / 8) << int(width * 2.5) / 8);
     ui->splitter->handle(1)->setDisabled(true);
     ui->splitter->handle(2)->setDisabled(true);
+
+    auto props = new CreaturePropertiesView(this);
+    props->setCreature(creature);
+    ui->tabWidget->addTab(props, "Properties");
+
     auto stats = new CreatureStatsView(creature, this);
     ui->tabWidget->addTab(stats, "Statistics");
+
+    connect(props, &CreaturePropertiesView::updateStats, stats, &CreatureStatsView::updateAll);
+
     auto feats = new CreatureFeatSelector(creature, this);
     connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
     ui->tabWidget->addTab(feats, "Feats");
