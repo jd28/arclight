@@ -566,6 +566,7 @@ public:
     ~QtEnumPropertyManager();
 
     QVariant data(const QtProperty* property) const;
+    QString name(const QtProperty* property) const;
     int value(const QtProperty* property) const;
     QStringList enumNames(const QtProperty *property) const;
     QMap<int, QIcon> enumIcons(const QtProperty *property) const;

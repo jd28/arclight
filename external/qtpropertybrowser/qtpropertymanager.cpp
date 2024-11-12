@@ -4721,6 +4721,11 @@ QVariant QtEnumPropertyManager::data(const QtProperty* property) const
     return valueData(property);
 }
 
+QString QtEnumPropertyManager::name(const QtProperty* property) const
+{
+    return valueText(property);
+}
+
 int QtEnumPropertyManager::value(const QtProperty *property) const
 {
     return getValue<int>(d_ptr->m_values, property, -1);
