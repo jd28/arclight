@@ -78,13 +78,35 @@ void DoorProperties::onPropertyChanged(QtProperty* prop)
 void DoorProperties::basicsLoad()
 {
     QtProperty* grp_basic = addGroup("Basic");
-    QStringList qfactions;
+
+    QList<QPair<QString, int>> factions;
+    int i = 0;
     for (const auto& fac : nw::kernel::factions().all()) {
-        qfactions << to_qstring(fac);
+        factions << QPair<QString, int>{to_qstring(fac), i};
+        ++i;
     }
-    auto fac = addPropertyEnum("Faction", obj_->faction, std::move(qfactions));
+
+    std::sort(factions.begin(), factions.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.first < rhs.first;
+    });
+
+    QStringList names;
+    QList<QVariant> qdata;
+
+    int faction_idx = -1;
+    i = 0;
+    foreach (const auto& r, factions) {
+        names << r.first;
+        qdata << r.second;
+        if (r.second == int(obj_->faction)) {
+            faction_idx = i;
+        }
+        ++i;
+    }
+
+    auto fac = addPropertyEnum("Faction", faction_idx, names, qdata);
     prop_func_map_.insert(fac, [this](QtProperty* prop) {
-        obj_->hardness = static_cast<uint8_t>(enums()->value(prop));
+        obj_->faction = static_cast<uint16_t>(enums()->data(prop).toInt());
     });
     grp_basic->addSubProperty(fac);
 
