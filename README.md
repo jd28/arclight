@@ -106,6 +106,10 @@ Feat selection with handy fuzzy searching.
 
 ![inventory](screenshots/creature-inventory-view-2024-11-04.png)
 
+### Creature View - Appearance - Color Selector
+
+![colors](screenshots/creature-view-color-selector-2024-11-18.png)
+
 ### Dialog View
 
 A tree view for NWN dialogs.  See dlg above.

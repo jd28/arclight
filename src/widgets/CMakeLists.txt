@@ -7,6 +7,7 @@ find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 add_subdirectory(AreaView)
+add_subdirectory(ColorSelectorDialog)
 add_subdirectory(ContainerView)
 add_subdirectory(CreatureView)
 add_subdirectory(DialogView)

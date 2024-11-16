@@ -1,6 +1,8 @@
 #include "creatureappearanceview.h"
 #include "ui_creatureappearanceview.h"
 
+#include "../ColorSelectorDialog/creaturecolorselectordialog.h"
+#include "../ColorSelectorDialog/creaturecolorselectorview.h"
 #include "../util/strings.h"
 
 #include "nw/kernel/Rules.hpp"
@@ -15,6 +17,8 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     , ui(new Ui::CreatureAppearanceView)
 {
     ui->setupUi(this);
+    mvpal_hair = QPixmap(":/resources/images/mvpal_hair.png");
+    mvpal_skin = QPixmap(":/resources/images/mvpal_skin.png");
 
     int idx = 0;
     bool is_dynamic = false;
@@ -106,13 +110,38 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
 
     ui->appearance->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onAppearanceChange);
+    connect(ui->hair, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
+    connect(ui->skin, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
+    connect(ui->tatoo1, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
+    connect(ui->tatoo2, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
 
     creature_ = creature;
+
+    ui->hair->setIcon(getPixmapIcon(nw::CreatureColors::hair));
+    ui->skin->setIcon(getPixmapIcon(nw::CreatureColors::skin));
+    ui->tatoo1->setIcon(getPixmapIcon(nw::CreatureColors::tatoo1));
+    ui->tatoo2->setIcon(getPixmapIcon(nw::CreatureColors::tatoo2));
 }
 
 CreatureAppearanceView::~CreatureAppearanceView()
 {
     delete ui;
+}
+
+QPixmap CreatureAppearanceView::getPixmapIcon(nw::CreatureColors::type color) const
+{
+    auto selected = creature_->appearance.colors[color];
+
+    int col = selected % 16;
+    int row = selected / 16;
+    QRect rect(col * 32, row * 32, 32, 32);
+
+    // Extract the region of the image corresponding to the selected cell
+    if (color == nw::CreatureColors::hair) {
+        return mvpal_hair.copy(rect).scaled(24, 24);
+    } else {
+        return mvpal_skin.copy(rect).scaled(24, 24);
+    }
 }
 
 // == public slots ============================================================
@@ -124,4 +153,33 @@ void CreatureAppearanceView::onAppearanceChange(int index)
     if (!creature_) { return; }
     creature_->appearance.id = static_cast<uint16_t>(ui->appearance->currentData(Qt::UserRole).toInt());
     emit dataChanged();
+}
+
+void CreatureAppearanceView::onColorChanged(int color, int value)
+{
+    creature_->appearance.colors[color] = uint8_t(value);
+    ui->hair->setIcon(getPixmapIcon(nw::CreatureColors::hair));
+    ui->skin->setIcon(getPixmapIcon(nw::CreatureColors::skin));
+    ui->tatoo1->setIcon(getPixmapIcon(nw::CreatureColors::tatoo1));
+    ui->tatoo2->setIcon(getPixmapIcon(nw::CreatureColors::tatoo2));
+}
+
+void CreatureAppearanceView::onOpenColorSelector()
+{
+    auto dialog = CreatureColorSelectionDialog(this);
+    connect(dialog.selector(), &CreatureColorSelectorView::colorChange, this, &CreatureAppearanceView::onColorChanged);
+    dialog.selector()
+        ->setColors(creature_->appearance.colors);
+    if (sender()->objectName() == "hair") {
+        dialog.selector()->setIndex(nw::CreatureColors::hair);
+    } else if (sender()->objectName() == "skin") {
+        dialog.selector()->setIndex(nw::CreatureColors::skin);
+    } else if (sender()->objectName() == "tatoo1") {
+        dialog.selector()->setIndex(nw::CreatureColors::tatoo1);
+    } else if (sender()->objectName() == "tatoo2") {
+        dialog.selector()->setIndex(nw::CreatureColors::tatoo2);
+    }
+
+    if (dialog.exec() == QDialog::Accepted) {
+    }
 }

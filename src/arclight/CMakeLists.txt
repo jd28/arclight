@@ -8,6 +8,7 @@ set(SRC_FILES
     mainwindow.cpp
     mainwindow.ui
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
+    ${CMAKE_SOURCE_DIR}/src/widgets/ColorSelectorDialog/resources.qrc
     ${CMAKE_SOURCE_DIR}/src/widgets/CreatureView/resources.qrc
 )
 
@@ -53,6 +54,7 @@ target_link_libraries(arclight PUBLIC
     qtpropertybrowser
     LanguageMenu
     AreaView
+    ColorSelectorDialog
     CreatureView
     DialogView
     DoorView
