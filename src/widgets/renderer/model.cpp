@@ -455,7 +455,7 @@ std::unique_ptr<Model> load_model(std::string_view resref, QOpenGLFunctions_3_3_
         LOG_F(ERROR, "Failed to load model: {}", resref);
         return {};
     }
-    return std::move(mdl);
+    return mdl;
 }
 
 // == BasicTileArea ===========================================================
