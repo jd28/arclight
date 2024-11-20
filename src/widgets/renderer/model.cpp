@@ -262,32 +262,32 @@ Node* Model::load_node(nw::model::Node* node, QOpenGLFunctions_3_3_Core* gl, Nod
 
             // vertex positions
             gl->glEnableVertexAttribArray(0);
-            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex), (void*)0);
+            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex), nullptr);
 
             // vertex texture coords
             gl->glEnableVertexAttribArray(1);
             gl->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex),
-                (void*)offsetof(nw::model::SkinVertex, tex_coords));
+                reinterpret_cast<void*>(offsetof(nw::model::SkinVertex, tex_coords)));
 
             // vertex normals
             gl->glEnableVertexAttribArray(2);
             gl->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex),
-                (void*)offsetof(nw::model::SkinVertex, normal));
+                reinterpret_cast<void*>(offsetof(nw::model::SkinVertex, normal)));
 
             // vertex tangents
             gl->glEnableVertexAttribArray(3);
             gl->glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex),
-                (void*)offsetof(nw::model::SkinVertex, tangent));
+                reinterpret_cast<void*>(offsetof(nw::model::SkinVertex, tangent)));
 
             // vertex bones
             gl->glEnableVertexAttribArray(4);
             gl->glVertexAttribIPointer(4, 4, GL_INT, sizeof(nw::model::SkinVertex),
-                (void*)offsetof(nw::model::SkinVertex, bones));
+                reinterpret_cast<void*>(offsetof(nw::model::SkinVertex, bones)));
 
             // vertex weights
             gl->glEnableVertexAttribArray(5);
             gl->glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(nw::model::SkinVertex),
-                (void*)offsetof(nw::model::SkinVertex, weights));
+                reinterpret_cast<void*>(offsetof(nw::model::SkinVertex, weights)));
 
             gl->glBindVertexArray(0);
 
@@ -334,22 +334,22 @@ Node* Model::load_node(nw::model::Node* node, QOpenGLFunctions_3_3_Core* gl, Nod
 
             // vertex positions
             gl->glEnableVertexAttribArray(0);
-            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::Vertex), (void*)0);
+            gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::Vertex), nullptr);
 
             // vertex texture coords
             gl->glEnableVertexAttribArray(1);
             gl->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(nw::model::Vertex),
-                (void*)offsetof(nw::model::Vertex, tex_coords));
+                reinterpret_cast<void*>(offsetof(nw::model::Vertex, tex_coords)));
 
             // vertex normals
             gl->glEnableVertexAttribArray(2);
             gl->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(nw::model::Vertex),
-                (void*)offsetof(nw::model::Vertex, normal));
+                reinterpret_cast<void*>(offsetof(nw::model::Vertex, normal)));
 
             // vertex tangents
             gl->glEnableVertexAttribArray(3);
             gl->glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(nw::model::Vertex),
-                (void*)offsetof(nw::model::Vertex, tangent));
+                reinterpret_cast<void*>(offsetof(nw::model::Vertex, tangent)));
 
             gl->glBindVertexArray(0);
 
