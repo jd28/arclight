@@ -156,6 +156,9 @@ void MainWindow::loadTreeviews()
     auto result = mod_load_watcher_->result();
     delete mod_load_watcher_;
     module_ = result[0];
+    if(!module_) {
+        return;
+    }
     module_container_ = dynamic_cast<nw::StaticDirectory*>(nw::kernel::resman().module_container());
 
     ui->placeHolder->setHidden(true);
