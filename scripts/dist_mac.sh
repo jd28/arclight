@@ -8,7 +8,7 @@ if [[ -z "${Qt6_DIR}" ]]; then
 fi
 
 echo "Configuring..."
-cmake --preset macos
+cmake --preset macos -DCMAKE_PREFIX_PATH="${Qt6_DIR}/lib/cmake/"
 
 echo "Building..."
 cmake --build --preset default
