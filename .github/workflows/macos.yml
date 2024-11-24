@@ -39,7 +39,7 @@ jobs:
           HOMEBREW_NO_BOTTLE_SOURCE_FALLBACK: "ON"
           HOMEBREW_NO_INSTALL_CLEANUP: "ON"
         run: |
-          brew install pkg-config automake ninja ccache
+          brew install automake ninja ccache
 
       - name: Set up ccache
         run: |
