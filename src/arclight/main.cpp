@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 
+#include "toolsetprofile.h"
+
 #include <ZFontIcon/ZFontIcon.h>
 #include <ZFontIcon/ZFont_fa6.h> // FA6 helpers
 #include <nowide/args.hpp>
@@ -15,6 +17,7 @@ int main(int argc, char* argv[])
     nw::init_logger(argc, argv);
 
     nw::kernel::config().initialize();
+    nw::kernel::set_game_profile(new ToolsetProfile);
     nw::kernel::services().start();
 
     QApplication app{argc, argv};

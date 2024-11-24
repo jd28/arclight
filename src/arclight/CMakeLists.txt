@@ -7,6 +7,11 @@ set(SRC_FILES
     mainwindow.h
     mainwindow.cpp
     mainwindow.ui
+
+    toolsetservice.cpp
+    toolsetservice.h
+    toolsetprofile.h
+
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
     ${CMAKE_SOURCE_DIR}/src/widgets/ColorSelectorDialog/resources.qrc
     ${CMAKE_SOURCE_DIR}/src/widgets/CreatureView/resources.qrc
