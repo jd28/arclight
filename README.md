@@ -106,9 +106,9 @@ Feat selection with handy fuzzy searching.
 
 ![inventory](screenshots/creature-inventory-view-2024-11-04.png)
 
-### Creature View - Appearance - Color Selector
+### Creature View - Appearance
 
-![colors](screenshots/creature-view-color-selector-2024-11-18.png)
+![appearance](screenshots/creature-view-appearance-2024-11-23.png)
 
 ### Dialog View
 

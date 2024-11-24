@@ -169,7 +169,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
     int package_index = 0;
     for (int i = 0; i < package_list.size(); ++i) {
         ui->packageComboBox->addItem(package_list[i].first, package_list[i].second);
-        if (creature->starting_package == package_list[i].second) {
+        if (creature->starting_package == static_cast<uint32_t>(package_list[i].second)) {
             package_index = i;
         }
     }

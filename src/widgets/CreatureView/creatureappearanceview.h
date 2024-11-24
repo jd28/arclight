@@ -20,10 +20,14 @@ public:
     explicit CreatureAppearanceView(nw::Creature* creature, QWidget* parent = nullptr);
     ~CreatureAppearanceView();
 
+    void loadBodyParts();
+
 public slots:
     void onAppearanceChange(int index);
-    void onOpenColorSelector();
+    void onBodyPartChanged(int index);
     void onColorChanged(int color, int value);
+    void onOpenColorSelector();
+    void onPhenotypeChanged(int index);
 
 signals:
     emit void dataChanged();
@@ -31,10 +35,12 @@ signals:
 private:
     Ui::CreatureAppearanceView* ui;
     nw::Creature* creature_ = nullptr;
+    bool is_dynamic_ = false;
     QPixmap mvpal_hair;
     QPixmap mvpal_skin;
 
     QPixmap getPixmapIcon(nw::CreatureColors::type color) const;
+    void updateEnabled();
 };
 
 #endif // CREATUREAPPEARANCEVIEW_H

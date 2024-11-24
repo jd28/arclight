@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>770</width>
-    <height>846</height>
+    <height>959</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,10 +86,10 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="1" column="1">
-             <widget class="QComboBox" name="comboBox_4"/>
+             <widget class="QComboBox" name="neck"/>
             </item>
             <item row="0" column="1">
-             <widget class="QComboBox" name="comboBox_2">
+             <widget class="QComboBox" name="head">
               <property name="minimumSize">
                <size>
                 <width>100</width>
@@ -126,7 +126,7 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QComboBox" name="comboBox_6"/>
+             <widget class="QComboBox" name="pelvis"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_4">
@@ -136,7 +136,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="comboBox_5"/>
+             <widget class="QComboBox" name="torso"/>
             </item>
            </layout>
           </widget>
@@ -186,100 +186,6 @@
           </spacer>
          </item>
          <item>
-          <widget class="QWidget" name="widget_2" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>300</width>
-             <height>0</height>
-            </size>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>Hand</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_15"/>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_17">
-              <property name="text">
-               <string>Shin</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Bicep</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_16"/>
-            </item>
-            <item row="4" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_10"/>
-            </item>
-            <item row="7" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_17"/>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>Foot</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_9"/>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Thigh</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1" colspan="2">
-             <widget class="QComboBox" name="comboBox_8"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Forearm</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="3">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Right</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
           <widget class="QWidget" name="widget_3" native="true">
            <property name="minimumSize">
             <size>
@@ -312,7 +218,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QComboBox" name="comboBox_12"/>
+             <widget class="QComboBox" name="bicep_left"/>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_14">
@@ -322,7 +228,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="comboBox_11"/>
+             <widget class="QComboBox" name="forearm_left"/>
             </item>
             <item row="3" column="0">
              <widget class="QLabel" name="label_12">
@@ -332,7 +238,7 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QComboBox" name="comboBox_13"/>
+             <widget class="QComboBox" name="hand_left"/>
             </item>
             <item row="4" column="0">
              <widget class="QLabel" name="label_18">
@@ -348,7 +254,7 @@
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QComboBox" name="comboBox_20"/>
+             <widget class="QComboBox" name="thigh_left"/>
             </item>
             <item row="5" column="0">
              <widget class="QLabel" name="label_19">
@@ -358,7 +264,7 @@
              </widget>
             </item>
             <item row="5" column="1">
-             <widget class="QComboBox" name="comboBox_19"/>
+             <widget class="QComboBox" name="shin_left"/>
             </item>
             <item row="6" column="0">
              <widget class="QLabel" name="label_20">
@@ -368,7 +274,101 @@
              </widget>
             </item>
             <item row="6" column="1">
-             <widget class="QComboBox" name="comboBox_18"/>
+             <widget class="QComboBox" name="foot_left"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QWidget" name="widget_2" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>300</width>
+             <height>0</height>
+            </size>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Hand</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1" colspan="2">
+             <widget class="QComboBox" name="thigh_right"/>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_17">
+              <property name="text">
+               <string>Shin</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Bicep</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1" colspan="2">
+             <widget class="QComboBox" name="shin_right"/>
+            </item>
+            <item row="4" column="1" colspan="2">
+             <widget class="QComboBox" name="hand_right"/>
+            </item>
+            <item row="7" column="1" colspan="2">
+             <widget class="QComboBox" name="foot_right"/>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Foot</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1" colspan="2">
+             <widget class="QComboBox" name="forearm_right"/>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Thigh</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1" colspan="2">
+             <widget class="QComboBox" name="bicep_right"/>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Forearm</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>Right</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -438,9 +438,6 @@
         <property name="text">
          <string>Hair</string>
         </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::CallStop"/>
-        </property>
         <property name="iconSize">
          <size>
           <width>32</width>
@@ -453,9 +450,6 @@
        <widget class="QPushButton" name="skin">
         <property name="text">
          <string>Skin</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::AddressBookNew"/>
         </property>
         <property name="iconSize">
          <size>
@@ -470,9 +464,6 @@
         <property name="text">
          <string>Tatoo 1</string>
         </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::AddressBookNew"/>
-        </property>
         <property name="iconSize">
          <size>
           <width>32</width>
@@ -485,9 +476,6 @@
        <widget class="QPushButton" name="tatoo2">
         <property name="text">
          <string>Tatoo 2</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::AddressBookNew"/>
         </property>
         <property name="iconSize">
          <size>
