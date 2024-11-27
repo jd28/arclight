@@ -20,6 +20,8 @@ add_library(CreatureView STATIC
     creatureinventoryview.cpp
     creatureinventoryview.h
     creatureinventoryview.ui
+    creaturepartsview.h
+    creaturepartsview.cpp
     creaturepropertiesview.cpp
     creaturepropertiesview.h
     creaturestatsview.cpp

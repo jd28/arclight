@@ -108,7 +108,7 @@ Feat selection with handy fuzzy searching.
 
 ### Creature View - Appearance
 
-![appearance](screenshots/creature-view-appearance-2024-11-23.png)
+![appearance](screenshots/creature-view-appearance-2024-11-27.gif)
 
 ### Dialog View
 

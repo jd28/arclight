@@ -20,11 +20,8 @@ public:
     explicit CreatureAppearanceView(nw::Creature* creature, QWidget* parent = nullptr);
     ~CreatureAppearanceView();
 
-    void loadBodyParts();
-
 public slots:
     void onAppearanceChange(int index);
-    void onBodyPartChanged(int index);
     void onColorChanged(int color, int value);
     void onOpenColorSelector();
     void onPhenotypeChanged(int index);

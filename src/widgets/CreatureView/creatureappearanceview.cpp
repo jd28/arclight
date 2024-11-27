@@ -3,7 +3,6 @@
 
 #include "../ColorSelectorDialog/creaturecolorselectordialog.h"
 #include "../ColorSelectorDialog/creaturecolorselectorview.h"
-#include "../arclight/toolsetservice.h"
 #include "../util/strings.h"
 
 #include "nw/kernel/Rules.hpp"
@@ -118,24 +117,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
 
     creature_ = creature;
 
-    loadBodyParts();
-
-    connect(ui->bicep_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->bicep_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->torso, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->foot_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->foot_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->forearm_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->forearm_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->hand_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->hand_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->head, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->thigh_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->thigh_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->neck, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->pelvis, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->shin_left, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
-    connect(ui->shin_right, &QComboBox::currentIndexChanged, this, &CreatureAppearanceView::onBodyPartChanged);
+    ui->parts->setCreature(creature_);
 
     if (is_dynamic_) {
         ui->hair->setIcon(getPixmapIcon(nw::CreatureColors::hair));
@@ -149,159 +131,6 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
 CreatureAppearanceView::~CreatureAppearanceView()
 {
     delete ui;
-}
-
-void CreatureAppearanceView::loadBodyParts()
-{
-    auto tool = toolset();
-    auto appearance = nw::kernel::rules().appearances.get(nw::Appearance::make(creature_->appearance.id));
-    if (!appearance) {
-        LOG_F(ERROR, "Invalid appearance");
-        return;
-    }
-    auto phenotype = nw::kernel::rules().phenotypes.get(nw::Phenotype::make(creature_->appearance.phenotype));
-    if (!phenotype) {
-        LOG_F(ERROR, "Invalid phenotype");
-        return;
-    }
-
-    QSet<int> model_numbers;
-    std::string_view prev;
-
-    for (auto& part : tool.body_part_models) {
-        if (appearance->model.size() != 1 || appearance->model[0] != part.race) {
-            continue;
-        }
-
-        if (prev != part.part) {
-            prev = part.part;
-            model_numbers.clear();
-        }
-
-        if (creature_->appearance.phenotype != part.phenotype
-            && phenotype->fallback != part.phenotype) {
-            continue;
-        } else if (part.female && creature_->gender != 1) {
-            continue;
-        }
-
-        if (model_numbers.contains(part.number)) { continue; }
-        model_numbers.insert(part.number);
-
-        if ("bicepl" == part.part) {
-            auto was = ui->bicep_left->blockSignals(true);
-            ui->bicep_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.bicep_left) {
-                ui->bicep_left->setCurrentIndex(ui->bicep_left->count() - 1);
-            }
-            ui->bicep_left->blockSignals(was);
-        } else if ("bicepr" == part.part) {
-            auto was = ui->bicep_right->blockSignals(true);
-            ui->bicep_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.bicep_right) {
-                ui->bicep_right->setCurrentIndex(ui->bicep_right->count() - 1);
-            }
-            ui->bicep_right->blockSignals(was);
-        } else if ("chest" == part.part) {
-            auto was = ui->torso->blockSignals(true);
-            ui->torso->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.torso) {
-                ui->torso->setCurrentIndex(ui->torso->count() - 1);
-            }
-            ui->torso->blockSignals(was);
-        } else if ("footl" == part.part) {
-            auto was = ui->foot_left->blockSignals(true);
-            ui->foot_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.foot_left) {
-                ui->foot_left->setCurrentIndex(ui->foot_left->count() - 1);
-            }
-            ui->foot_left->blockSignals(was);
-        } else if ("footr" == part.part) {
-            auto was = ui->foot_right->blockSignals(true);
-            ui->foot_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.foot_right) {
-                ui->foot_right->setCurrentIndex(ui->foot_right->count() - 1);
-            }
-            ui->foot_right->blockSignals(was);
-        } else if ("forel" == part.part) {
-            auto was = ui->forearm_left->blockSignals(true);
-            ui->forearm_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.forearm_left) {
-                ui->forearm_left->setCurrentIndex(ui->forearm_left->count() - 1);
-            }
-            ui->forearm_left->blockSignals(was);
-        } else if ("forer" == part.part) {
-            auto was = ui->forearm_right->blockSignals(true);
-            ui->forearm_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.forearm_right) {
-                ui->forearm_right->setCurrentIndex(ui->forearm_right->count() - 1);
-            }
-            ui->forearm_right->blockSignals(was);
-        } else if ("handl" == part.part) {
-            auto was = ui->hand_left->blockSignals(true);
-            ui->hand_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.hand_left) {
-                ui->hand_left->setCurrentIndex(ui->hand_left->count() - 1);
-            }
-            ui->hand_left->blockSignals(was);
-        } else if ("handr" == part.part) {
-            auto was = ui->hand_right->blockSignals(true);
-            ui->hand_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.hand_right) {
-                ui->hand_right->setCurrentIndex(ui->hand_right->count() - 1);
-            }
-            ui->hand_right->blockSignals(was);
-        } else if ("head" == part.part) {
-            auto was = ui->head->blockSignals(true);
-            ui->head->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.head) {
-                ui->head->setCurrentIndex(ui->head->count() - 1);
-            }
-            ui->head->blockSignals(was);
-        } else if ("legl" == part.part) {
-            auto was = ui->thigh_left->blockSignals(true);
-            ui->thigh_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.thigh_left) {
-                ui->thigh_left->setCurrentIndex(ui->thigh_left->count() - 1);
-            }
-            ui->thigh_left->blockSignals(was);
-        } else if ("legr" == part.part) {
-            auto was = ui->thigh_right->blockSignals(true);
-            ui->thigh_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.thigh_right) {
-                ui->thigh_right->setCurrentIndex(ui->thigh_right->count() - 1);
-            }
-            ui->thigh_right->blockSignals(was);
-        } else if ("neck" == part.part) {
-            auto was = ui->neck->blockSignals(true);
-            ui->neck->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.neck) {
-                ui->neck->setCurrentIndex(ui->neck->count() - 1);
-            }
-            ui->neck->blockSignals(was);
-        } else if ("pelvis" == part.part) {
-            auto was = ui->pelvis->blockSignals(true);
-            ui->pelvis->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.pelvis) {
-                ui->pelvis->setCurrentIndex(ui->pelvis->count() - 1);
-            }
-            ui->pelvis->blockSignals(was);
-        } else if ("shinl" == part.part) {
-            auto was = ui->shin_left->blockSignals(true);
-            ui->shin_left->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.shin_left) {
-                ui->shin_left->setCurrentIndex(ui->shin_left->count() - 1);
-            }
-            ui->shin_left->blockSignals(was);
-        } else if ("shinr" == part.part) {
-            auto was = ui->shin_right->blockSignals(true);
-            ui->shin_right->addItem(QString::number(part.number), part.number);
-            if (part.number == creature_->appearance.body_parts.shin_right) {
-                ui->shin_right->setCurrentIndex(ui->shin_right->count() - 1);
-            }
-            ui->shin_right->blockSignals(was);
-        }
-    }
 }
 
 QPixmap CreatureAppearanceView::getPixmapIcon(nw::CreatureColors::type color) const
@@ -332,48 +161,12 @@ void CreatureAppearanceView::onAppearanceChange(int index)
     if (appearance) {
         is_dynamic_ = appearance->model.size() == 1;
     }
+
+    ui->parts->clear();
+    ui->parts->loadProperties();
+
     updateEnabled();
     emit dataChanged();
-}
-
-void CreatureAppearanceView::onBodyPartChanged(int index)
-{
-    Q_UNUSED(index);
-    auto objname = sender()->objectName();
-    QComboBox* cb = static_cast<QComboBox*>(sender());
-    if (objname == "bicep_left") {
-        creature_->appearance.body_parts.bicep_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "bicep_right") {
-        creature_->appearance.body_parts.bicep_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "torso") {
-        creature_->appearance.body_parts.torso = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "foot_left") {
-        creature_->appearance.body_parts.foot_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "foot_right") {
-        creature_->appearance.body_parts.foot_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "forearm_left") {
-        creature_->appearance.body_parts.forearm_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "forearm_right") {
-        creature_->appearance.body_parts.forearm_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "hand_left") {
-        creature_->appearance.body_parts.hand_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "hand_right") {
-        creature_->appearance.body_parts.hand_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "head") {
-        creature_->appearance.body_parts.head = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "thigh_left") {
-        creature_->appearance.body_parts.thigh_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "thigh_right") {
-        creature_->appearance.body_parts.thigh_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "neck") {
-        creature_->appearance.body_parts.neck = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "pelvis") {
-        creature_->appearance.body_parts.pelvis = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "shin_left") {
-        creature_->appearance.body_parts.shin_left = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    } else if (objname == "shin_right") {
-        creature_->appearance.body_parts.shin_right = static_cast<uint16_t>(cb->currentData(Qt::UserRole).toInt());
-    }
 }
 
 void CreatureAppearanceView::onColorChanged(int color, int value)
@@ -408,59 +201,8 @@ void CreatureAppearanceView::onPhenotypeChanged(int index)
 {
     Q_UNUSED(index);
     creature_->appearance.phenotype = ui->phenotype->currentData(Qt::UserRole).toInt();
-
-    ui->bicep_left->blockSignals(true);
-    LOG_F(INFO, "Item count before clear: {}", ui->bicep_left->count());
-    ui->bicep_left->clear();
-    LOG_F(INFO, "Item count after clear: {}", ui->bicep_left->count());
-    ui->bicep_left->blockSignals(false);
-    ui->bicep_right->blockSignals(true);
-    ui->bicep_right->clear();
-    ui->bicep_right->blockSignals(false);
-    ui->torso->blockSignals(true);
-    ui->torso->clear();
-    ui->torso->blockSignals(false);
-    ui->foot_left->blockSignals(true);
-    ui->foot_left->clear();
-    ui->foot_left->blockSignals(false);
-    ui->foot_right->blockSignals(true);
-    ui->foot_right->clear();
-    ui->foot_right->blockSignals(false);
-    ui->forearm_left->blockSignals(true);
-    ui->forearm_left->clear();
-    ui->forearm_left->blockSignals(false);
-    ui->forearm_right->blockSignals(true);
-    ui->forearm_right->clear();
-    ui->forearm_right->blockSignals(false);
-    ui->hand_left->blockSignals(true);
-    ui->hand_left->clear();
-    ui->hand_left->blockSignals(false);
-    ui->hand_right->blockSignals(true);
-    ui->hand_right->clear();
-    ui->hand_right->blockSignals(false);
-    ui->head->blockSignals(true);
-    ui->head->clear();
-    ui->head->blockSignals(false);
-    ui->thigh_left->blockSignals(true);
-    ui->thigh_left->clear();
-    ui->thigh_left->blockSignals(false);
-    ui->thigh_right->blockSignals(true);
-    ui->thigh_right->clear();
-    ui->thigh_right->blockSignals(false);
-    ui->neck->blockSignals(true);
-    ui->neck->clear();
-    ui->neck->blockSignals(false);
-    ui->pelvis->blockSignals(true);
-    ui->pelvis->clear();
-    ui->pelvis->blockSignals(false);
-    ui->shin_left->blockSignals(true);
-    ui->shin_left->clear();
-    ui->shin_left->blockSignals(false);
-    ui->shin_right->blockSignals(true);
-    ui->shin_right->clear();
-    ui->shin_right->blockSignals(false);
-
-    loadBodyParts();
+    ui->parts->clear();
+    ui->parts->loadProperties();
 }
 
 // == private =================================================================
@@ -474,21 +216,5 @@ void CreatureAppearanceView::updateEnabled()
     ui->skin->setEnabled(is_dynamic_);
     ui->tatoo1->setEnabled(is_dynamic_);
     ui->tatoo2->setEnabled(is_dynamic_);
-
-    ui->bicep_left->setEnabled(is_dynamic_);
-    ui->bicep_right->setEnabled(is_dynamic_);
-    ui->torso->setEnabled(is_dynamic_);
-    ui->foot_left->setEnabled(is_dynamic_);
-    ui->foot_right->setEnabled(is_dynamic_);
-    ui->forearm_left->setEnabled(is_dynamic_);
-    ui->forearm_right->setEnabled(is_dynamic_);
-    ui->hand_left->setEnabled(is_dynamic_);
-    ui->hand_right->setEnabled(is_dynamic_);
-    ui->head->setEnabled(is_dynamic_);
-    ui->thigh_left->setEnabled(is_dynamic_);
-    ui->thigh_right->setEnabled(is_dynamic_);
-    ui->neck->setEnabled(is_dynamic_);
-    ui->pelvis->setEnabled(is_dynamic_);
-    ui->shin_left->setEnabled(is_dynamic_);
-    ui->shin_right->setEnabled(is_dynamic_);
+    ui->parts->setEnabled(is_dynamic_);
 }

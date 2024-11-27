@@ -33,7 +33,7 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
 
     // Disable splitter movement for now, it's too easy to create weird results
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << int(width * 1.5 / 8) << int(width * 4.0 / 8) << int(width * 2.5) / 8);
+    ui->splitter->setSizes(QList<int>() << int(width * 2.0 / 8) << int(width * 3.5 / 8) << int(width * 2.5) / 8);
     ui->splitter->handle(1)->setDisabled(true);
     ui->splitter->handle(2)->setDisabled(true);
 
