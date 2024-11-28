@@ -162,6 +162,13 @@ void CreatureAppearanceView::onAppearanceChange(int index)
         is_dynamic_ = appearance->model.size() == 1;
     }
 
+    for (int i = 0; i < ui->phenotype->count(); ++i) {
+        if (ui->phenotype->itemData(i) == creature_->appearance.phenotype) {
+            ui->phenotype->setCurrentIndex(i);
+            break;
+        }
+    }
+
     ui->parts->clear();
     ui->parts->loadProperties();
 
