@@ -63,7 +63,7 @@ void CreaturePartsView::loadProperties()
 {
 
     auto load_part = [this](QString name, std::string_view part, uint16_t* current) {
-        auto set = getPartModelNumbers(part, nw::Appearance::make(obj_->appearance.id), nw::Phenotype::make(obj_->appearance.phenotype),
+        auto set = getPartModelNumbers(part, obj_->appearance.id, obj_->appearance.phenotype,
             obj_->gender == 1);
 
         QList<int> sorted = set.values();

@@ -26,9 +26,9 @@ BasicModelView::BasicModelView(QWidget* parent)
     fmt.setProfile(QSurfaceFormat::CoreProfile);
     setFormat(fmt);
 
-    azimuth_ = 0.0f;     // Start facing the positive X axis
-    declination_ = 0.0f; // Start looking straight ahead
-    distance_ = 8.0f;    // Start 3 units away from the origin
+    azimuth_ = 0.0;     // Start facing the positive X axis
+    declination_ = 0.0; // Start looking straight ahead
+    distance_ = 8.0;    // Start 3 units away from the origin
 
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &BasicModelView::onUpdateModelAnimation);
@@ -158,15 +158,15 @@ void BasicModelView::resizeGL(int w, int h)
 void BasicModelView::setCreature(nw::Creature* creature)
 {
     creature_ = creature;
-    if (current_appearance_ == creature_->appearance.id) {
+    if (current_appearance_ == *creature_->appearance.id) {
         return;
     }
-    current_appearance_ = creature_->appearance.id;
+    current_appearance_ = *creature_->appearance.id;
 
     auto appearances_2da = nw::kernel::twodas().get("appearance");
     std::string model;
     // [TODO] Can't do parts based models yet..
-    if (!appearances_2da->get_to(creature_->appearance.id, "RACE", model) || model.length() <= 1) {
+    if (!appearances_2da->get_to(*creature_->appearance.id, "RACE", model) || model.length() <= 1) {
         current_model_.reset();
     } else {
         nw::Resref resref{model};
@@ -198,8 +198,8 @@ void BasicModelView::mousePressEvent(QMouseEvent* event)
 void BasicModelView::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons() & Qt::LeftButton) {
-        int dx = event->position().x() - last_pos_.x();
-        int dy = event->position().y() - last_pos_.y();
+        int dx = int(event->position().x() - last_pos_.x());
+        int dy = int(event->position().y() - last_pos_.y());
         azimuth_ -= dx * 0.5 * 0.01;
         declination_ += dy * 0.5 * 0.01;
         last_pos_ = event->pos();

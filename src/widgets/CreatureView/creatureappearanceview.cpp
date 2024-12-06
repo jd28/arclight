@@ -40,7 +40,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
         string = appearances.entries[i].label;
 
         ui->appearance->addItem(to_qstring(string), int(i));
-        if (creature->appearance.id == i) {
+        if (*creature->appearance.id == int(i)) {
             ui->appearance->setCurrentIndex(idx);
             is_dynamic_ = appearances.entries[i].model.size() <= 1;
         }
@@ -57,7 +57,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
         if (string.empty()) { continue; }
 
         ui->phenotype->addItem(to_qstring(string), int(i));
-        if (creature->appearance.phenotype == int(i)) {
+        if (*creature->appearance.phenotype == int(i)) {
             ui->phenotype->setCurrentIndex(idx);
         }
         ++idx;
@@ -156,14 +156,16 @@ void CreatureAppearanceView::onAppearanceChange(int index)
 {
     Q_UNUSED(index);
     if (!creature_) { return; }
-    creature_->appearance.id = static_cast<uint16_t>(ui->appearance->currentData(Qt::UserRole).toInt());
-    auto appearance = nw::kernel::rules().appearances.get(nw::Appearance::make(creature_->appearance.id));
-    if (appearance) {
-        is_dynamic_ = appearance->model.size() == 1;
-    }
+
+    auto new_app = nw::Appearance::make(ui->appearance->currentData(Qt::UserRole).toInt());
+    auto appearance = nw::kernel::rules().appearances.get(new_app);
+    if (!appearance) { return; }
+
+    is_dynamic_ = appearance->model.size() == 1;
+    creature_->update_appearance(new_app);
 
     for (int i = 0; i < ui->phenotype->count(); ++i) {
-        if (ui->phenotype->itemData(i) == creature_->appearance.phenotype) {
+        if (ui->phenotype->itemData(i) == *creature_->appearance.phenotype) {
             ui->phenotype->setCurrentIndex(i);
             break;
         }
@@ -207,7 +209,7 @@ void CreatureAppearanceView::onOpenColorSelector()
 void CreatureAppearanceView::onPhenotypeChanged(int index)
 {
     Q_UNUSED(index);
-    creature_->appearance.phenotype = ui->phenotype->currentData(Qt::UserRole).toInt();
+    creature_->appearance.phenotype = nw::Phenotype::make(ui->phenotype->currentData(Qt::UserRole).toInt());
     ui->parts->clear();
     ui->parts->loadProperties();
 }
