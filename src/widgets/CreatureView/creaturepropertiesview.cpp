@@ -8,6 +8,7 @@
 
 #include <nw/kernel/FactionSystem.hpp>
 #include <nw/kernel/Rules.hpp>
+#include <nw/kernel/Strings.hpp>
 #include <nw/kernel/TwoDACache.hpp>
 
 #include <QGridLayout>

@@ -98,7 +98,6 @@ nw::ObjectHandle deserialize_obj_handle(const QByteArray& data)
     nw::ObjectHandle res;
     res.id = static_cast<nw::ObjectID>(id);
     res.type = static_cast<nw::ObjectType>(type);
-    res.version = version & 0xFFFFFF;
     return res;
 }
 
@@ -109,7 +108,5 @@ QByteArray serialize_obj_handle(nw::ObjectHandle hndl)
 
     stream << static_cast<quint32>(hndl.id);
     stream << static_cast<quint8>(hndl.type);
-    stream << static_cast<quint32>(hndl.version); // Use only lower 24 bits of the version
-
     return res;
 }

@@ -5,7 +5,7 @@
 
 #include "nw/objects/Creature.hpp"
 #include "nw/objects/Item.hpp"
-#include "nw/profiles/nwn1/functions.hpp"
+#include "nw/profiles/nwn1/scriptapi.hpp"
 
 #include <QByteArray>
 #include <QImage>

@@ -8,6 +8,7 @@
 #include "nw/formats/Image.hpp"
 #include "nw/kernel/Resources.hpp"
 #include "nw/kernel/Rules.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Placeable.hpp"
 

@@ -8,7 +8,7 @@
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
 #include "nw/profiles/nwn1/constants.hpp"
-#include "nw/profiles/nwn1/functions.hpp"
+#include "nw/profiles/nwn1/scriptapi.hpp"
 
 CreatureStatsView::CreatureStatsView(nw::Creature* creature, QWidget* parent)
     : QWidget(parent)

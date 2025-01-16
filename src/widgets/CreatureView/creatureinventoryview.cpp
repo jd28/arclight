@@ -9,6 +9,7 @@
 #include "ZFontIcon/ZFont_fa6.h"
 
 #include "nw/kernel/Objects.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
 #include "nw/objects/Item.hpp"

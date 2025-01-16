@@ -7,7 +7,7 @@
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Item.hpp"
-#include "nw/profiles/nwn1/functions.hpp"
+#include "nw/profiles/nwn1/scriptapi.hpp"
 
 #include <QDrag>
 #include <QMimeData>
