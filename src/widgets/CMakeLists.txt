@@ -58,6 +58,8 @@ add_library(arclight-widgets STATIC
     strreftextedit.ui
     comboboxdelegate.h
     comboboxdelegate.cpp
+    spinboxdelegate.h
+    spinboxdelegate.cpp
 )
 
 target_include_directories(arclight-widgets SYSTEM PRIVATE

@@ -9,7 +9,6 @@
 CheckBoxDelegate::CheckBoxDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
-    LOG_F(INFO, "creating delegate");
 }
 
 bool CheckBoxDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -32,7 +31,7 @@ bool CheckBoxDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, con
         return false;
     }
 
-    bool checked = index.model()->data(index, Qt::DisplayRole).toBool();
+    bool checked = index.data(Qt::DisplayRole).toBool();
     return model->setData(index, !checked, Qt::EditRole);
 }
 
