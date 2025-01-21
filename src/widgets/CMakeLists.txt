@@ -60,6 +60,8 @@ add_library(arclight-widgets STATIC
     comboboxdelegate.cpp
     spinboxdelegate.h
     spinboxdelegate.cpp
+    textboxdialog.h
+    textboxdialog.cpp
 )
 
 target_include_directories(arclight-widgets SYSTEM PRIVATE
