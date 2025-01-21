@@ -1,5 +1,6 @@
 #include "creatureview.h"
 #include "creaturepropertiesview.h"
+#include "creaturespellselector.h"
 #include "ui_creatureview.h"
 
 #include "VariableTableView/vartabledialog.h"
@@ -49,6 +50,10 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     auto feats = new CreatureFeatSelector(creature, this);
     connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
     ui->tabWidget->addTab(feats, "Feats");
+
+    auto spells = new CreatureSpellSelector(creature, this);
+    // connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
+    ui->tabWidget->addTab(spells, "Spells");
 
     auto appearance = new CreatureAppearanceView(creature, this);
     ui->tabWidget->addTab(appearance, "Appearance");

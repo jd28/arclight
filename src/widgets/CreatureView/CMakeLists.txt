@@ -34,6 +34,9 @@ add_library(CreatureView STATIC
     inventoryslot.h
 
     resources.qrc
+    creaturespellselector.h
+    creaturespellselector.cpp
+    creaturespellselector.ui
 )
 
 target_compile_definitions(CreatureView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

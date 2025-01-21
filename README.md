@@ -110,6 +110,10 @@ Feat selection with handy fuzzy searching.
 
 ![appearance](screenshots/creature-view-appearance-2024-11-27.gif)
 
+### Creature View - Spells
+
+![spells](screenshots/creature-view-spells-2025-01-20.gif)
+
 ### Dialog View
 
 A tree view for NWN dialogs.  See dlg above.
