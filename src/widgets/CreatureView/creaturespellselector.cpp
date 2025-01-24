@@ -517,6 +517,6 @@ void CreatureSpellSelector::onSummaryClicked()
     } else {
         text = generate_known_summary(creature_, class_);
     }
-    TextBoxDialog dialog(text, 400, 500);
+    TextBoxDialog dialog("Spell Summary", text, 400, 500);
     dialog.exec();
 }

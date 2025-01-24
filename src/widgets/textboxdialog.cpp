@@ -4,10 +4,10 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 
-TextBoxDialog::TextBoxDialog(const QString& summary, int width, int height, QWidget* parent)
+TextBoxDialog::TextBoxDialog(const QString& title, const QString& summary, int width, int height, QWidget* parent)
     : QDialog(parent)
 {
-    setWindowTitle("Spell Summary");
+    setWindowTitle(title);
 
     auto* text = new QTextEdit(this);
     text->setPlainText(summary);
