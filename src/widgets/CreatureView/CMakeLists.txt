@@ -2,6 +2,9 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(CreatureView STATIC
+    creatureabilitiesselector.cpp
+    creatureabilitiesselector.h
+    creatureabilitiesselector.ui
     creatureappearanceview.cpp
     creatureappearanceview.h
     creatureappearanceview.ui
@@ -20,10 +23,13 @@ add_library(CreatureView STATIC
     creatureinventoryview.cpp
     creatureinventoryview.h
     creatureinventoryview.ui
-    creaturepartsview.h
     creaturepartsview.cpp
+    creaturepartsview.h
     creaturepropertiesview.cpp
     creaturepropertiesview.h
+    creaturespellselector.cpp
+    creaturespellselector.h
+    creaturespellselector.ui
     creaturestatsview.cpp
     creaturestatsview.h
     creaturestatsview.ui
@@ -34,9 +40,6 @@ add_library(CreatureView STATIC
     inventoryslot.h
 
     resources.qrc
-    creaturespellselector.h
-    creaturespellselector.cpp
-    creaturespellselector.ui
 )
 
 target_compile_definitions(CreatureView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

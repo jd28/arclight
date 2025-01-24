@@ -114,6 +114,10 @@ Feat selection with handy fuzzy searching.
 
 ![spells](screenshots/creature-view-spells-2025-01-20.gif)
 
+### Creature View - Special Abilities
+
+![special_abilities](screenshots/creature-view-special-abilities-2025-01-23.png)
+
 ### Dialog View
 
 A tree view for NWN dialogs.  See dlg above.

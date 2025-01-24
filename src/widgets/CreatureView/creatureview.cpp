@@ -1,4 +1,5 @@
 #include "creatureview.h"
+#include "creatureabilitiesselector.h"
 #include "creaturepropertiesview.h"
 #include "creaturespellselector.h"
 #include "ui_creatureview.h"
@@ -54,6 +55,9 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     auto spells = new CreatureSpellSelector(creature, this);
     // connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
     ui->tabWidget->addTab(spells, "Spells");
+
+    auto abilities = new CreatureAbilitiesSelector(creature, this);
+    ui->tabWidget->addTab(abilities, "Special Abilities");
 
     auto appearance = new CreatureAppearanceView(creature, this);
     ui->tabWidget->addTab(appearance, "Appearance");
