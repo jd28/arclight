@@ -373,6 +373,10 @@ CreatureSpellSelector::CreatureSpellSelector(nw::Creature* creature, QWidget* pa
         ++i;
     }
 
+    if (class_ == nw::Class::invalid()) {
+        return; // No caster classes..
+    }
+
     // Set up model and proxy
     model_ = new CreatureSpellModel(creature_, class_, this);
     proxy_ = new CreatureSpellSortFilterProxyModel(this);
