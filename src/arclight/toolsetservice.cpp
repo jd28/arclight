@@ -39,4 +39,7 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     };
     nw::kernel::resman().visit(model_filter, {nw::ResourceType::mdl});
     std::sort(body_part_models.begin(), body_part_models.end());
+
+    base_item_model = new RuleTypeModel<nw::BaseItemInfo>(&nw::kernel::rules().baseitems.entries);
+    class_model = new RuleTypeModel<nw::ClassInfo>(&nw::kernel::rules().classes.entries);
 }

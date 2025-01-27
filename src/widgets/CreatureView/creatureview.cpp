@@ -1,4 +1,5 @@
 #include "creatureview.h"
+#include "../../arclight/toolsetservice.h"
 #include "creatureabilitiesselector.h"
 #include "creaturepropertiesview.h"
 #include "creaturespellselector.h"
@@ -135,16 +136,15 @@ void CreatureView::loadCreature(nw::Creature* creature)
         auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
         auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
 
-        int class_index = -1;
-        for (int j = 0; j < class_list.size(); ++j) {
-            combobox->addItem(class_list[j].first, class_list[j].second);
-            if (creature->levels.entries[i].id == nw::Class::make(class_list[j].second)) {
-                class_index = j;
-            }
-        }
+        auto proxy = new RuleFilterProxyModel(combobox);
+        proxy->setSourceModel(toolset().class_model);
+        combobox->setModel(proxy);
 
         if (creature->levels.entries[i].id != nw::Class::invalid()) {
-            combobox->setCurrentIndex(class_index);
+            QModelIndex sidx = toolset().class_model->index(*creature->levels.entries[i].id, 0, {});
+            QModelIndex pidx = proxy->mapFromSource(sidx);
+            combobox->setCurrentIndex(pidx.row());
+
             spinbox->setValue(creature->levels.entries[i].level);
             ++current_classes_;
             widget->setHidden(false);

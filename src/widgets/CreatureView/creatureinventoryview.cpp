@@ -108,7 +108,6 @@ QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent
 InventoryItemDelegate::InventoryItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
-    // Create a QModelIndex with the pointer as the internal data
 }
 
 void InventoryItemDelegate::initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const
