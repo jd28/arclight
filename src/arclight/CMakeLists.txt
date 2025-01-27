@@ -8,8 +8,6 @@ set(SRC_FILES
     mainwindow.cpp
     mainwindow.ui
 
-    toolsetservice.cpp
-    toolsetservice.h
     toolsetprofile.h
 
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
@@ -54,6 +52,7 @@ target_include_directories(arclight SYSTEM PRIVATE
 
 target_link_libraries(arclight PUBLIC
     arclight-widgets
+    arclight-services
     nw
     sqlite3
     arclight-external

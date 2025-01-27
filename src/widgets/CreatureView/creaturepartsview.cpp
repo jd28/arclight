@@ -1,6 +1,6 @@
 #include "creaturepartsview.h"
 
-#include "../arclight/toolsetservice.h"
+#include "../services/toolsetservice.h"
 #include "qtpropertybrowser/qtpropertybrowser.h"
 #include "qtpropertybrowser/qtpropertymanager.h"
 

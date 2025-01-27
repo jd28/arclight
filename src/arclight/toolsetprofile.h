@@ -1,7 +1,7 @@
 #ifndef TOOLSETPROFILE_H
 #define TOOLSETPROFILE_H
 
-#include "toolsetservice.h"
+#include "../services/toolsetservice.h"
 
 #include "nw/profiles/nwn1/Profile.hpp"
 

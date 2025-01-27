@@ -1,4 +1,5 @@
 add_subdirectory(widgets)
+add_subdirectory(services)
 add_subdirectory(arclight)
 add_subdirectory(dlg)
 add_subdirectory(erfherder)

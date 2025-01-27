@@ -77,6 +77,7 @@ target_include_directories(arclight-widgets SYSTEM PRIVATE
 target_link_libraries(arclight-widgets PRIVATE
     nw
     arclight-external
+    arclight-services
     WaitingSpinnerWidget
     qtpropertybrowser
     Qt6::Widgets
