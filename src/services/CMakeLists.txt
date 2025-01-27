@@ -4,10 +4,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 add_library(arclight-services
     toolsetservice.cpp
     toolsetservice.h
-
-    ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
-    ${CMAKE_SOURCE_DIR}/src/widgets/ColorSelectorDialog/resources.qrc
-    ${CMAKE_SOURCE_DIR}/src/widgets/CreatureView/resources.qrc
+    rulesetmodels.cpp
+    rulesetmodels.h
 )
 
 target_include_directories(arclight-services SYSTEM PRIVATE

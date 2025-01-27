@@ -1,6 +1,7 @@
 #include "toolsetservice.h"
 
 #include "nw/kernel/Resources.hpp"
+#include "nw/kernel/Rules.hpp"
 
 #include <regex>
 
