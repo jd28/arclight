@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("arclight");
     QCoreApplication::setApplicationVersion("1.0.0");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
+#if defined(Q_OS_WIN)
     app.setStyle(QStyleFactory::create("Fusion"));
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));
