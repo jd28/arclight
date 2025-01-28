@@ -216,7 +216,6 @@ bool ProjectModel::canDropMimeData(const QMimeData* data, Qt::DropAction action,
     // If dropping between nodes it's the parent of the new siblings.
 
     if (!data->hasFormat("application/x-arclight-projectitem")) {
-        LOG_F(INFO, "wrong format");
         return false;
     }
 
@@ -225,8 +224,6 @@ bool ProjectModel::canDropMimeData(const QMimeData* data, Qt::DropAction action,
     qint64 senderPid;
     stream >> senderPid;
     if (senderPid != QCoreApplication::applicationPid()) {
-        // Let's not cast pointers that come from another process...
-        LOG_F(INFO, "wrong pid");
         return false;
     }
 
@@ -423,6 +420,7 @@ ProjectView::ProjectView(nw::StaticDirectory* module, QWidget* parent)
     setDragDropMode(QAbstractItemView::InternalMove);
     setSelectionMode(QAbstractItemView::SingleSelection);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setRootIsDecorated(false);
     connect(this, &QTreeView::doubleClicked, this, &ProjectView::onDoubleClicked);
 }
 
