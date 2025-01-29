@@ -62,6 +62,8 @@ add_library(arclight-widgets STATIC
     spinboxdelegate.cpp
     textboxdialog.h
     textboxdialog.cpp
+    statictwodamodel.h
+    statictwodamodel.cpp
 )
 
 target_include_directories(arclight-widgets SYSTEM PRIVATE
