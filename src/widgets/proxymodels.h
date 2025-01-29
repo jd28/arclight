@@ -3,6 +3,9 @@
 
 #include <QSortFilterProxyModel>
 
+// == FuzzyProxyModel =========================================================
+// ============================================================================
+
 class FuzzyProxyModel : public QSortFilterProxyModel {
 public:
     FuzzyProxyModel(QObject* parent = nullptr);
@@ -14,6 +17,20 @@ public slots:
 
 public:
     QString filter_;
+};
+
+// == EmptyFilterProxyModel ===================================================
+// ============================================================================
+
+class EmptyFilterProxyModel : public QSortFilterProxyModel {
+public:
+    EmptyFilterProxyModel(int columnToCheck, QObject* parent = nullptr);
+
+protected:
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
+
+private:
+    int column_ = 0;
 };
 
 #endif // PROXYMODELS_H
