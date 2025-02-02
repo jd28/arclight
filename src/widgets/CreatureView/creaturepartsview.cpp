@@ -13,7 +13,7 @@ QSet<int> getPartModelNumbers(std::string_view name, nw::Appearance appearance, 
 {
     QSet<int> result;
 
-    auto tool = toolset();
+    auto& tool = toolset();
     auto app = nw::kernel::rules().appearances.get(appearance);
     if (!app) {
         LOG_F(ERROR, "Invalid appearance");
@@ -28,7 +28,7 @@ QSet<int> getPartModelNumbers(std::string_view name, nw::Appearance appearance, 
     for (auto& part : tool.body_part_models) {
         if (part.part != name) { continue; }
 
-        if (app->model.size() != 1 || app->model[0] != part.race) {
+        if (app->model_name.size() != 1 || app->model_name[0] != part.race) {
             continue;
         }
 

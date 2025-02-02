@@ -1,5 +1,7 @@
 #include "proxymodels.h"
 
+#include "nw/log.hpp"
+
 extern "C" {
 #include "fzy/match.h"
 }
@@ -45,4 +47,33 @@ bool EmptyFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
     if (value.toString().isEmpty()) { return false; }
 
     return true;
+}
+
+// == VariantListFilterProxyModel =============================================
+// ============================================================================
+
+VariantListFilterProxyModel::VariantListFilterProxyModel(QVariant target, int role, QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , target_{target}
+    , role_{role}
+{
+}
+
+void VariantListFilterProxyModel::setTargetValue(QVariant target)
+{
+    target_ = target;
+    invalidateFilter();
+}
+
+bool VariantListFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+{
+    if (!target_.isValid()) { return true; }
+
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    QVariantList values = index.data(role_).toList();
+
+    foreach (const QVariant& mid, values) {
+        if (mid == target_) { return true; }
+    }
+    return false;
 }

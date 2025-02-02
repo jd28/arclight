@@ -23,7 +23,7 @@ QImage item_to_image(const nw::Item* item, bool female)
         if (!icon.valid()) { return QImage{}; }
         QImage image(icon.release(), icon.width(), icon.height(), icon.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888,
             [](void* bytes) { if (bytes) { free(bytes); } });
-        return image.mirrored();
+        return icon.is_bio_dds() ? image.mirrored() : image;
     } else if (type == nw::ItemModelType::composite) {
         auto img1 = item->get_icon_by_part(nw::ItemModelParts::model1);
         if (!img1.valid()) { return QImage{}; }

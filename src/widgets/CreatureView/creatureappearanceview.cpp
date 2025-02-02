@@ -30,19 +30,19 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
         std::string string;
         if (appearances.entries[i].string_ref != 0xFFFFFFFF) {
             string = nw::kernel::strings().get(appearances.entries[i].string_ref);
-            if (!string.empty() && appearances.entries[i].model.size() <= 1) {
+            if (!string.empty() && nw::string::icmp(appearances.entries[i].model_type, "P")) {
                 string = fmt::format("(Dynamic) {}", string);
             }
         }
 
-        if (appearances.entries[i].label.empty()) { continue; }
-
-        string = appearances.entries[i].label;
+        if (string.empty()) {
+            string = appearances.entries[i].label;
+        }
 
         ui->appearance->addItem(to_qstring(string), int(i));
         if (*creature->appearance.id == int(i)) {
             ui->appearance->setCurrentIndex(idx);
-            is_dynamic_ = appearances.entries[i].model.size() <= 1;
+            is_dynamic_ = nw::string::icmp(appearances.entries[i].model_type, "P");
         }
         ++idx;
     }
@@ -53,9 +53,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* creature, QWidget* 
     for (size_t i = 0; i < phenotypes.entries.size(); ++i) {
         if (!phenotypes.entries[i].valid()) { continue; }
 
-        auto string = nw::kernel::strings().get(phenotypes.entries[i].name_ref);
-        if (string.empty()) { continue; }
-
+        auto string = phenotypes.entries[i].editor_name();
         ui->phenotype->addItem(to_qstring(string), int(i));
         if (*creature->appearance.phenotype == int(i)) {
             ui->phenotype->setCurrentIndex(idx);
@@ -161,7 +159,7 @@ void CreatureAppearanceView::onAppearanceChange(int index)
     auto appearance = nw::kernel::rules().appearances.get(new_app);
     if (!appearance) { return; }
 
-    is_dynamic_ = appearance->model.size() == 1;
+    is_dynamic_ = nw::string::icmp(appearance->model_type, "P");
     creature_->update_appearance(new_app);
 
     for (int i = 0; i < ui->phenotype->count(); ++i) {
