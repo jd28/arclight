@@ -19,6 +19,7 @@
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Resources.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
 #include "nw/serialization/Gff.hpp"
@@ -28,6 +29,7 @@
 #include <QMessageBox>
 #include <QPluginLoader>
 #include <QTreeView>
+#include <QUndoStack>
 #include <QtConcurrent/QtConcurrent>
 
 MainWindow::MainWindow(QWidget* parent)
@@ -60,6 +62,8 @@ MainWindow::MainWindow(QWidget* parent)
         connect(act, &QAction::triggered, this, &MainWindow::onActionRecent);
     }
 
+    ui->actionUndo->setShortcut(QKeySequence::Undo);
+    ui->actionRedo->setShortcut(QKeySequence::Redo);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     connect(ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onActionAboutQt);
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
@@ -95,7 +99,9 @@ void MainWindow::loadCallbacks()
             auto utc = new nw::Creature();
             nw::deserialize(utc, gff.toplevel(), nw::SerializationProfile::blueprint);
             utc->instantiate();
-            return new CreatureView(utc, this);
+            auto tv = new CreatureView(utc, this);
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            return tv;
         });
 
     type_to_view_.emplace(nw::ResourceType::utd,
@@ -107,7 +113,9 @@ void MainWindow::loadCallbacks()
             }
             auto utd = new nw::Door();
             nw::deserialize(utd, gff.toplevel(), nw::SerializationProfile::blueprint);
-            return new DoorView(utd, this);
+            auto tv = new DoorView(utd, this);
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            return tv;
         });
     type_to_view_.emplace(nw::ResourceType::utp,
         [this](nw::Resource res) -> ArclightView* {
@@ -118,7 +126,9 @@ void MainWindow::loadCallbacks()
             }
             auto obj = new nw::Placeable();
             nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
-            return new PlaceableView(obj, this);
+            auto tv = new PlaceableView(obj, this);
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            return tv;
         });
 
     type_to_view_.emplace(nw::ResourceType::dlg,
@@ -138,7 +148,7 @@ void MainWindow::loadCallbacks()
             auto tv = new DialogView(dlg, this);
             tv->setFont(QApplication::font());
             tv->selectFirst();
-
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
             return tv;
         });
 
@@ -147,6 +157,7 @@ void MainWindow::loadCallbacks()
             auto area = nw::kernel::objects().make_area(res.resref);
             area->instantiate();
             auto tv = new AreaView(area, this);
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
             return tv;
         });
 }
@@ -317,6 +328,30 @@ void MainWindow::onActionRecent()
     open(act->data().toString());
 }
 
+void MainWindow::onActivateUndoStack(QUndoStack* stack)
+{
+    if (currentUndoStack_) {
+        ui->actionUndo->disconnect(currentUndoStack_);
+        ui->actionRedo->disconnect(currentUndoStack_);
+    }
+
+    currentUndoStack_ = stack;
+
+    if (stack) {
+        ui->actionUndo->setEnabled(stack->canUndo());
+        connect(ui->actionUndo, &QAction::triggered, stack, &QUndoStack::undo);
+
+        ui->actionRedo->setEnabled(stack->canRedo());
+        connect(ui->actionRedo, &QAction::triggered, stack, &QUndoStack::redo);
+
+        connect(stack, &QUndoStack::canUndoChanged, ui->actionUndo, &QAction::setEnabled);
+        connect(stack, &QUndoStack::canRedoChanged, ui->actionRedo, &QAction::setEnabled);
+    } else {
+        ui->actionUndo->setEnabled(false);
+        ui->actionRedo->setEnabled(false);
+    }
+}
+
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
 {
     if (!item || item->is_folder_) { return; }
@@ -325,6 +360,7 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
     if (it == std::end(type_to_view_)) { return; }
 
     auto view = it->second(item->res_);
+    onActivateUndoStack(view->undoStack());
     auto idx = ui->tabWidget->addTab(view, to_qstring(item->res_.filename()));
     ui->tabWidget->setTabsClosable(true);
     ui->tabWidget->setCurrentIndex(idx);
