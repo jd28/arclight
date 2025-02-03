@@ -2,32 +2,29 @@
 
 #include "colorselectorview.h"
 
+#include <QShortcut>
+#include <QUndoStack>
 #include <QVBoxLayout>
 
-ColorSelectionDialog::ColorSelectionDialog(QWidget* parent)
+ColorSelectionDialog::ColorSelectionDialog(nw::Item* obj, bool has_parts, QWidget* parent)
     : QDialog(parent)
+    , undo_{new QUndoStack(this)}
+
 {
-    setWindowTitle("Select Character Colors");
+    setWindowTitle("Select Item Colors");
 
     QVBoxLayout* layout = new QVBoxLayout(this);
-
-    // Load image and setup color selector
-    selector_ = new ColorSelectorView(this);
-
+    selector_ = new ColorSelectorView(obj, has_parts, undo_, this);
     layout->addWidget(selector_);
 
-    // Add controls
-    // QComboBox* comboBox = new QComboBox();
-    // comboBox->addItems({"Tattoo 1", "Tattoo 2"}); // Add items as needed
-    // QPushButton* okButton = new QPushButton("OK");
-    // QPushButton* cancelButton = new QPushButton("Cancel");
+    QShortcut* undoShortcut = new QShortcut(QKeySequence::Undo, this);
+    QShortcut* redoShortcut = new QShortcut(QKeySequence::Redo, this);
 
-    // QHBoxLayout* controlsLayout = new QHBoxLayout();
-    // controlsLayout->addWidget(comboBox);
-    // controlsLayout->addWidget(okButton);
-    // controlsLayout->addWidget(cancelButton);
-    // layout->addLayout(controlsLayout);
+    connect(undoShortcut, &QShortcut::activated, undo_, &QUndoStack::undo);
+    connect(redoShortcut, &QShortcut::activated, undo_, &QUndoStack::redo);
+}
 
-    // connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
-    // connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+ColorSelectorView* ColorSelectionDialog::selector() const
+{
+    return selector_;
 }
