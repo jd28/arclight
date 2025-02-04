@@ -845,7 +845,7 @@
   <customwidget>
    <class>InventorySlot</class>
    <extends>QLabel</extends>
-   <header>inventoryslot.h</header>
+   <header>../InventoryView/inventoryslot.h</header>
   </customwidget>
  </customwidgets>
  <resources>

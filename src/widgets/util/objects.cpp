@@ -89,11 +89,9 @@ nw::ObjectHandle deserialize_obj_handle(const QByteArray& data)
 
     quint32 id;
     quint8 type;
-    quint32 version;
 
     stream >> id;
     stream >> type;
-    stream >> version;
 
     nw::ObjectHandle res;
     res.id = static_cast<nw::ObjectID>(id);

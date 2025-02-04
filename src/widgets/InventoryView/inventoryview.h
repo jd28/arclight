@@ -1,5 +1,5 @@
-#ifndef CREATUREINVENTORYVIEW_H
-#define CREATUREINVENTORYVIEW_H
+#ifndef VENTORYVIEW_H
+#define VENTORYVIEW_H
 
 #include <QAbstractItemModel>
 #include <QPainter>
@@ -10,9 +10,11 @@
 #include <QWidget>
 
 namespace nw {
+struct ObjectBase;
 struct Creature;
 enum struct EquipSlot;
 struct Item;
+struct Placable;
 }
 
 class CreatureEquipView;
@@ -57,7 +59,7 @@ class InventoryModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    InventoryModel(nw::Creature* creature, QObject* parent = nullptr);
+    InventoryModel(nw::ObjectBase* obj, QObject* parent = nullptr);
 
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -67,27 +69,27 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
     void addItem(nw::Item* item);
-    nw::Creature* creature() const noexcept;
+    nw::ObjectBase* object() const noexcept;
     void removeItem(nw::Item* item);
 
 private:
-    nw::Creature* creature_;
+    nw::ObjectBase* obj_;
 };
 
 namespace Ui {
-class CreatureInventoryView;
+class InventoryView;
 }
 
-class CreatureInventoryView : public QWidget {
+class InventoryView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CreatureInventoryView(QWidget* parent = nullptr);
-    ~CreatureInventoryView();
+    explicit InventoryView(QWidget* parent = nullptr);
+    ~InventoryView();
 
     void connectSlots(CreatureEquipView* equips);
     InventoryModel* model() const noexcept { return model_; }
-    void setCreature(nw::Creature* creature);
+    void setObject(nw::ObjectBase* obj);
 
 public slots:
     void removeItemFromInventory(nw::Item* item);
@@ -95,9 +97,9 @@ public slots:
     void onRemove(bool checked = false);
 
 private:
-    Ui::CreatureInventoryView* ui;
-    nw::Creature* creature_ = nullptr;
+    Ui::InventoryView* ui;
+    nw::ObjectBase* obj_ = nullptr;
     InventoryModel* model_ = nullptr;
 };
 
-#endif // CREATUREINVENTORYVIEW_H
+#endif // VENTORYVIEW_H

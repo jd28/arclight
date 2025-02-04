@@ -30,8 +30,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>594</width>
-        <height>626</height>
+        <width>598</width>
+        <height>630</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -52,8 +52,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>312</width>
-                <height>1001</height>
+                <width>334</width>
+                <height>818</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -650,7 +650,7 @@
   <customwidget>
    <class>StrrefLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>../strreflineedit.h</header>
+   <header location="global">../strreflineedit.h</header>
   </customwidget>
   <customwidget>
    <class>BasicModelView</class>

@@ -20,9 +20,6 @@ add_library(CreatureView STATIC
     creatureinventorypanel.cpp
     creatureinventorypanel.h
     creatureinventorypanel.ui
-    creatureinventoryview.cpp
-    creatureinventoryview.h
-    creatureinventoryview.ui
     creaturepartsview.cpp
     creaturepartsview.h
     creaturepropertiesview.cpp
@@ -36,8 +33,6 @@ add_library(CreatureView STATIC
     creatureview.cpp
     creatureview.h
     creatureview.ui
-    inventoryslot.cpp
-    inventoryslot.h
 
     resources.qrc
 )
@@ -71,5 +66,6 @@ target_link_libraries(CreatureView PRIVATE
     nw
     renderer
     ColorSelectorDialog
+    InventoryView
     VariableTableView
 )

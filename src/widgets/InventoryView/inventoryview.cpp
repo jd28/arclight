@@ -1,9 +1,10 @@
-#include "creatureinventoryview.h"
-#include "ui_creatureinventoryview.h"
+#include "inventoryview.h"
+#include "ui_inventoryview.h"
 
+#include "../CreatureView/creatureequipview.h"
+#include "../projectview.h"
 #include "../util/objects.h"
 #include "../util/strings.h"
-#include "creatureequipview.h"
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
@@ -56,6 +57,27 @@ void InventoryTable::dragEnterEvent(QDragEnterEvent* event)
         event->ignore();
     } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
         event->acceptProposedAction();
+    } else if (event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
+        QByteArray data_ = event->mimeData()->data("application/x-arclight-projectitem");
+        QDataStream stream(&data_, QIODevice::ReadOnly);
+        qint64 senderPid;
+        stream >> senderPid;
+        if (senderPid != QCoreApplication::applicationPid()) {
+            event->ignore();
+            return;
+        }
+
+        qlonglong ptr;
+        stream >> ptr;
+        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
+        if (!node) {
+            event->ignore();
+            return;
+        }
+        if (node->res_.type == nw::ResourceType::uti) {
+            event->acceptProposedAction();
+            return;
+        }
     }
 }
 
@@ -65,6 +87,27 @@ void InventoryTable::dragMoveEvent(QDragMoveEvent* event)
         event->ignore();
     } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
         event->acceptProposedAction();
+    } else if (event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
+        QByteArray data_ = event->mimeData()->data("application/x-arclight-projectitem");
+        QDataStream stream(&data_, QIODevice::ReadOnly);
+        qint64 senderPid;
+        stream >> senderPid;
+        if (senderPid != QCoreApplication::applicationPid()) {
+            event->ignore();
+            return;
+        }
+
+        qlonglong ptr;
+        stream >> ptr;
+        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
+        if (!node) {
+            event->ignore();
+            return;
+        }
+        if (node->res_.type == nw::ResourceType::uti) {
+            event->acceptProposedAction();
+            return;
+        }
     }
 }
 
@@ -77,8 +120,12 @@ void InventoryTable::dropEvent(QDropEvent* event)
         if (!item) { return; }
 
         auto m = static_cast<InventoryModel*>(model());
+
+        auto cre = m->object() ? m->object()->as_creature() : nullptr;
+        if (!cre) { return; }
+
         int i = 0;
-        for (const auto& it : m->creature()->equipment.equips) {
+        for (const auto& it : cre->equipment.equips) {
             if (it.is<nw::Item*>() && it.as<nw::Item*>() == item) { break; }
             ++i;
         }
@@ -89,16 +136,46 @@ void InventoryTable::dropEvent(QDropEvent* event)
         m->addItem(item);
         resizeRowsToContents();
         event->acceptProposedAction();
+    } else if (event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
+        QByteArray data_ = event->mimeData()->data("application/x-arclight-projectitem");
+        QDataStream stream(&data_, QIODevice::ReadOnly);
+        qint64 senderPid;
+        stream >> senderPid;
+        if (senderPid != QCoreApplication::applicationPid()) {
+            return;
+        }
+
+        qlonglong ptr;
+        stream >> ptr;
+        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
+        if (!node) { return; }
+        if (node->res_.type != nw::ResourceType::uti) { return; }
+
+        auto item = nw::kernel::objects().load<nw::Item>(node->res_.resref);
+        if (!item) { return; }
+        auto m = static_cast<InventoryModel*>(model());
+        m->addItem(item);
+        resizeRowsToContents();
+        event->acceptProposedAction();
     }
 }
 
 QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if (!hasIndex(row, column, parent))
-        return QModelIndex();
+    if (!hasIndex(row, column, parent)) { return {}; }
 
-    nw::Item* item = creature_->inventory.items[row].item.as<nw::Item*>();
-    if (!item) { return QModelIndex(); }
+    nw::Inventory* inv = nullptr;
+    if (const auto cre = obj_->as_creature()) {
+        inv = &cre->inventory;
+    } else if (const auto it = obj_->as_item()) {
+        inv = &it->inventory;
+    } else if (const auto place = obj_->as_placeable()) {
+        inv = &place->inventory;
+    }
+    if (!inv) { return {}; }
+
+    nw::Item* item = inv->items[row].item.as<nw::Item*>();
+    if (!item) { return {}; }
 
     return createIndex(row, column, item);
 }
@@ -152,9 +229,9 @@ QSize InventoryItemDelegate::sizeHint(const QStyleOptionViewItem& option, const 
 // == InventoryModel ==========================================================
 // ============================================================================
 
-InventoryModel::InventoryModel(nw::Creature* creature, QObject* parent)
+InventoryModel::InventoryModel(nw::ObjectBase* obj, QObject* parent)
     : QAbstractTableModel(parent)
-    , creature_{creature}
+    , obj_{obj}
 {
 }
 
@@ -178,7 +255,18 @@ QVariant InventoryModel::headerData(int section, Qt::Orientation orientation, in
 int InventoryModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return creature_ ? static_cast<int>(creature_->inventory.items.size()) : 0;
+    if (!obj_) { return 0; }
+
+    const nw::Inventory* inv = nullptr;
+    if (const auto cre = obj_->as_creature()) {
+        inv = &cre->inventory;
+    } else if (const auto item = obj_->as_item()) {
+        inv = &item->inventory;
+    } else if (const auto place = obj_->as_placeable()) {
+        inv = &place->inventory;
+    }
+
+    return inv ? static_cast<int>(inv->items.size()) : 0;
 }
 
 int InventoryModel::columnCount(const QModelIndex& parent) const
@@ -189,22 +277,33 @@ int InventoryModel::columnCount(const QModelIndex& parent) const
 
 QVariant InventoryModel::data(const QModelIndex& index, int role) const
 {
-    if (!creature_) { return QVariant(); }
-    if (!index.isValid() || index.row() >= static_cast<int>(creature_->inventory.items.size())) {
+    const nw::Inventory* inv = nullptr;
+    if (const auto cre = obj_->as_creature()) {
+        inv = &cre->inventory;
+    } else if (const auto item = obj_->as_item()) {
+        inv = &item->inventory;
+    } else if (const auto place = obj_->as_placeable()) {
+        inv = &place->inventory;
+    }
+    if (!inv) { return {}; }
+
+    if (!obj_) { return QVariant(); }
+    if (!index.isValid() || index.row() >= static_cast<int>(inv->items.size())) {
         return QVariant();
     }
 
-    if (!creature_->inventory.items[index.row()].item.is<nw::Item*>()) {
+    if (!inv->items[index.row()].item.is<nw::Item*>()) {
         return {};
     }
 
-    const auto item = creature_->inventory.items[index.row()].item.as<nw::Item*>();
+    const auto item = inv->items[index.row()].item.as<nw::Item*>();
     if (!item) { return {}; }
 
     switch (index.column()) {
     case 0:
         if (role == Qt::DecorationRole) {
-            return item_to_image(item, creature_->gender == 1);
+            auto cre = obj_->as_creature();
+            return item_to_image(item, cre ? cre->gender == 1 : false);
         }
         break;
     case 1:
@@ -229,58 +328,78 @@ Qt::ItemFlags InventoryModel::flags(const QModelIndex& index) const
 
 void InventoryModel::addItem(nw::Item* item)
 {
-    if (creature_->inventory.can_add_item(item)) {
-        beginInsertRows(QModelIndex(), int(creature_->inventory.items.size()), int(creature_->inventory.items.size()));
-        creature_->inventory.add_item(item);
+    nw::Inventory* inv = nullptr;
+    if (const auto cre = obj_->as_creature()) {
+        inv = &cre->inventory;
+    } else if (const auto it = obj_->as_item()) {
+        inv = &it->inventory;
+    } else if (const auto place = obj_->as_placeable()) {
+        inv = &place->inventory;
+    }
+    if (!inv) { return; }
+
+    if (inv->can_add_item(item)) {
+        beginInsertRows(QModelIndex(), int(inv->items.size()), int(inv->items.size()));
+        inv->add_item(item);
         endInsertRows();
     }
 }
 
-nw::Creature* InventoryModel::creature() const noexcept
+nw::ObjectBase* InventoryModel::object() const noexcept
 {
-    return creature_;
+    return obj_;
 }
 
 void InventoryModel::removeItem(nw::Item* item)
 {
-    auto it = std::find_if(creature_->inventory.items.begin(), creature_->inventory.items.end(),
+    nw::Inventory* inv = nullptr;
+    if (const auto cre = obj_->as_creature()) {
+        inv = &cre->inventory;
+    } else if (const auto it = obj_->as_item()) {
+        inv = &it->inventory;
+    } else if (const auto place = obj_->as_placeable()) {
+        inv = &place->inventory;
+    }
+    if (!inv) { return; }
+
+    auto it = std::find_if(inv->items.begin(), inv->items.end(),
         [item](const nw::InventoryItem& ii) { return ii.item == item; });
 
-    if (it != std::end(creature_->inventory.items)) {
-        int index = int(std::distance(creature_->inventory.items.begin(), it));
+    if (it != std::end(inv->items)) {
+        int index = int(std::distance(inv->items.begin(), it));
         beginRemoveRows(QModelIndex(), index, index);
-        creature_->inventory.remove_item(item);
+        inv->remove_item(item);
         endRemoveRows();
     }
 }
 
-// == CreatureInventoryView ===================================================
+// == InventoryView ===========================================================
 // ============================================================================
 
-CreatureInventoryView::CreatureInventoryView(QWidget* parent)
+InventoryView::InventoryView(QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::CreatureInventoryView)
+    , ui(new Ui::InventoryView)
 {
     ui->setupUi(this);
     ui->add->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
     ui->remove->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
-    connect(ui->remove, &QPushButton::clicked, this, &CreatureInventoryView::onRemove);
+    connect(ui->remove, &QPushButton::clicked, this, &InventoryView::onRemove);
 }
 
-CreatureInventoryView::~CreatureInventoryView()
+InventoryView::~InventoryView()
 {
     delete ui;
 }
 
-void CreatureInventoryView::connectSlots(CreatureEquipView* equips)
+void InventoryView::connectSlots(CreatureEquipView* equips)
 {
     connect(ui->inventoryView, &InventoryTable::unequipItem, equips, &CreatureEquipView::unequipItem);
 }
 
-void CreatureInventoryView::setCreature(nw::Creature* creature)
+void InventoryView::setObject(nw::ObjectBase* obj)
 {
-    creature_ = creature;
-    model_ = new InventoryModel(creature_, this);
+    obj_ = obj;
+    model_ = new InventoryModel(obj_, this);
     ui->inventoryView->setModel(model_);
     ui->inventoryView->setItemDelegate(new InventoryItemDelegate(this));
     ui->inventoryView->setColumnWidth(0, 64);
@@ -293,20 +412,20 @@ void CreatureInventoryView::setCreature(nw::Creature* creature)
     ui->inventoryView->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
-void CreatureInventoryView::removeItemFromInventory(nw::Item* item)
+void InventoryView::removeItemFromInventory(nw::Item* item)
 {
     CHECK_F(!!item, "item is null");
     model_->removeItem(item);
 }
 
-void CreatureInventoryView::addItemToInventory(nw::Item* item)
+void InventoryView::addItemToInventory(nw::Item* item)
 {
     CHECK_F(!!item, "item is null");
     model_->addItem(item);
     ui->inventoryView->resizeRowsToContents();
 }
 
-void CreatureInventoryView::onRemove(bool checked)
+void InventoryView::onRemove(bool checked)
 {
     Q_UNUSED(checked);
     if (!model_) { return; }

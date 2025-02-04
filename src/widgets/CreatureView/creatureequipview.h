@@ -9,7 +9,7 @@ enum struct EquipSlot;
 struct Item;
 }
 
-class CreatureInventoryView;
+class InventoryView;
 
 namespace Ui {
 class CreatureEquipView;
@@ -22,7 +22,7 @@ public:
     explicit CreatureEquipView(QWidget* parent = nullptr);
     ~CreatureEquipView();
 
-    void connectSlots(CreatureInventoryView* inventory);
+    void connectSlots(InventoryView* inventory);
     void setCreature(nw::Creature* creature);
     void updateEquips();
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CreatureInventoryView</class>
- <widget class="QWidget" name="CreatureInventoryView">
+ <class>InventoryView</class>
+ <widget class="QWidget" name="InventoryView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -15,16 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Inventory</string>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="InventoryTable" name="inventoryView"/>
-      </item>
-     </layout>
-    </widget>
+    <widget class="InventoryTable" name="inventoryView"/>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -84,7 +75,7 @@
   <customwidget>
    <class>InventoryTable</class>
    <extends>QTableView</extends>
-   <header>creatureinventoryview.h</header>
+   <header>inventoryview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
