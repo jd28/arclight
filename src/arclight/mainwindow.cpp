@@ -8,6 +8,7 @@
 #include "widgets/DialogView/dialogmodel.h"
 #include "widgets/DialogView/dialogview.h"
 #include "widgets/DoorView/doorview.h"
+#include "widgets/ItemView/itemview.h"
 #include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
 #include "widgets/arclighttreeview.h"
@@ -127,6 +128,20 @@ void MainWindow::loadCallbacks()
             auto obj = new nw::Placeable();
             nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
             auto tv = new PlaceableView(obj, this);
+            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            return tv;
+        });
+
+    type_to_view_.emplace(nw::ResourceType::uti,
+        [this](nw::Resource res) -> ArclightView* {
+            nw::Gff gff(nw::kernel::resman().demand(res));
+            if (!gff.valid()) {
+                LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
+                return nullptr;
+            }
+            auto obj = new nw::Item();
+            nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
+            auto tv = new ItemView(obj, this);
             connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
             return tv;
         });
