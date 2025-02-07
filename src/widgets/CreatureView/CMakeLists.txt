@@ -8,6 +8,9 @@ add_library(CreatureView STATIC
     creatureappearanceview.cpp
     creatureappearanceview.h
     creatureappearanceview.ui
+    creaturecharsheetview.cpp
+    creaturecharsheetview.h
+    creaturecharsheetview.ui
     creatureequipview.cpp
     creatureequipview.h
     creatureequipview.ui

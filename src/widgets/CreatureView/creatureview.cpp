@@ -2,11 +2,11 @@
 #include "ui_creatureview.h"
 
 #include "../VariableTableView/variabletableview.h"
-#include "../services/toolsetservice.h"
 #include "../util/strings.h"
 
 #include "creatureabilitiesselector.h"
 #include "creatureappearanceview.h"
+#include "creaturecharsheetview.h"
 #include "creatureequipview.h"
 #include "creaturefeatselector.h"
 #include "creaturefeatselectormodel.h"
@@ -15,69 +15,61 @@
 #include "creaturespellselector.h"
 #include "creaturestatsview.h"
 
-#include "ZFontIcon/ZFontIcon.h"
-#include "ZFontIcon/ZFont_fa6.h"
-
-#include "nw/kernel/Resources.hpp"
-#include "nw/kernel/Rules.hpp"
-#include "nw/kernel/Strings.hpp"
-#include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
 
 #include <QApplication>
 #include <QScreen>
+#include <QTextEdit>
 
-CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
+CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     : ArclightView(parent)
     , ui(new Ui::CreatureView)
 {
     ui->setupUi(this);
-    ui->openGLWidget->setCreature(creature);
+    ui->openGLWidget->setCreature(obj);
 
-    // Disable splitter movement for now, it's too easy to create weird results
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << int(width * 2.0 / 8) << int(width * 3.5 / 8) << int(width * 2.5) / 8);
-    ui->splitter->handle(1)->setDisabled(true);
-    ui->splitter->handle(2)->setDisabled(true);
+    ui->splitter->setSizes(QList<int>() << int(width * 1.8 / 8) << int(width * 3.7 / 8) << int(width * 2.5) / 8);
+
+    auto charsheet = new CreatureCharSheetView(obj, this);
+    charsheet->setEnabled(!readOnly());
+    ui->tabWidget->addTab(charsheet, "Sheet");
 
     auto props = new CreaturePropertiesView(this);
-    props->setCreature(creature);
+    props->setEnabled(!readOnly());
+    props->setCreature(obj);
     ui->tabWidget->addTab(props, "Properties");
 
-    auto stats = new CreatureStatsView(creature, this);
+    auto stats = new CreatureStatsView(obj, this);
     ui->tabWidget->addTab(stats, "Statistics");
 
     connect(props, &CreaturePropertiesView::updateStats, stats, &CreatureStatsView::updateAll);
 
-    auto feats = new CreatureFeatSelector(creature, this);
+    auto feats = new CreatureFeatSelector(obj, this);
     connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
     ui->tabWidget->addTab(feats, "Feats");
 
-    auto spells = new CreatureSpellSelector(creature, this);
+    auto spells = new CreatureSpellSelector(obj, this);
     // connect(feats->model(), &CreatureFeatSelectorModel::featsChanged, stats, &CreatureStatsView::updateAll);
     ui->tabWidget->addTab(spells, "Spells");
 
-    auto abilities = new CreatureAbilitiesSelector(creature, this);
+    auto abilities = new CreatureAbilitiesSelector(obj, this);
     ui->tabWidget->addTab(abilities, "Special Abilities");
 
-    auto appearance = new CreatureAppearanceView(creature, this);
+    auto appearance = new CreatureAppearanceView(obj, this);
+    appearance->setEnabled(!readOnly());
     ui->tabWidget->addTab(appearance, "Appearance");
-    connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onDataChanged);
+    connect(appearance, &CreatureAppearanceView::dataChanged, this, &CreatureView::onModified);
 
     auto inv = new CreatureInventoryPanel(this);
-    inv->setCreature(creature);
+    inv->setEnabled(!readOnly());
+    inv->setCreature(obj);
     ui->tabWidget->addTab(inv, "Inventory");
 
     auto variables = new VariableTableView(this);
     variables->setEnabled(!readOnly());
-    variables->setLocals(&creature->common.locals);
+    variables->setLocals(&obj->common.locals);
     ui->tabWidget->addTab(variables, tr("Variables"));
-
-    ui->portraitEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
-
-    setupClassWidgets(creature);
-
-    loadCreature(creature);
 }
 
 CreatureView::~CreatureView()
@@ -85,233 +77,7 @@ CreatureView::~CreatureView()
     delete ui;
 }
 
-void CreatureView::loadCreature(nw::Creature* creature)
-{
-    creature_ = nullptr;
-
-    ui->firstName->setLocString(creature->name_first);
-    ui->lastName->setLocString(creature->name_last);
-    ui->genderSelector->setCurrentIndex(int(creature->gender));
-
-    if (auto portraits_2da = nw::kernel::twodas().get("portraits")) {
-        auto base = portraits_2da->get<std::string>(creature->appearance.portrait_id, "BaseResRef");
-        if (base) {
-            auto base_resref = fmt::format("po_{}m", *base);
-            auto portrait = nw::kernel::resman().demand_in_order(nw::Resref(base_resref),
-                {nw::ResourceType::dds, nw::ResourceType::tga});
-
-            if (portrait.bytes.size()) {
-                auto img = nw::Image(std::move(portrait));
-                QImage qi(img.data(), img.width(), img.height(),
-                    img.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
-                if (qi.height() > 128 || qi.width() > 128) {
-                    qi = qi.scaled(128, 128, Qt::KeepAspectRatio);
-                }
-
-                // These are pre-flipped
-                if (img.is_bio_dds()) {
-                    qi.mirror();
-                }
-
-                QRect rect(0, 0, 64, 100); // This is specific to medium portraits
-                qi = qi.copy(rect);
-                ui->labelPortraitImage->setPixmap(QPixmap::fromImage(qi));
-                ui->portraitLineEdit->setText(to_qstring("po_" + *base));
-            }
-        }
-    } else {
-        LOG_F(ERROR, "Failed to load portraits.2da");
-    }
-
-    QList<QPair<QString, int>> class_list;
-    for (size_t i = 0; i < nw::kernel::rules().classes.entries.size(); ++i) {
-        if (nw::kernel::rules().classes.entries[i].name != 0xFFFFFFFF) {
-            auto name = nw::kernel::strings().get(nw::kernel::rules().classes.entries[i].name);
-            class_list.append({to_qstring(name), int(i)});
-        }
-    }
-
-    std::sort(class_list.begin(), class_list.end(), [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    for (size_t i = 0; i < nw::LevelStats::max_classes; ++i) {
-        auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
-        auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
-        auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
-
-        auto proxy = toolset().class_filter.get();
-        combobox->setModel(proxy);
-
-        if (creature->levels.entries[i].id != nw::Class::invalid()) {
-            QModelIndex sidx = toolset().class_model->index(*creature->levels.entries[i].id, 0, {});
-            QModelIndex pidx = proxy->mapFromSource(sidx);
-            combobox->setCurrentIndex(pidx.row());
-
-            spinbox->setValue(creature->levels.entries[i].level);
-            ++current_classes_;
-            widget->setHidden(false);
-        } else if (i != 0) {
-            spinbox->setDisabled(true);
-        }
-    }
-
-    ui->classAdd->setEnabled(current_classes_ < 8);
-    ui->classDelete->setEnabled(current_classes_ > 1);
-
-    QList<QPair<QString, int>> package_list;
-    if (auto packages_2da = nw::kernel::twodas().get("packages")) {
-        for (size_t i = 0; i < packages_2da->rows(); ++i) {
-            if (auto package_class = packages_2da->get<int32_t>(i, "ClassID")) {
-                if (creature->levels.level_by_class(nw::Class::make(*package_class)) <= 0) {
-                    continue;
-                }
-            }
-            if (auto name_id = packages_2da->get<int32_t>(i, "Name")) {
-                auto name = nw::kernel::strings().get(uint32_t(*name_id));
-                package_list.append({to_qstring(name), int(i)});
-            }
-        }
-    }
-
-    std::sort(package_list.begin(), package_list.end(), [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    int package_index = 0;
-    for (int i = 0; i < package_list.size(); ++i) {
-        ui->packageComboBox->addItem(package_list[i].first, package_list[i].second);
-        if (creature->starting_package == static_cast<uint32_t>(package_list[i].second)) {
-            package_index = i;
-        }
-    }
-    ui->packageComboBox->setCurrentIndex(package_index);
-
-    creature_ = creature;
-}
-
-void CreatureView::setupClassWidgets(nw::Creature* creature)
-{
-    connect(ui->classAdd, &QPushButton::clicked, this, &CreatureView::onClassAddClicked);
-    ui->classAdd->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_plus, Qt::green));
-    connect(ui->classDelete, &QPushButton::clicked, this, &CreatureView::onClassDelClicked);
-    ui->classDelete->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
-    ui->classDelete->setDisabled(creature->levels.entries[1].id == nw::Class::invalid());
-
-    for (size_t i = 0; i < nw::LevelStats::max_classes; ++i) {
-        auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
-        auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
-        auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
-        if (i > 0) {
-            widget->setHidden(true);
-        }
-        combobox->setPlaceholderText(QStringLiteral("--Select Class--"));
-        combobox->setCurrentIndex(-1);
-        connect(combobox, &QComboBox::currentIndexChanged, this, &CreatureView::onClassChanged);
-        connect(spinbox, &QSpinBox::valueChanged, this, &CreatureView::onClassLevelChanged);
-    }
-}
-
-// == Public Slots ============================================================
-// ============================================================================
-
-void CreatureView::onClassAddClicked(bool checked)
-{
-    Q_UNUSED(checked);
-
-    if (!creature_) { return; }
-
-    // Don't add another class until the classes that are available are leveled
-    if (current_classes_ > 0
-        && creature_->levels.entries[size_t(current_classes_ - 1)].id == nw::Class::invalid()) {
-        return;
-    }
-
-    size_t i;
-    for (i = 0; i < nw::LevelStats::max_classes; ++i) {
-        auto widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
-        auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
-        auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
-
-        if (!widget->isVisible()) {
-            combobox->setPlaceholderText(QStringLiteral("--Select Class--"));
-            combobox->setCurrentIndex(-1);
-            spinbox->setValue(0);
-            spinbox->setDisabled(true);
-            widget->setVisible(true);
-            ++current_classes_;
-            break;
-        }
-    }
-
-    ui->classAdd->setEnabled(current_classes_ < 8);
-    ui->classDelete->setEnabled(current_classes_ > 1);
-}
-
-void CreatureView::onClassChanged(int index)
-{
-    Q_UNUSED(index);
-    if (!creature_) { return; }
-
-    auto combobox = qobject_cast<QComboBox*>(sender());
-    auto combobox_id = combobox->objectName().back().digitValue();
-
-    auto class_slot = static_cast<size_t>(combobox_id - 1);
-    auto class_id = nw::Class::make(combobox->currentData().toInt());
-    creature_->levels.entries[class_slot].id = class_id;
-
-    auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(combobox_id));
-    spinbox->setDisabled(false);
-    spinbox->setValue(1);
-    onDataChanged();
-}
-
-void CreatureView::onClassDelClicked(bool checked)
-{
-    Q_UNUSED(checked);
-
-    if (!creature_) { return; }
-
-    QWidget* widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(1));
-    size_t i;
-
-    for (i = 1; i < nw::LevelStats::max_classes; ++i) {
-        auto next_widget = ui->classesWidget->findChild<QWidget*>(QString("classWidget_%1").arg(i + 1));
-        if (!next_widget->isVisible()) { break; }
-        widget = next_widget;
-    }
-    // Don't ever hide class one.
-    if (i == 1) {
-        ui->classDelete->setDisabled(true);
-        return;
-    }
-
-    widget->setHidden(true);
-
-    creature_->levels.entries[i - 1].id = nw::Class::invalid();
-    creature_->levels.entries[i - 1].level = 0;
-    creature_->levels.entries[i - 1].spells.known_.clear();
-    creature_->levels.entries[i - 1].spells.memorized_.clear();
-
-    --current_classes_;
-    ui->classAdd->setEnabled(current_classes_ < 8);
-    ui->classDelete->setEnabled(current_classes_ > 1);
-
-    onDataChanged();
-}
-
-void CreatureView::onClassLevelChanged(int value)
-{
-    if (!creature_) { return; }
-
-    auto spinbox = qobject_cast<QSpinBox*>(sender());
-    auto class_slot = spinbox->objectName().back().digitValue() - 1;
-    creature_->levels.entries[class_slot].level = int16_t(value);
-
-    onDataChanged();
-}
-
-void CreatureView::onDataChanged()
+void CreatureView::onModified()
 {
     ui->openGLWidget->onDataChanged();
 }
