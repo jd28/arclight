@@ -1,10 +1,9 @@
-#include "inventoryslot.h"
+#include "../InventoryView/inventoryslot.h"
 
 #include "../util/objects.h"
 #include "../util/strings.h"
 
 #include "nw/kernel/Objects.hpp"
-#include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/objects/Item.hpp"
 #include "nw/profiles/nwn1/scriptapi.hpp"
@@ -58,6 +57,16 @@ void InventorySlot::dropEvent(QDropEvent* event)
     if (item_) {
         if (inv) { emit addItemToInventory(item_); }
         emit unequipItem(item_, slot_);
+    }
+
+    for (size_t i = 0; i < 18; ++i) {
+        if (creature_->equipment.equips[i].is<nw::Item*>()) {
+            auto equipped = creature_->equipment.equips[i].as<nw::Item*>();
+            if (equipped == item) {
+                emit unequipItem(item, static_cast<nw::EquipSlot>(1 << i));
+                break;
+            }
+        }
     }
 
     if (inv) { emit removeItemFromInventory(item); }

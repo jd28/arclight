@@ -12,6 +12,8 @@ add_subdirectory(ContainerView)
 add_subdirectory(CreatureView)
 add_subdirectory(DialogView)
 add_subdirectory(DoorView)
+add_subdirectory(InventoryView)
+add_subdirectory(ItemView)
 add_subdirectory(LanguageMenu)
 add_subdirectory(PlaceableView)
 add_subdirectory(renderer)
@@ -62,6 +64,8 @@ add_library(arclight-widgets STATIC
     spinboxdelegate.cpp
     textboxdialog.h
     textboxdialog.cpp
+    propertybrowser.h
+    propertybrowser.cpp
     statictwodamodel.h
     statictwodamodel.cpp
 )

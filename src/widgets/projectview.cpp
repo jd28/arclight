@@ -169,7 +169,7 @@ void ProjectModel::walkDirectory(const QString& path, ProjectItem* parent)
     // Get the list of entries in the directory
     QFileInfoList list = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
 
-    for (const QFileInfo& fileInfo : list) {
+    foreach (const QFileInfo& fileInfo, list) {
         auto p = fileInfo.canonicalFilePath();
 
         ProjectItem* it = nullptr;
@@ -243,7 +243,6 @@ bool ProjectModel::canDropMimeData(const QMimeData* data, Qt::DropAction action,
     }
 
     auto result = AbstractTreeModel::canDropMimeData(data, action, row, column, parent);
-    LOG_F(INFO, "result: {}", result);
     return result;
 }
 
@@ -365,7 +364,7 @@ Qt::DropActions ProjectModel::supportedDropActions() const
 
 Qt::DropActions ProjectModel::supportedDragActions() const
 {
-    return Qt::MoveAction;
+    return Qt::MoveAction | Qt::CopyAction;
 }
 
 // == ProjectProxyModel =======================================================
@@ -416,8 +415,12 @@ ProjectView::ProjectView(nw::StaticDirectory* module, QWidget* parent)
     , module_{module}
 {
     setHeaderHidden(true);
+
     setDragEnabled(true);
-    setDragDropMode(QAbstractItemView::InternalMove);
+    setAcceptDrops(true);
+    setDropIndicatorShown(true);
+    setDefaultDropAction(Qt::MoveAction);
+
     setSelectionMode(QAbstractItemView::SingleSelection);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setRootIsDecorated(false);

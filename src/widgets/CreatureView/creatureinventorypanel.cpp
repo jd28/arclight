@@ -1,6 +1,8 @@
 #include "creatureinventorypanel.h"
 #include "ui_creatureinventorypanel.h"
 
+#include "nw/objects/Creature.hpp"
+
 CreatureInventoryPanel::CreatureInventoryPanel(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::CreatureInventoryPanel)
@@ -18,5 +20,5 @@ CreatureInventoryPanel::~CreatureInventoryPanel()
 void CreatureInventoryPanel::setCreature(nw::Creature* creature)
 {
     ui->equips->setCreature(creature);
-    ui->inventory->setCreature(creature);
+    ui->inventory->setObject(creature);
 }

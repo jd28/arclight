@@ -26,6 +26,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class QUndoStack;
+
 using ResourceCallback = std::function<ArclightView*(nw::Resource)>;
 using ExtensionCallback = std::function<ArclightView*(const std::string&)>;
 
@@ -51,6 +53,7 @@ public slots:
     void onActionCloseProject(bool checked = false);
     void onActionOpen(bool checked = false);
     void onActionRecent();
+    void onActivateUndoStack(QUndoStack* stack);
     void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
     void onTabCloseRequested(int index);
@@ -72,6 +75,7 @@ private:
     WaitingSpinnerWidget* spinner_ = nullptr;
     QStringList recentProjects_;
     QList<QAction*> recentActions_;
+    QUndoStack* currentUndoStack_ = nullptr;
 };
 
 #endif // MAINWINDOW_H

@@ -74,7 +74,7 @@
     </widget>
    </item>
    <item>
-    <widget class="CreatureInventoryView" name="inventory" native="true"/>
+    <widget class="InventoryView" name="inventory" native="true"/>
    </item>
   </layout>
  </widget>
@@ -86,9 +86,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>CreatureInventoryView</class>
+   <class>InventoryView</class>
    <extends>QWidget</extends>
-   <header>creatureinventoryview.h</header>
+   <header>../InventoryView/inventoryview.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

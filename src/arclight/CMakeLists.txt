@@ -63,6 +63,7 @@ target_link_libraries(arclight PUBLIC
     CreatureView
     DialogView
     DoorView
+    ItemView
     PlaceableView
     VariableTableView
     WaitingSpinnerWidget

@@ -1,5 +1,4 @@
-#ifndef FILESTYSTEMMODEL_H
-#define FILESTYSTEMMODEL_H
+#pragma once
 
 #include "AbstractTreeModel.hpp"
 
@@ -43,19 +42,20 @@ class ProjectModel : public AbstractTreeModel {
 public:
     explicit ProjectModel(nw::StaticDirectory* module, QObject* parent = nullptr);
 
-    virtual bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
-    virtual int columnCount(const QModelIndex& parent) const override;
-    virtual QVariant data(const QModelIndex& index, int role) const override;
-    virtual Qt::ItemFlags flags(const QModelIndex& index) const override;
     ProjectItemMetadata getMetadata(const QString& path);
     void insertMetadata(const QString& path, const ProjectItemMetadata& metadata);
+    bool setupDatabase();
+    void walkDirectory(const QString& path, ProjectItem* parent = nullptr);
+
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
+    int columnCount(const QModelIndex& parent) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
     virtual void loadRootItems() override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
     QStringList mimeTypes() const override;
-    bool setupDatabase();
     Qt::DropActions supportedDropActions() const override;
     Qt::DropActions supportedDragActions() const override;
-    void walkDirectory(const QString& path, ProjectItem* parent = nullptr);
 
     QFileSystemWatcher watcher_;
     nw::StaticDirectory* module_ = nullptr;
@@ -63,7 +63,7 @@ public:
     sqlite3* db_ = nullptr;
 };
 
-// == FileSystemProxtModel ====================================================
+// == ProjectProxyModel =======================================================
 // ============================================================================
 
 class ProjectProxyModel : public QSortFilterProxyModel {
@@ -105,5 +105,3 @@ public:
     ProjectModel* model_;
     ProjectProxyModel* proxy_;
 };
-
-#endif // FILESTYSTEMMODEL_H

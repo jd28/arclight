@@ -135,8 +135,7 @@ void CreatureView::loadCreature(nw::Creature* creature)
         auto spinbox = ui->classesWidget->findChild<QSpinBox*>(QString("classLevelSpinBox_%1").arg(i + 1));
         auto combobox = ui->classesWidget->findChild<QComboBox*>(QString("classComboBox_%1").arg(i + 1));
 
-        auto proxy = new RuleFilterProxyModel(combobox);
-        proxy->setSourceModel(toolset().class_model);
+        auto proxy = toolset().class_filter.get();
         combobox->setModel(proxy);
 
         if (creature->levels.entries[i].id != nw::Class::invalid()) {

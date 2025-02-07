@@ -1,9 +1,10 @@
 #ifndef SERVICES_RULESETMODELS_H
 #define SERVICES_RULESETMODELS_H
 
-#include "util/strings.h"
+#include "nw/config.hpp"
+#include "nw/log.hpp"
 
-#include "nw/kernel/Strings.hpp"
+#include "util/strings.h"
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
@@ -56,10 +57,12 @@ struct RuleTypeModel : public QAbstractItemModel {
             break;
         case Qt::DisplayRole:
             if (info.valid()) {
-                return to_qstring(nw::kernel::strings().get(info.name));
+                return to_qstring(info.editor_name());
             }
             break;
-        case Qt::UserRole:
+        case Qt::UserRole + 1:
+            return index.row();
+        case Qt::UserRole + 2:
             return info.valid();
         }
         return {};
@@ -76,5 +79,9 @@ public:
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 };
+
+int mapProxyRowToSourceRow(const QSortFilterProxyModel* model, int row);
+int mapSourceRowToProxyRow(const QAbstractItemModel* source,
+    const QSortFilterProxyModel* proxy, int row);
 
 #endif // SERVICES_RULESETMODELS_H

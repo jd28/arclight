@@ -45,7 +45,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>17</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -54,7 +54,7 @@
     </property>
     <widget class="QMenu" name="menuRecentProjects">
      <property name="title">
-      <string>Recent Projects</string>
+      <string>&amp;Recent Projects</string>
      </property>
      <property name="icon">
       <iconset theme="document-open-recent"/>
@@ -80,7 +80,15 @@
      <string>Language</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuLanguage"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -119,7 +127,7 @@
     <iconset theme="document-open"/>
    </property>
    <property name="text">
-    <string>Open Project</string>
+    <string>&amp;Open Project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -135,7 +143,7 @@
     <iconset theme="help-about"/>
    </property>
    <property name="text">
-    <string>About</string>
+    <string>&amp;About</string>
    </property>
   </action>
   <action name="actionAboutQt">
@@ -143,10 +151,10 @@
     <iconset theme="help-about"/>
    </property>
    <property name="text">
-    <string>About Qt</string>
+    <string>About &amp;Qt</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutQtRole</enum>
+    <enum>QAction::MenuRole::AboutQtRole</enum>
    </property>
   </action>
   <action name="actionAboutPlugins">
@@ -159,7 +167,7 @@
     <iconset theme="document-close"/>
    </property>
    <property name="text">
-    <string>Close</string>
+    <string>&amp;Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -167,7 +175,7 @@
   </action>
   <action name="actionCloseProject">
    <property name="text">
-    <string>Close Project</string>
+    <string>Close &amp;Project</string>
    </property>
   </action>
   <action name="actionExit">
@@ -175,7 +183,29 @@
     <iconset theme="application-exit"/>
    </property>
    <property name="text">
-    <string>Exit</string>
+    <string>&amp;Exit</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditUndo"/>
+   </property>
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset theme="QIcon::ThemeIcon::EditRedo"/>
+   </property>
+   <property name="text">
+    <string>&amp;Redo</string>
    </property>
   </action>
  </widget>

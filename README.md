@@ -128,6 +128,19 @@ A widget for doors
 
 ![door](screenshots/door-view-2024-06-14.png)
 
+### Item View
+
+A widget for items.
+
+![item](screenshots/item-view-item-properties-2025-02-06.png)
+
+![item](screenshots/item-view-per-part-coloring-2025-02-06.png)
+
+![item](screenshots/item-view-simple-models-2025-02-06.png)
+
+![item](screenshots/item-view-inventory-2025-02-06.gif)
+
+
 ### Placeable View
 
 A widget for placeables

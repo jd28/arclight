@@ -18,7 +18,13 @@ QImage item_to_image(const nw::Item* item, bool female)
     if (!bi) { return QImage{}; }
     nw::ItemModelType type = bi->model_type;
 
-    if (type == nw::ItemModelType::simple || type == nw::ItemModelType::layered) {
+    if (type == nw::ItemModelType::simple) {
+        auto icon = item->get_icon_by_part();
+        if (!icon.valid()) { return QImage{}; }
+        QImage image(icon.release(), icon.width(), icon.height(), icon.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888,
+            [](void* bytes) { if (bytes) { free(bytes); } });
+        return icon.is_bio_dds() ? image.mirrored() : image;
+    } else if (type == nw::ItemModelType::layered) {
         auto icon = item->get_icon_by_part();
         if (!icon.valid()) { return QImage{}; }
         QImage image(icon.release(), icon.width(), icon.height(), icon.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888,
@@ -89,11 +95,9 @@ nw::ObjectHandle deserialize_obj_handle(const QByteArray& data)
 
     quint32 id;
     quint8 type;
-    quint32 version;
 
     stream >> id;
     stream >> type;
-    stream >> version;
 
     nw::ObjectHandle res;
     res.id = static_cast<nw::ObjectID>(id);

@@ -1,0 +1,45 @@
+#ifndef ITEMVIEW_H
+#define ITEMVIEW_H
+
+#include "ArclightView.h"
+
+namespace nw {
+struct BaseItem;
+struct Item;
+}
+
+namespace Ui {
+class ItemView;
+}
+
+class InventoryView;
+
+class QtProperty;
+class QtIntPropertyManager;
+class QtStringPropertyManager;
+class QUndoStack;
+
+
+// == ItemView ================================================================
+// ============================================================================
+
+class ItemView : public ArclightView {
+    Q_OBJECT
+
+public:
+    explicit ItemView(nw::Item* obj, QWidget* parent = nullptr);
+    ~ItemView();
+
+public slots:
+    void onBaseItemChanged(nw::BaseItem bi);
+
+private slots:
+    void onTabChanged(int index);
+
+private:
+    Ui::ItemView* ui;
+    nw::Item* obj_;
+    InventoryView* inventory_;
+};
+
+#endif // ITEMVIEW_H
