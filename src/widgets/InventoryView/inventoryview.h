@@ -89,6 +89,7 @@ public:
 
     void connectSlots(CreatureEquipView* equips);
     InventoryModel* model() const noexcept { return model_; }
+    void setDragEnabled(bool value);
     void setObject(nw::ObjectBase* obj);
 
 public slots:

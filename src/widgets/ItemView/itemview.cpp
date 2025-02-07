@@ -45,6 +45,7 @@ ItemView::ItemView(nw::Item* obj, QWidget* parent)
     inventory_ = new InventoryView(this);
     inventory_->setEnabled(!readOnly() && bi_info->is_container);
     inventory_->setObject(obj_);
+    inventory_->setDragEnabled(false);
     ui->tabWidget->addTab(inventory_, tr("Inventory"));
 
     auto variables = new VariableTableView(this);
@@ -80,7 +81,7 @@ void ItemView::onBaseItemChanged(nw::BaseItem bi)
 
 void ItemView::onTabChanged(int index)
 {
-    if (index == 0) {
+    if (index == 0 || index == 2) {
         ui->openGLWidget->show();
     } else {
         ui->openGLWidget->hide();

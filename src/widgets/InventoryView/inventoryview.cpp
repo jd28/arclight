@@ -30,7 +30,7 @@ InventoryTable::InventoryTable(QWidget* parent)
 
 void InventoryTable::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton && dragEnabled()) {
         QModelIndex index = indexAt(event->pos());
         auto idx = model()->index(index.row(), 0, index.parent());
         if (index.isValid()) {
@@ -394,6 +394,11 @@ InventoryView::~InventoryView()
 void InventoryView::connectSlots(CreatureEquipView* equips)
 {
     connect(ui->inventoryView, &InventoryTable::unequipItem, equips, &CreatureEquipView::unequipItem);
+}
+
+void InventoryView::setDragEnabled(bool value)
+{
+    ui->inventoryView->setDragEnabled(value);
 }
 
 void InventoryView::setObject(nw::ObjectBase* obj)
