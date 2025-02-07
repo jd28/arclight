@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>618</width>
-    <height>650</height>
+    <height>1118</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
         <x>0</x>
         <y>0</y>
         <width>598</width>
-        <height>630</height>
+        <height>1098</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -52,8 +52,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>334</width>
-                <height>818</height>
+                <width>348</width>
+                <height>1060</height>
                </rect>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -601,19 +601,6 @@
                <item>
                 <widget class="QTextEdit" name="textEdit"/>
                </item>
-               <item>
-                <widget class="QPushButton" name="variables">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Variables</string>
-                 </property>
-                </widget>
-               </item>
               </layout>
              </widget>
             </widget>
@@ -648,14 +635,14 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>BasicModelView</class>
+   <extends>QOpenGLWidget</extends>
+   <header>renderer/basicmodelview.h</header>
+  </customwidget>
+  <customwidget>
    <class>StrrefLineEdit</class>
    <extends>QLineEdit</extends>
    <header location="global">../strreflineedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>BasicModelView</class>
-   <extends>QOpenGLWidget</extends>
-   <header>../renderer/basicmodelview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

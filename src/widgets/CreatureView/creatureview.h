@@ -33,7 +33,6 @@ public slots:
     void onClassDelClicked(bool checked = false);
     void onClassLevelChanged(int value);
     void onDataChanged();
-    void onVariablesClicked();
 
 private:
     Ui::CreatureView* ui;

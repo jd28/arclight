@@ -1,8 +1,10 @@
 #include "creatureview.h"
 #include "ui_creatureview.h"
 
+#include "../VariableTableView/variabletableview.h"
 #include "../services/toolsetservice.h"
-#include "VariableTableView/vartabledialog.h"
+#include "../util/strings.h"
+
 #include "creatureabilitiesselector.h"
 #include "creatureappearanceview.h"
 #include "creatureequipview.h"
@@ -12,7 +14,6 @@
 #include "creaturepropertiesview.h"
 #include "creaturespellselector.h"
 #include "creaturestatsview.h"
-#include "util/strings.h"
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
@@ -67,12 +68,16 @@ CreatureView::CreatureView(nw::Creature* creature, QWidget* parent)
     inv->setCreature(creature);
     ui->tabWidget->addTab(inv, "Inventory");
 
+    auto variables = new VariableTableView(this);
+    variables->setEnabled(!readOnly());
+    variables->setLocals(&creature->common.locals);
+    ui->tabWidget->addTab(variables, tr("Variables"));
+
     ui->portraitEdit->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_ellipsis));
 
     setupClassWidgets(creature);
 
     loadCreature(creature);
-    connect(ui->variables, &QPushButton::clicked, this, &CreatureView::onVariablesClicked);
 }
 
 CreatureView::~CreatureView()
@@ -309,11 +314,4 @@ void CreatureView::onClassLevelChanged(int value)
 void CreatureView::onDataChanged()
 {
     ui->openGLWidget->onDataChanged();
-}
-
-void CreatureView::onVariablesClicked()
-{
-    VarTableDialog dialog(this);
-    dialog.setLocals(&creature_->common.locals);
-    dialog.exec();
 }
