@@ -2,12 +2,12 @@
 #include "itemview.h"
 #include "ui_itemview.h"
 
+#include "../InventoryView/inventoryview.h"
+#include "../VariableTableView/variabletableview.h"
+#include "../strreftextedit.h"
 #include "../util/strings.h"
-#include "InventoryView/inventoryview.h"
-#include "VariableTableView/variabletableview.h"
 #include "itemgeneralview.h"
 #include "itemproperties.h"
-#include "strreftextedit.h"
 
 #include "nw/kernel/Rules.hpp"
 #include "nw/objects/Item.hpp"

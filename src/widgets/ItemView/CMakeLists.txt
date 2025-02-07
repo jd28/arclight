@@ -8,8 +8,8 @@ add_library(ItemView STATIC
     itemproperties.cpp
     itemproperties.h
     itemproperties.ui
-    itemsimplemodelselector.cpp 
-    itemsimplemodelselector.h 
+    itemsimplemodelselector.cpp
+    itemsimplemodelselector.h
     itemsimplemodelselector.ui
     itemsimplemodelselectordialog.cpp
     itemsimplemodelselectordialog.h
@@ -23,7 +23,6 @@ target_compile_definitions(ItemView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(ItemView PRIVATE
     ./
-    ../
 )
 
 target_include_directories(ItemView SYSTEM PRIVATE

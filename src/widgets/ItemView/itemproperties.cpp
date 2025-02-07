@@ -1,10 +1,10 @@
 #include "itemproperties.h"
 #include "ui_itemproperties.h"
 
+#include "../proxymodels.h"
+#include "../statictwodamodel.h"
 #include "../util/strings.h"
 #include "itemview.h"
-#include "proxymodels.h"
-#include "statictwodamodel.h"
 
 #include "nw/kernel/EffectSystem.hpp"
 #include "nw/kernel/Rules.hpp"

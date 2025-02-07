@@ -1,7 +1,7 @@
 #ifndef ITEMVIEW_H
 #define ITEMVIEW_H
 
-#include "ArclightView.h"
+#include "../ArclightView.h"
 
 namespace nw {
 struct BaseItem;

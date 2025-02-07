@@ -2,9 +2,8 @@
 #define SERVICES_RULESETMODELS_H
 
 #include "nw/config.hpp"
-#include "nw/log.hpp"
 
-#include "util/strings.h"
+#include "../widgets/util/strings.h"
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>

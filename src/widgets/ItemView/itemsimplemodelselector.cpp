@@ -1,7 +1,7 @@
 #include "itemsimplemodelselector.h"
 #include "ui_itemsimplemodelselector.h"
 
-#include "../services/toolsetservice.h"
+#include "../../services/toolsetservice.h"
 
 #include "nw/kernel/Rules.hpp"
 

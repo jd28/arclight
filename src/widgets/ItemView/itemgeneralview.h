@@ -1,7 +1,7 @@
 #ifndef ITEMGENERALVIEW_H
 #define ITEMGENERALVIEW_H
 
-#include "propertybrowser.h"
+#include "../propertybrowser.h"
 
 #include "nw/rules/items.hpp"
 
