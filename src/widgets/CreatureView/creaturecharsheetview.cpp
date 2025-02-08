@@ -3,6 +3,7 @@
 
 #include "../../services/toolsetservice.h"
 #include "../util/strings.h"
+#include "creatureview.h"
 
 #include "ZFontIcon/ZFontIcon.h"
 #include "ZFontIcon/ZFont_fa6.h"
@@ -12,14 +13,16 @@
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
 
-CreatureCharSheetView::CreatureCharSheetView(nw::Creature* obj, QWidget* parent)
-    : QWidget(parent)
+CreatureCharSheetView::CreatureCharSheetView(nw::Creature* obj, CreatureView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::CreatureCharSheetView)
 {
     ui->setupUi(this);
     loadCreature(obj);
     loadPortrait(obj);
     obj_ = obj;
+
+    connect(this, &CreatureCharSheetView::modified, parent, &CreatureView::onModified);
 }
 
 CreatureCharSheetView::~CreatureCharSheetView()
@@ -170,8 +173,7 @@ void CreatureCharSheetView::onClassChanged(int index)
 
         emit classAdded(class_id);
     }
-
-    // onDataChanged();
+    emit modified();
 }
 
 void CreatureCharSheetView::onClassDeleteButtonClicked()
@@ -209,6 +211,7 @@ void CreatureCharSheetView::onClassDeleteButtonClicked()
     // auto sb = obj_->levels.spells(last_class_id);
 
     emit classRemoved(last_class_id);
+    emit modified();
 }
 
 void CreatureCharSheetView::onClassLevelChanged(int value)
@@ -218,6 +221,5 @@ void CreatureCharSheetView::onClassLevelChanged(int value)
     auto spinbox = qobject_cast<QSpinBox*>(sender());
     auto class_slot = spinbox->objectName().back().digitValue() - 1;
     obj_->levels.entries[class_slot].level = int16_t(value);
-
-    // onDataChanged();
+    emit modified();
 }

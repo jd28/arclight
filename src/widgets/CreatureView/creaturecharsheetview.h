@@ -1,7 +1,6 @@
-#ifndef CREATURECHARSHEETVIEW_H
-#define CREATURECHARSHEETVIEW_H
+#pragma once
 
-#include <QWidget>
+#include "../arclighttab.h"
 
 namespace nw {
 struct Class;
@@ -12,11 +11,13 @@ namespace Ui {
 class CreatureCharSheetView;
 }
 
-class CreatureCharSheetView : public QWidget {
+class CreatureView;
+
+class CreatureCharSheetView : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit CreatureCharSheetView(nw::Creature* obj, QWidget* parent = nullptr);
+    explicit CreatureCharSheetView(nw::Creature* obj, CreatureView* parent = nullptr);
     ~CreatureCharSheetView();
 
     void loadCreature(nw::Creature* obj);
@@ -35,5 +36,3 @@ private:
     Ui::CreatureCharSheetView* ui;
     nw::Creature* obj_ = nullptr;
 };
-
-#endif // CREATURECHARSHEETVIEW_H
