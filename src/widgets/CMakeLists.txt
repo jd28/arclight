@@ -25,8 +25,10 @@ add_library(arclight-widgets STATIC
     AbstractTreeModel.cpp
     AbstractTreeModel.hpp
 
+    ArclightView.cpp
     ArclightView.h
-    ArcLightView.cpp
+    arclighttab.cpp
+    arclighttab.h
 
     TlkSelector/tlkselector.h
     TlkSelector/tlkselector.cpp

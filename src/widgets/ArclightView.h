@@ -1,5 +1,4 @@
-#ifndef ARCLIGHTVIEW_H
-#define ARCLIGHTVIEW_H
+#pragma once
 
 #include <QWidget>
 
@@ -13,21 +12,20 @@ public:
     ArclightView(QWidget* parent = nullptr);
     virtual ~ArclightView() = default;
 
+    /// Get is modified.
+    bool isModified() const noexcept;
+
     /// Is view read only
     bool readOnly() const noexcept;
 
-    /// Gets undo stack
-    QUndoStack* undoStack() const noexcept;
+    /// Set is modified.
+    void setModified(bool value);
 
 signals:
     void activateUndoStack(QUndoStack*);
-
-protected:
-    void focusInEvent(QFocusEvent* event) override;
+    void modified();
 
 private:
     bool read_only_ = false;
-    QUndoStack* undo_stack_;
+    bool modified_ = false;
 };
-
-#endif // ARCLIGHTVIEW_H
