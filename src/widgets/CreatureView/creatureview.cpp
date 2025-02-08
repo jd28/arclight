@@ -15,16 +15,25 @@
 #include "creaturespellselector.h"
 #include "creaturestatsview.h"
 
+#include "nw/kernel/Objects.hpp"
 #include "nw/objects/Creature.hpp"
 
 #include <QApplication>
 #include <QScreen>
 #include <QTextEdit>
 
+CreatureView::CreatureView(nw::Resource res, QWidget* parent)
+    : CreatureView(nw::kernel::objects().load<nw::Creature>(res.resref), parent)
+{
+    owned_ = true;
+}
+
 CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     : ArclightView(parent)
     , ui(new Ui::CreatureView)
 {
+    if (!obj) { return; }
+
     ui->setupUi(this);
     ui->openGLWidget->setCreature(obj);
 
@@ -75,9 +84,13 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
 CreatureView::~CreatureView()
 {
     delete ui;
+    if (owned_ && obj_) {
+        nw::kernel::objects().destroy(obj_->handle());
+    }
 }
 
 void CreatureView::onModified()
 {
+    setModified(true);
     ui->openGLWidget->onDataChanged();
 }

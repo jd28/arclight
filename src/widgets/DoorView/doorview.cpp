@@ -5,19 +5,27 @@
 #include "../util/strings.h"
 #include "doorgeneralview.h"
 
+#include "nw/kernel/Objects.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Door.hpp"
 
 #include <QScreen>
 #include <QTextEdit>
 
+DoorView::DoorView(nw::Resource res, QWidget* parent)
+    : DoorView(nw::kernel::objects().load<nw::Door>(res.resref), parent)
+{
+    owned_ = true;
+}
+
 DoorView::DoorView(nw::Door* obj, QWidget* parent)
     : ArclightView(parent)
     , ui(new Ui::DoorView)
     , obj_{obj}
 {
-    ui->setupUi(this);
+    if (!obj_) { return; }
 
+    ui->setupUi(this);
     auto width = qApp->primaryScreen()->geometry().width();
     ui->splitter->setSizes(QList<int>() << width * 1 / 3 << width * 2 / 3);
 
@@ -37,6 +45,9 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
 DoorView::~DoorView()
 {
     delete ui;
+    if (owned_) {
+        nw::kernel::objects().destroy(obj_->handle());
+    }
 }
 
 void DoorView::loadModel()

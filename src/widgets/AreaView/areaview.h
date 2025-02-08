@@ -3,10 +3,13 @@
 
 #include "../ArclightView.h"
 
+#include <memory>
+
 class BasicTileArea;
 
 namespace nw {
 struct Area;
+struct Resource;
 }
 
 namespace Ui {
@@ -17,14 +20,15 @@ class AreaView : public ArclightView {
     Q_OBJECT
 
 public:
-    void load_model();
-    explicit AreaView(nw::Area* area, QWidget* parent = nullptr);
+    explicit AreaView(nw::Resource area, QWidget* parent = nullptr);
     ~AreaView();
+
+    void loadModel();
 
 private:
     Ui::AreaView* ui;
-    nw::Area* area_ = nullptr;
-    BasicTileArea* area_model_;
+    nw::Area* obj_ = nullptr;
+    std::unique_ptr<BasicTileArea> area_model_;
 };
 
 #endif // AREAVIEW_H

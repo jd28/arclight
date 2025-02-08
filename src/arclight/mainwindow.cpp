@@ -90,59 +90,32 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::loadCallbacks()
 {
+    type_to_view_.emplace(nw::ResourceType::are,
+        [this](nw::Resource res) -> ArclightView* {
+            auto tv = new AreaView(res, this);
+            return tv;
+        });
+
     type_to_view_.emplace(nw::ResourceType::utc,
         [this](nw::Resource res) -> ArclightView* {
-            nw::Gff gff(nw::kernel::resman().demand(res));
-            if (!gff.valid()) {
-                LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
-                return nullptr;
-            }
-            auto utc = new nw::Creature();
-            nw::deserialize(utc, gff.toplevel(), nw::SerializationProfile::blueprint);
-            utc->instantiate();
-            auto tv = new CreatureView(utc, this);
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            auto tv = new CreatureView(res, this);
             return tv;
         });
 
     type_to_view_.emplace(nw::ResourceType::utd,
         [this](nw::Resource res) -> ArclightView* {
-            nw::Gff gff(nw::kernel::resman().demand(res));
-            if (!gff.valid()) {
-                LOG_F(ERROR, "[utd] failed to open file: {}", res.filename());
-                return nullptr;
-            }
-            auto utd = new nw::Door();
-            nw::deserialize(utd, gff.toplevel(), nw::SerializationProfile::blueprint);
-            auto tv = new DoorView(utd, this);
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            auto tv = new DoorView(res, this);
             return tv;
         });
     type_to_view_.emplace(nw::ResourceType::utp,
         [this](nw::Resource res) -> ArclightView* {
-            nw::Gff gff(nw::kernel::resman().demand(res));
-            if (!gff.valid()) {
-                LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
-                return nullptr;
-            }
-            auto obj = new nw::Placeable();
-            nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
-            auto tv = new PlaceableView(obj, this);
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            auto tv = new PlaceableView(res, this);
             return tv;
         });
 
     type_to_view_.emplace(nw::ResourceType::uti,
         [this](nw::Resource res) -> ArclightView* {
-            nw::Gff gff(nw::kernel::resman().demand(res));
-            if (!gff.valid()) {
-                LOG_F(ERROR, "[utc] failed to open file: {}", res.filename());
-                return nullptr;
-            }
-            auto obj = new nw::Item();
-            nw::deserialize(obj, gff.toplevel(), nw::SerializationProfile::blueprint);
-            auto tv = new ItemView(obj, this);
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
+            auto tv = new ItemView(res, this);
             return tv;
         });
 
@@ -163,16 +136,6 @@ void MainWindow::loadCallbacks()
             auto tv = new DialogView(dlg, this);
             tv->setFont(QApplication::font());
             tv->selectFirst();
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
-            return tv;
-        });
-
-    type_to_view_.emplace(nw::ResourceType::are,
-        [this](nw::Resource res) -> ArclightView* {
-            auto area = nw::kernel::objects().make_area(res.resref);
-            area->instantiate();
-            auto tv = new AreaView(area, this);
-            connect(tv, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
             return tv;
         });
 }
@@ -216,13 +179,7 @@ void MainWindow::open(const QString& path)
 {
     QFileInfo fi(path);
     auto abspath = fi.absoluteFilePath();
-    if (fi.suffix().compare(".mod", Qt::CaseInsensitive) == 0) {
-        module_path_ = fi.absolutePath() + "/temp.0/";
-        nw::Erf mod_erf{abspath.toStdString()};
-        mod_erf.extract_by_glob("*", module_path_.toStdString());
-    } else {
-        module_path_ = fi.absolutePath();
-    }
+    module_path_ = fi.absolutePath();
 
     if (recentProjects_.contains(abspath)) {
         recentProjects_.removeOne(abspath);
@@ -264,7 +221,7 @@ void MainWindow::writeSettings()
     QSettings settings("jmd", "arclight");
     settings.beginWriteArray("Recent Projects", static_cast<int>(recentProjects_.size()));
     int i = 0;
-    for (const auto& f : recentProjects_) {
+    foreach (const auto& f, recentProjects_) {
         settings.setArrayIndex(i++);
         settings.setValue("file", f);
     }
@@ -316,11 +273,11 @@ void MainWindow::onActionCloseProject(bool checked)
     ui->filter->setEnabled(false);
 
     ui->placeHolder->setVisible(true);
-    for (auto widget : project_treeviews_) {
+    foreach (auto widget, project_treeviews_) {
         widget->setVisible(false);
     }
 
-    for (auto widget : project_treeviews_) {
+    foreach (auto widget, project_treeviews_) {
         ui->projectLayout->removeWidget(widget);
         delete widget;
     }

@@ -9,6 +9,7 @@
 #include "itemgeneralview.h"
 #include "itemproperties.h"
 
+#include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Rules.hpp"
 #include "nw/objects/Item.hpp"
 
@@ -19,6 +20,12 @@ static QRegularExpression resref_regex("^[a-z_]{0,16}$");
 
 // == ItemView ================================================================
 // ============================================================================
+
+ItemView::ItemView(nw::Resource res, QWidget* parent)
+    : ItemView(nw::kernel::objects().load<nw::Item>(res.resref), parent)
+{
+    owned_ = true;
+}
 
 ItemView::ItemView(nw::Item* obj, QWidget* parent)
     : ArclightView(parent)

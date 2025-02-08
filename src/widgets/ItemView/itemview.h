@@ -6,6 +6,7 @@
 namespace nw {
 struct BaseItem;
 struct Item;
+struct Resource;
 }
 
 namespace Ui {
@@ -27,6 +28,7 @@ class ItemView : public ArclightView {
     Q_OBJECT
 
 public:
+    explicit ItemView(nw::Resource res, QWidget* parent = nullptr);
     explicit ItemView(nw::Item* obj, QWidget* parent = nullptr);
     ~ItemView();
 
@@ -39,6 +41,7 @@ private slots:
 private:
     Ui::ItemView* ui;
     nw::Item* obj_;
+    bool owned_ = false;
     InventoryView* inventory_;
 };
 

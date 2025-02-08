@@ -5,17 +5,26 @@
 #include "../util/strings.h"
 #include "placeablegeneralview.h"
 
+#include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Rules.hpp"
 #include "nw/objects/Placeable.hpp"
 
 #include <QScreen>
 #include <QTextEdit>
 
+PlaceableView::PlaceableView(nw::Resource res, QWidget* parent)
+    : PlaceableView(nw::kernel::objects().load<nw::Placeable>(res.resref), parent)
+{
+    owned_ = true;
+}
+
 PlaceableView::PlaceableView(nw::Placeable* obj, QWidget* parent)
     : ArclightView(parent)
     , ui(new Ui::PlaceableView)
     , obj_{obj}
 {
+    if (!obj_) { return; }
+
     ui->setupUi(this);
 
     auto width = qApp->primaryScreen()->geometry().width();
@@ -44,7 +53,6 @@ void PlaceableView::loadModel()
     ui->openGLWidget->makeCurrent();
     auto plc = nw::kernel::rules().placeables.get(nw::PlaceableType::make(obj_->appearance));
     if (plc && !plc->model.empty()) {
-        LOG_F(INFO, "placeable model: {}", plc->model);
         ui->openGLWidget->setModel(load_model(plc->model.view(), ui->openGLWidget->funcs()));
     }
 }
