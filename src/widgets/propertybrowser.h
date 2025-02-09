@@ -2,8 +2,11 @@
 #define PROPERTYBROWSER_H
 
 #include <QAbstractItemModel>
+#include <QCheckBox>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QObject>
+#include <QSpinBox>
 #include <QStyledItemDelegate>
 #include <QTreeView>
 
@@ -40,6 +43,87 @@ private:
     bool init_ = false;
 };
 
+class AutoCommitSpinBox : public QSpinBox {
+    Q_OBJECT
+public:
+    AutoCommitSpinBox(QWidget* parent = nullptr)
+        : QSpinBox(parent)
+    {
+        connect(this, QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &AutoCommitSpinBox::onValueChanged);
+    }
+    void setInitialized() { init_ = true; }
+
+private slots:
+    void onValueChanged()
+    {
+        if (init_) {
+            if (QAbstractItemView* view = qobject_cast<QAbstractItemView*>(parent()->parent())) {
+                QAbstractItemModel* model = view->model();
+                QModelIndex index = view->currentIndex();
+                model->setData(index, value(), Qt::EditRole);
+            }
+        }
+    }
+
+private:
+    bool init_ = false;
+};
+
+class AutoCommitLineEdit : public QLineEdit {
+    Q_OBJECT
+public:
+    AutoCommitLineEdit(QWidget* parent = nullptr)
+        : QLineEdit(parent)
+    {
+        connect(this, &QLineEdit::textChanged,
+            this, &AutoCommitLineEdit::onTextChanged);
+    }
+    void setInitialized() { init_ = true; }
+
+private slots:
+    void onTextChanged()
+    {
+        if (init_) {
+            if (QAbstractItemView* view = qobject_cast<QAbstractItemView*>(parent()->parent())) {
+                QAbstractItemModel* model = view->model();
+                QModelIndex index = view->currentIndex();
+                model->setData(index, text(), Qt::EditRole);
+            }
+        }
+    }
+
+private:
+    bool init_ = false;
+};
+
+class AutoCommitCheckBox : public QCheckBox {
+    Q_OBJECT
+public:
+    AutoCommitCheckBox(QWidget* parent = nullptr)
+        : QCheckBox(parent)
+    {
+        connect(this, &QCheckBox::clicked,
+            this, &AutoCommitCheckBox::onClicked);
+    }
+    void setInitialized() { init_ = true; }
+
+private slots:
+    void onClicked()
+    {
+        if (init_) {
+            if (QAbstractItemView* view = qobject_cast<QAbstractItemView*>(parent()->parent())) {
+                QAbstractItemModel* model = view->model();
+                QModelIndex index = view->currentIndex();
+                model->setData(index, isChecked(), Qt::EditRole);
+            }
+        }
+    }
+
+private:
+    bool init_ = false;
+};
+
 enum struct PropertyType2 {
     Group,
     Boolean,
@@ -54,6 +138,7 @@ struct EnumPropConfig {
 
 struct StringPropConfig {
     QCompleter* completer = nullptr;
+    QValidator* validator = nullptr;
 };
 
 struct IntPropConfig {
@@ -72,6 +157,8 @@ public:
     Property& operator=(const Property&) = delete;
     Property& operator=(Property&&) = delete;
 
+    void setEditable(bool val);
+    void setReadOnly(bool val);
     void removeFromParent();
 
     QString name;
@@ -127,6 +214,7 @@ public:
     void removeProperty(Property* prop);
     void replaceProperty(Property* old, Property* replacement);
     void setUndoStack(QUndoStack* undo);
+    void updateReadOnly(Property* prop);
 
     // QAbstractItemModel overrides
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -152,8 +240,9 @@ public:
 
     Property* makeGroup(QString name, Property* parent = nullptr);
     Property* makeBoolProperty(QString name, bool value, Property* parent = nullptr);
-    Property* makeIntegerProperty(QString name, int value, Property* parent = nullptr);
     Property* makeEnumProperty(QString name, int value, QAbstractItemModel* model, Property* parent = nullptr);
+    Property* makeIntegerProperty(QString name, int value, Property* parent = nullptr);
+    Property* makeStringProperty(QString name, QString value, Property* parent = nullptr);
 
     void addProperty(Property* prop);
     void expandAll();

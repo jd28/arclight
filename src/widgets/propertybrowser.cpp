@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QHeaderView>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
@@ -93,6 +94,16 @@ void Property::removeFromParent()
     }
 }
 
+void Property::setEditable(bool val)
+{
+    setReadOnly(!val);
+}
+
+void Property::setReadOnly(bool val)
+{
+    read_only = val;
+}
+
 // == PropertyDelegate ========================================================
 // ============================================================================
 
@@ -108,7 +119,7 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewI
 
     switch (prop->type) {
     case PropertyType2::Boolean: {
-        auto ed = new QCheckBox(parent);
+        auto ed = new AutoCommitCheckBox(parent);
         return ed;
     }
     case PropertyType2::Enum: {
@@ -132,7 +143,7 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewI
         return combo;
     }
     case PropertyType2::Integer: {
-        QSpinBox* ed = new QSpinBox(parent);
+        auto ed = new AutoCommitSpinBox(parent);
         if (prop->int_config.min.isValid()) {
             ed->setMinimum(prop->int_config.min.toInt());
         }
@@ -142,6 +153,17 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewI
         if (prop->int_config.step.isValid()) {
             ed->setSingleStep(prop->int_config.step.toInt());
         }
+        return ed;
+    }
+    case PropertyType2::String: {
+        auto ed = new AutoCommitLineEdit(parent);
+        if (prop->string_config.completer) {
+            ed->setCompleter(prop->string_config.completer);
+        }
+        if (prop->string_config.validator) {
+            ed->setValidator(prop->string_config.validator);
+        }
+
         return ed;
     }
 
@@ -182,8 +204,9 @@ void PropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) 
         QStyledItemDelegate::setEditorData(editor, index);
         break;
     case PropertyType2::Boolean: {
-        QCheckBox* checkbox = qobject_cast<QCheckBox*>(editor);
-        checkbox->setChecked(prop->value.toBool());
+        auto ed = qobject_cast<AutoCommitCheckBox*>(editor);
+        ed->setChecked(prop->value.toBool());
+        ed->setInitialized();
         break;
     }
     case PropertyType2::Enum: {
@@ -194,8 +217,16 @@ void PropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) 
         break;
     }
     case PropertyType2::Integer: {
-        QSpinBox* ed = qobject_cast<QSpinBox*>(editor);
+        auto ed = qobject_cast<AutoCommitSpinBox*>(editor);
         ed->setValue(prop->value.toInt());
+        ed->setInitialized();
+        break;
+    }
+    case PropertyType2::String: {
+        if (auto ed = qobject_cast<AutoCommitLineEdit*>(editor)) {
+            ed->setText(prop->value.toString());
+            ed->setInitialized();
+        }
         break;
     }
     }
@@ -209,8 +240,8 @@ void PropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, 
         QStyledItemDelegate::setModelData(editor, model, index);
         break;
     case PropertyType2::Boolean: {
-        QCheckBox* checkbox = qobject_cast<QCheckBox*>(editor);
-        model->setData(index, checkbox->isChecked());
+        auto ed = qobject_cast<AutoCommitCheckBox*>(editor);
+        model->setData(index, ed->isChecked());
         break;
     }
     case PropertyType2::Enum: {
@@ -222,8 +253,13 @@ void PropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, 
         break;
     }
     case PropertyType2::Integer: {
-        QSpinBox* ed = qobject_cast<QSpinBox*>(editor);
+        auto ed = qobject_cast<AutoCommitSpinBox*>(editor);
         model->setData(index, ed->value());
+        break;
+    }
+    case PropertyType2::String: {
+        auto ed = qobject_cast<AutoCommitLineEdit*>(editor);
+        model->setData(index, ed->text());
         break;
     }
     }
@@ -321,6 +357,16 @@ void PropertyModel::replaceProperty(Property* old, Property* replacement)
 void PropertyModel::setUndoStack(QUndoStack* undo)
 {
     undo_ = undo;
+}
+
+void PropertyModel::updateReadOnly(Property* prop)
+{
+    QModelIndex index = indexForProperty(prop);
+    if (!index.isValid()) { return; }
+
+    QModelIndex left = this->index(index.row(), ColumnName, index.parent());
+    QModelIndex right = this->index(index.row(), ColumnValue, index.parent());
+    emit dataChanged(left, right);
 }
 
 int PropertyModel::columnCount(const QModelIndex& parent) const
@@ -525,6 +571,19 @@ Property* PropertyBrowser::makeIntegerProperty(QString name, int value, Property
     result->name = std::move(name);
     result->value = value;
     result->type = PropertyType2::Integer;
+    if (parent) {
+        result->parent = parent;
+        result->parent->children.append(result);
+    }
+    return result;
+}
+
+Property* PropertyBrowser::makeStringProperty(QString name, QString value, Property* parent)
+{
+    auto result = new Property;
+    result->name = std::move(name);
+    result->value = value;
+    result->type = PropertyType2::String;
     if (parent) {
         result->parent = parent;
         result->parent->children.append(result);
