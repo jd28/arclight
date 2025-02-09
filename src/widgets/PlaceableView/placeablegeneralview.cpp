@@ -1,19 +1,18 @@
 #include "placeablegeneralview.h"
 #include "ui_placeablegeneralview.h"
 
-#include "../VariableTableView/vartabledialog.h"
+#include "../../services/toolsetservice.h"
 #include "../util/strings.h"
 #include "placeableproperties.h"
+#include "placeableview.h"
 
 #include "nw/formats/Image.hpp"
 #include "nw/kernel/Resources.hpp"
-#include "nw/kernel/Rules.hpp"
-#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Placeable.hpp"
 
-PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
-    : QWidget(parent)
+PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, PlaceableView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::PlaceableGeneralView)
     , obj_{obj}
 {
@@ -50,29 +49,18 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, QWidget* parent)
     ui->tag->setText(to_qstring(obj->tag().view()));
     ui->resref->setText(to_qstring(obj->common.resref.view()));
     ui->resref->setEnabled(obj->common.resref.empty());
-    ui->inventory->setEnabled(obj->has_inventory);
     ui->properties->setObject(obj_);
+    ui->properties->setUndoStack(undoStack());
 
-    auto& plcs = nw::kernel::rules().placeables.entries;
-    uint32_t added = 0;
-    std::string name;
-
-    for (size_t i = 0; i < plcs.size(); ++i) {
-        if (!plcs[i].valid()) { continue; }
-        name = plcs[i].label;
-        if (plcs[i].name != 0xFFFFFFFF) {
-            name = nw::kernel::strings().get(plcs[i].name);
-        }
-        ui->appearance->addItem(to_qstring(name), int(i));
-        if (i == obj_->appearance) {
-            ui->appearance->setCurrentIndex(int(added));
-        }
-        ++added;
-    }
-    ui->appearance->model()->sort(0);
+    auto app_idx = mapSourceRowToProxyRow(toolset().placeable_model.get(),
+        toolset().placeable_filter.get(), obj_->appearance);
+    ui->appearance->setModel(toolset().placeable_filter.get());
+    ui->appearance->setCurrentIndex(app_idx);
 
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &PlaceableGeneralView::onAppearanceChanged);
-    connect(ui->variables, &QPushButton::clicked, this, &PlaceableGeneralView::onVariablesClicked);
+    connect(ui->properties, &PlaceableProperties::modified, this, &PlaceableGeneralView::modified);
+    connect(this, &PlaceableGeneralView::modified, parent, &PlaceableView::onModified);
+    connect(ui->properties, &PlaceableProperties::hasInventoryChanged, parent, &PlaceableView::onHasInvetoryChanged);
 }
 
 PlaceableGeneralView::~PlaceableGeneralView()
@@ -82,13 +70,7 @@ PlaceableGeneralView::~PlaceableGeneralView()
 
 void PlaceableGeneralView::onAppearanceChanged(int value)
 {
-    obj_->appearance = static_cast<uint32_t>(ui->appearance->itemData(value).toInt());
+    obj_->appearance = static_cast<uint32_t>(ui->appearance->itemData(value, Qt::UserRole + 1).toInt());
     emit appearanceChanged();
-}
-
-void PlaceableGeneralView::onVariablesClicked()
-{
-    VarTableDialog dialog(this);
-    dialog.setLocals(&obj_->common.locals);
-    dialog.exec(); // This makes the dialog modal
+    emit modified();
 }

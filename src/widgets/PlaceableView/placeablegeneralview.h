@@ -1,7 +1,6 @@
-#ifndef PLACEABLEGENERALVIEW_H
-#define PLACEABLEGENERALVIEW_H
+#pragma once
 
-#include <QWidget>
+#include "../arclighttab.h"
 
 namespace nw {
 struct Placeable;
@@ -12,23 +11,24 @@ namespace Ui {
 class PlaceableGeneralView;
 }
 
-class PlaceableGeneralView : public QWidget {
+class PlaceableView;
+class QUndoStack;
+
+class PlaceableGeneralView : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit PlaceableGeneralView(nw::Placeable* obj, QWidget* parent = nullptr);
+    explicit PlaceableGeneralView(nw::Placeable* obj, PlaceableView* parent = nullptr);
     ~PlaceableGeneralView();
 
 signals:
     void appearanceChanged();
+    void modified();
 
 private slots:
     void onAppearanceChanged(int value);
-    void onVariablesClicked();
 
 private:
     Ui::PlaceableGeneralView* ui = nullptr;
     nw::Placeable* obj_ = nullptr;
 };
-
-#endif // PLACEABLEGENERALVIEW_H

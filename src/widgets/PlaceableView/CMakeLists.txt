@@ -16,7 +16,6 @@ target_compile_definitions(PlaceableView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(PlaceableView PRIVATE
     ./
-    ../
 )
 
 target_include_directories(PlaceableView SYSTEM PRIVATE

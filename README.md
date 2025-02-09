@@ -145,7 +145,7 @@ A widget for items.
 
 A widget for placeables
 
-![placeable](screenshots/placeable-view-2024-06-13.png)
+![placeable](screenshots/placeable-view-2025-02-09.png)
 
 ### Variable Table View
 

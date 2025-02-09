@@ -96,7 +96,7 @@
          <string>Appearance</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="leftMargin">
@@ -138,20 +138,6 @@
          <property name="bottomMargin">
           <number>0</number>
          </property>
-         <item>
-          <widget class="QPushButton" name="variables">
-           <property name="text">
-            <string>Variables</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="inventory">
-           <property name="text">
-            <string>Inventory</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>

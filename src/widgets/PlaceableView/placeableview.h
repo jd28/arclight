@@ -1,7 +1,7 @@
 #ifndef PLACEABLEVIEW_H
 #define PLACEABLEVIEW_H
 
-#include "ArclightView.h"
+#include "../ArclightView.h"
 
 #include <QWidget>
 
@@ -14,6 +14,8 @@ namespace Ui {
 class PlaceableView;
 }
 
+class InventoryView;
+
 class PlaceableView : public ArclightView {
     Q_OBJECT
 
@@ -24,11 +26,14 @@ public:
 
 public slots:
     void loadModel();
+    void onHasInvetoryChanged(bool value);
+    void onModified();
 
 private:
     Ui::PlaceableView* ui;
     nw::Placeable* obj_ = nullptr;
-    bool owned_;
+    bool owned_ = false;
+    InventoryView* inventory_ = nullptr;
 };
 
 #endif // PLACEABLEVIEW_H

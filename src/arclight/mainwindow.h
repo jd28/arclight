@@ -50,17 +50,23 @@ public slots:
     void onActionAbout();
     void onActionAboutQt();
     void onActionClose(bool checked = false);
+    void onActionCloseAll(bool checked = false);
     void onActionCloseProject(bool checked = false);
     void onActionOpen(bool checked = false);
     void onActionRecent();
     void onActivateUndoStack(QUndoStack* stack);
+    void onModified();
     void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
     void onTabCloseRequested(int index);
+    void onTabChanged(int index);
     void onTreeviewsLoaded();
 
 private:
-    Ui::MainWindow *ui;
+    void doClose(int index);
+    void doSave(int index);
+
+    Ui::MainWindow* ui;
     nw::Module* module_ = nullptr;
     nw::StaticDirectory* module_container_ = nullptr;
     QString module_path_;

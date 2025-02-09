@@ -20,7 +20,6 @@
 #include "nw/formats/Dialog.hpp"
 #include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Resources.hpp"
-#include "nw/kernel/Strings.hpp"
 #include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
 #include "nw/serialization/Gff.hpp"
@@ -70,6 +69,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionClose, &QAction::triggered, this, &MainWindow::onActionClose);
     connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::onActionCloseProject);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpen);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &MainWindow::onTabCloseRequested);
     connect(ui->projectComboBox, &QComboBox::currentIndexChanged, this, &MainWindow::onProjectViewChanged);
 }
@@ -254,7 +254,15 @@ void MainWindow::onActionAboutQt()
 void MainWindow::onActionClose(bool checked)
 {
     Q_UNUSED(checked);
-    onTabCloseRequested(ui->tabWidget->currentIndex());
+    doClose(ui->tabWidget->currentIndex());
+}
+
+void MainWindow::onActionCloseAll(bool checked)
+{
+    Q_UNUSED(checked);
+    for (int i = 0; i < ui->tabWidget->count(); ++i) {
+        doClose(i);
+    }
 }
 
 void MainWindow::onActionCloseProject(bool checked)
@@ -289,7 +297,7 @@ void MainWindow::onActionOpen(bool checked)
 {
     Q_UNUSED(checked);
 
-    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.mod *.ifo *.ifo.json)");
+    auto path = QFileDialog::getOpenFileName(this, "Open Project", "", "Module (*.ifo)");
     if (path.isEmpty()) { return; }
     open(path);
 }
@@ -324,6 +332,23 @@ void MainWindow::onActivateUndoStack(QUndoStack* stack)
     }
 }
 
+void MainWindow::onModified()
+{
+    int idx = ui->tabWidget->currentIndex();
+    auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(idx));
+    if (!cw) { return; }
+
+    auto name = ui->tabWidget->tabText(idx);
+    if (!name.endsWith("*")) {
+        ui->tabWidget->setTabText(idx, name + "*");
+    } else {
+        name.chop(1);
+    }
+
+    ui->actionSave->setText(QString("Save '%1'").arg(name));
+    ui->actionSave->setEnabled(cw->isModified());
+}
+
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
 {
     if (!item || item->is_folder_) { return; }
@@ -332,7 +357,8 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
     if (it == std::end(type_to_view_)) { return; }
 
     auto view = it->second(item->res_);
-    onActivateUndoStack(view->undoStack());
+    connect(view, &ArclightView::modified, this, &MainWindow::onModified);
+    connect(view, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
     auto idx = ui->tabWidget->addTab(view, to_qstring(item->res_.filename()));
     ui->tabWidget->setTabsClosable(true);
     ui->tabWidget->setCurrentIndex(idx);
@@ -356,6 +382,16 @@ void MainWindow::onTabCloseRequested(int index)
     delete cw;
 }
 
+void MainWindow::onTabChanged(int index)
+{
+    auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(index));
+    if (!cw) { return; }
+    auto text = ui->tabWidget->tabText(index);
+    if (text.endsWith("*")) { text.chop(1); }
+    ui->actionSave->setText(QString("Save '%1'").arg(text));
+    ui->actionSave->setEnabled(cw->isModified());
+}
+
 void MainWindow::onTreeviewsLoaded()
 {
 
@@ -364,7 +400,7 @@ void MainWindow::onTreeviewsLoaded()
 
     Q_UNUSED(result);
 
-    for (auto it : project_treeviews_) {
+    foreach (auto it, project_treeviews_) {
         it->activateModel();
     }
 
@@ -380,4 +416,20 @@ void MainWindow::onTreeviewsLoaded()
     ui->filter->setEnabled(true);
 
     spinner_->stop();
+}
+
+void MainWindow::doClose(int index)
+{
+    auto alw = qobject_cast<ArclightView*>(ui->tabWidget->widget(index));
+    if (alw && alw->isModified()) {
+        // Save dialog Dialog
+    }
+    onTabCloseRequested(index);
+}
+
+void MainWindow::doSave(int index)
+{
+    auto alw = qobject_cast<ArclightView*>(ui->tabWidget->widget(index));
+    if (alw && alw->isModified()) {
+    }
 }
