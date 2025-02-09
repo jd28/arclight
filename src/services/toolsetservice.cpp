@@ -1,5 +1,6 @@
 #include "toolsetservice.h"
 
+#include "nw/kernel/FactionSystem.hpp"
 #include "nw/kernel/Resources.hpp"
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/TwoDACache.hpp"
@@ -74,6 +75,23 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     phenotype_filter->sort(-1);
     phenotype_model->moveToThread(QCoreApplication::instance()->thread());
     phenotype_filter->moveToThread(QCoreApplication::instance()->thread());
+
+    placeable_model.reset(new RuleTypeModel<nw::PlaceableInfo>(&nw::kernel::rules().placeables.entries, QCoreApplication::instance()));
+    placeable_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    placeable_filter->setSourceModel(placeable_model.get());
+    placeable_filter->sort(0);
+    placeable_model->moveToThread(QCoreApplication::instance()->thread());
+    placeable_filter->moveToThread(QCoreApplication::instance()->thread());
+
+    faction_model = std::make_unique<QStandardItemModel>();
+    for (auto& faction : nw::kernel::factions().all()) {
+        auto item = new QStandardItem(to_qstring(faction));
+        item->setData(nw::kernel::factions().faction_id(faction));
+        faction_model->appendRow(item);
+    }
+
+    trap_model = std::make_unique<RuleTypeModel<nw::TrapInfo>>(&nw::kernel::rules().traps.entries,
+        QCoreApplication::instance());
 
     gender_basic_model.reset(new QStringListModel(QCoreApplication::instance()));
     gender_basic_model->setStringList(QStringList()

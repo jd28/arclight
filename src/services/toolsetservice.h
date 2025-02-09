@@ -5,6 +5,8 @@
 
 #include "nw/config.hpp"
 #include "nw/kernel/Kernel.hpp"
+#include "nw/objects/Placeable.hpp"
+#include "nw/objects/Trap.hpp"
 #include "nw/rules/Class.hpp"
 #include "nw/rules/items.hpp"
 
@@ -56,13 +58,17 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<RuleTypeModel<nw::ClassInfo>> class_model;
     std::unique_ptr<RuleFilterProxyModel> phenotype_filter;
     std::unique_ptr<RuleTypeModel<nw::PhenotypeInfo>> phenotype_model;
-    std::unique_ptr<QStringListModel> gender_basic_model;
-    std::unique_ptr<QStandardItemModel> dynamic_appearance_model;
-    std::unique_ptr<QStandardItemModel> cloak_model;
+    std::unique_ptr<RuleFilterProxyModel> placeable_filter;
+    std::unique_ptr<RuleTypeModel<nw::PlaceableInfo>> placeable_model;
+    std::unique_ptr<QStandardItemModel> faction_model;
+    std::unique_ptr<RuleTypeModel<nw::TrapInfo>> trap_model;
 
     absl::flat_hash_map<std::string, CompositeModels> composite_model_map;
     absl::flat_hash_map<std::string, std::unique_ptr<QStandardItemModel>> simple_model_map;
 
+    std::unique_ptr<QStringListModel> gender_basic_model;
+    std::unique_ptr<QStandardItemModel> dynamic_appearance_model;
+    std::unique_ptr<QStandardItemModel> cloak_model;
     std::unique_ptr<QStandardItemModel> parts_belt;
     std::unique_ptr<QStandardItemModel> parts_bicep;
     std::unique_ptr<QStandardItemModel> parts_chest;
