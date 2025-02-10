@@ -58,8 +58,7 @@ PlaceableGeneralView::PlaceableGeneralView(nw::Placeable* obj, PlaceableView* pa
     ui->appearance->setCurrentIndex(app_idx);
 
     connect(ui->appearance, &QComboBox::currentIndexChanged, this, &PlaceableGeneralView::onAppearanceChanged);
-    connect(ui->properties, &PlaceableProperties::modified, this, &PlaceableGeneralView::modified);
-    connect(this, &PlaceableGeneralView::modified, parent, &PlaceableView::onModified);
+    connect(this, &PlaceableGeneralView::modificationChanged, parent, &PlaceableView::onModificationChanged);
     connect(ui->properties, &PlaceableProperties::hasInventoryChanged, parent, &PlaceableView::onHasInvetoryChanged);
 }
 
@@ -72,5 +71,4 @@ void PlaceableGeneralView::onAppearanceChanged(int value)
 {
     obj_->appearance = static_cast<uint32_t>(ui->appearance->itemData(value, Qt::UserRole + 1).toInt());
     emit appearanceChanged();
-    emit modified();
 }

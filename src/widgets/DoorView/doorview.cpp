@@ -32,6 +32,7 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
 
     auto general = new DoorGeneralView(obj_, this);
     ui->tabWidget->addTab(general, "General");
+
     auto description = new StrrefTextEdit(this);
     description->setLocstring(obj->description);
 
@@ -40,6 +41,7 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     variables->setLocals(&obj_->common.locals);
     ui->tabWidget->addTab(variables, tr("Variables"));
     connect(variables, &VariableTableView::modificationChanged, this, &DoorView::onModificationChanged);
+    addTab(variables);
 
     ui->tabWidget->addTab(description, "Description");
     auto comments = new QTextEdit(this);

@@ -1,5 +1,4 @@
-#ifndef ARCLIGHTTAB_H
-#define ARCLIGHTTAB_H
+#pragma once
 
 #include <QWidget>
 
@@ -11,14 +10,14 @@ class ArclightTab : public QWidget {
 public:
     explicit ArclightTab(ArclightView* parent = nullptr);
 
+    bool modified() const noexcept;
     QUndoStack* undoStack() const noexcept;
 
 signals:
     void activateUndoStack(QUndoStack*);
-    void modified();
+    void modificationChanged(bool modified);
 
 private:
-    QUndoStack* undo_stack_;
+    QUndoStack* undo_;
+    bool modified_ = false;
 };
-
-#endif // ARCLIGHTTAB_H

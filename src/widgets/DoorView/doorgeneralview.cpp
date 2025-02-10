@@ -10,8 +10,8 @@
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Door.hpp"
 
-DoorGeneralView::DoorGeneralView(nw::Door* obj, QWidget* parent)
-    : QWidget(parent)
+DoorGeneralView::DoorGeneralView(nw::Door* obj, ArclightView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::DoorGeneralView)
     , obj_{obj}
 {

@@ -30,11 +30,11 @@ PlaceableView::PlaceableView(nw::Placeable* obj, QWidget* parent)
     ui->setupUi(this);
 
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << width * 2 / 3 << width * 1 / 3);
+    ui->splitter->setSizes(QList<int>() << width * 1 / 3 << width * 2 / 3);
 
     auto general = new PlaceableGeneralView(obj_, this);
     ui->tabWidget->addTab(general, "General");
-    connect(general, &PlaceableGeneralView::modified, this, &PlaceableView::modified);
+    connect(general, &PlaceableGeneralView::modificationChanged, this, &PlaceableView::onModificationChanged);
 
     inventory_ = new InventoryView(this);
     inventory_->setEnabled(!readOnly() && obj_->has_inventory);
@@ -46,6 +46,7 @@ PlaceableView::PlaceableView(nw::Placeable* obj, QWidget* parent)
     variables->setEnabled(!readOnly());
     variables->setLocals(&obj_->common.locals);
     ui->tabWidget->addTab(variables, tr("Variables"));
+    connect(variables, &VariableTableView::modificationChanged, this, &PlaceableView::onModificationChanged);
 
     auto description = new StrrefTextEdit(this);
     description->setEnabled(!readOnly());
@@ -79,9 +80,4 @@ void PlaceableView::loadModel()
 void PlaceableView::onHasInvetoryChanged(bool value)
 {
     inventory_->setEnabled(value);
-}
-
-void PlaceableView::onModified()
-{
-    setModified(true);
 }

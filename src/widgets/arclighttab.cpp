@@ -7,18 +7,28 @@
 
 ArclightTab::ArclightTab(ArclightView* parent)
     : QWidget{parent}
-    , undo_stack_{new QUndoStack(this)}
+    , undo_{new QUndoStack(this)}
 {
-    // Chain this up to main window.
     connect(this, &ArclightTab::activateUndoStack, parent, &ArclightView::activateUndoStack);
 
     QShortcut* us = new QShortcut(QKeySequence::Undo, this);
     QShortcut* rs = new QShortcut(QKeySequence::Redo, this);
-    connect(us, &QShortcut::activated, undo_stack_, &QUndoStack::undo);
-    connect(rs, &QShortcut::activated, undo_stack_, &QUndoStack::redo);
+    connect(us, &QShortcut::activated, undo_, &QUndoStack::undo);
+    connect(rs, &QShortcut::activated, undo_, &QUndoStack::redo);
+
+    connect(undo_, &QUndoStack::cleanChanged, this, [this](bool clean) {
+        modified_ = !clean;
+        emit modificationChanged(!clean);
+    });
+    undo_->setClean();
+}
+
+bool ArclightTab::modified() const noexcept
+{
+    return modified_;
 }
 
 QUndoStack* ArclightTab::undoStack() const noexcept
 {
-    return undo_stack_;
+    return undo_;
 }

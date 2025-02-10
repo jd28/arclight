@@ -27,7 +27,6 @@ public:
 public slots:
     void loadModel();
     void onHasInvetoryChanged(bool value);
-    void onModified();
 
 private:
     Ui::PlaceableView* ui;

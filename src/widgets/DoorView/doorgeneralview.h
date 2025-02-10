@@ -1,7 +1,7 @@
 #ifndef DOORGENERALVIEW_H
 #define DOORGENERALVIEW_H
 
-#include <QWidget>
+#include "../arclighttab.h"
 
 namespace nw {
 struct Door;
@@ -12,11 +12,11 @@ namespace Ui {
 class DoorGeneralView;
 }
 
-class DoorGeneralView : public QWidget {
+class DoorGeneralView : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit DoorGeneralView(nw::Door* obj, QWidget* parent = nullptr);
+    explicit DoorGeneralView(nw::Door* obj, ArclightView* parent = nullptr);
     ~DoorGeneralView();
 
 signals:

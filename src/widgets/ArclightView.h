@@ -2,6 +2,7 @@
 
 #include <QWidget>
 
+class ArclightTab;
 class QUndoStack;
 
 /// Arclight View is an abstraction for any widget that is placed in the main window tab.
@@ -12,20 +13,24 @@ public:
     ArclightView(QWidget* parent = nullptr);
     virtual ~ArclightView() = default;
 
+    /// Adds a sub-tab to for the view to track
+    void addTab(ArclightTab* tab);
+
     /// Get is modified.
-    bool isModified() const noexcept;
+    bool modified() const noexcept;
 
     /// Is view read only
     bool readOnly() const noexcept;
 
-    /// Set is modified.
-    void setModified(bool value);
+public slots:
+    void onModificationChanged(bool modified);
 
 signals:
     void activateUndoStack(QUndoStack*);
-    void modified();
+    void modificationChanged(bool modified);
 
 private:
+    QList<ArclightTab*> tabs_;
     bool read_only_ = false;
     bool modified_ = false;
 };

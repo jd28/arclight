@@ -92,9 +92,6 @@ public slots:
     void onAddClicked();
     void onDeleteClicked();
 
-signals:
-    void modificationChanged(bool modified);
-
 private:
     Ui::VariableTableView* ui;
     VariableTableModel* model_ = nullptr;

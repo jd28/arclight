@@ -56,7 +56,6 @@ void PlaceableProperties::basicsLoad()
         auto idx = model->index(value.toInt(), 0);
         int mv = model->data(idx, Qt::UserRole + 1).toInt();
         obj_->faction = static_cast<uint32_t>(mv);
-        emit modified();
     };
 
     auto hardness = makeIntegerProperty("Hardness", obj_->hardness, grp_basic);
@@ -64,14 +63,12 @@ void PlaceableProperties::basicsLoad()
     hardness->int_config.max = 255;
     hardness->on_set = [this](const QVariant& value) {
         obj_->hardness = static_cast<uint8_t>(value.toInt());
-        emit modified();
     };
 
     auto has_inventory = makeBoolProperty("Has Inventory", obj_->has_inventory, grp_basic);
     has_inventory->on_set = [this](const QVariant& value) {
         obj_->has_inventory = value.toBool();
         emit hasInventoryChanged(obj_->has_inventory);
-        emit modified();
     };
 
     auto hitpoints = makeIntegerProperty("Hitpoints", obj_->hp, grp_basic);
@@ -79,13 +76,11 @@ void PlaceableProperties::basicsLoad()
     hitpoints->int_config.max = std::numeric_limits<int16_t>::max();
     hitpoints->on_set = [this](const QVariant& value) {
         obj_->hp = static_cast<int16_t>(value.toInt());
-        emit modified();
     };
 
     auto plot = makeBoolProperty("Plot", obj_->plot, grp_basic);
     plot->on_set = [this](const QVariant& value) {
         obj_->plot = value.toBool();
-        emit modified();
     };
 
     auto static_ = makeBoolProperty("Static", obj_->static_, grp_basic);
@@ -93,7 +88,6 @@ void PlaceableProperties::basicsLoad()
         obj_->static_ = value.toBool();
         locksUpdate();
         trapsUpdate();
-        emit modified();
     };
 
     auto useable = makeBoolProperty("Useable", obj_->useable);
@@ -101,7 +95,6 @@ void PlaceableProperties::basicsLoad()
         obj_->useable = value.toInt();
         locksUpdate();
         trapsUpdate();
-        emit modified();
     };
 
     addProperty(grp_basic);
@@ -113,13 +106,11 @@ void PlaceableProperties::conversationLoad()
     auto prop = makeStringProperty("Dialog", to_qstring(obj_->conversation.view()), grp_conv);
     prop->on_set = [this](const QVariant& value) {
         obj_->conversation = nw::Resref{value.toString().toStdString()};
-        emit modified();
     };
 
     prop = makeBoolProperty("Interruptable", obj_->interruptable, grp_conv);
     prop->on_set = [this](const QVariant& value) {
         obj_->interruptable = value.toBool();
-        emit modified();
     };
 
     addProperty(grp_conv);
@@ -133,35 +124,30 @@ void PlaceableProperties::locksLoad()
     lock_locked_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.locked = value.toBool();
         locksUpdate();
-        emit modified();
     };
 
     lock_lockable_prop_ = makeBoolProperty("Relockable", obj_->lock.lockable, grp_lock);
     lock_lockable_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.lockable = value.toBool();
         locksUpdate();
-        emit modified();
     };
 
     lock_remove_key_prop_ = makeBoolProperty("Remove Key", obj_->lock.remove_key, grp_lock);
     lock_remove_key_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.remove_key = value.toBool();
         locksUpdate();
-        emit modified();
     };
 
     lock_key_required_prop_ = makeBoolProperty("Key Required", obj_->lock.key_required, grp_lock);
     lock_key_required_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.key_required = value.toBool();
         locksUpdate();
-        emit modified();
     };
 
     lock_key_name_prop_ = makeStringProperty("Key Tag", to_qstring(obj_->lock.key_name), grp_lock);
     lock_key_name_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.key_name = value.toString().toStdString();
         locksUpdate();
-        emit modified();
     };
 
     lock_lock_dc_prop_ = makeIntegerProperty("Lock DC", obj_->lock.lock_dc, grp_lock);
@@ -170,7 +156,6 @@ void PlaceableProperties::locksLoad()
     lock_lock_dc_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.lock_dc = static_cast<uint8_t>(value.toInt());
         locksUpdate();
-        emit modified();
     };
 
     lock_unlock_dc_prop_ = makeIntegerProperty("Unlock DC", obj_->lock.unlock_dc, grp_lock);
@@ -179,7 +164,6 @@ void PlaceableProperties::locksLoad()
     lock_unlock_dc_prop_->on_set = [this](const QVariant& value) {
         obj_->lock.unlock_dc = static_cast<uint8_t>(value.toInt());
         locksUpdate();
-        emit modified();
     };
 
     locksUpdate();
@@ -214,7 +198,6 @@ void PlaceableProperties::savesLoad()
     save->int_config.max = 255;
     save->on_set = [this](const QVariant& value) {
         obj_->saves.fort = static_cast<int16_t>(value.toInt());
-        emit modified();
     };
 
     save = makeIntegerProperty("Fortitude", obj_->saves.fort, grp_saves);
@@ -222,7 +205,6 @@ void PlaceableProperties::savesLoad()
     save->int_config.max = 255;
     save->on_set = [this](const QVariant& value) {
         obj_->saves.reflex = static_cast<int16_t>(value.toInt());
-        emit modified();
     };
 
     save = makeIntegerProperty("Fortitude", obj_->saves.fort, grp_saves);
@@ -230,7 +212,6 @@ void PlaceableProperties::savesLoad()
     save->int_config.max = 255;
     save->on_set = [this](const QVariant& value) {
         obj_->saves.will = static_cast<int16_t>(value.toInt());
-        emit modified();
     };
 }
 
@@ -243,7 +224,6 @@ void PlaceableProperties::scriptsLoad()
         auto p = makeStringProperty(name, to_qstring(value.view()), grp_script); \
         p->on_set = [this](const QVariant& v) {                                  \
             value = nw::Resref{v.toString().toStdString()};                      \
-            emit modified(); /* clazy:skip */                                    \
         };                                                                       \
     } while (0)
 
@@ -274,20 +254,17 @@ void PlaceableProperties::trapsLoad()
     trap_is_trapped_->on_set = [this](const QVariant& value) {
         obj_->trap.is_trapped = value.toBool();
         trapsUpdate();
-        emit modified();
     };
 
     trap_type_ = makeEnumProperty("Type", *obj_->trap.type, toolset().trap_model.get(), grp_trap);
     trap_type_->on_set = [this](const QVariant& value) {
         obj_->trap.type = nw::TrapType::make(value.toInt());
-        emit modified();
     };
 
     trap_detectable_ = makeBoolProperty("Detectable", obj_->trap.detectable, grp_trap);
     trap_detectable_->on_set = [this](const QVariant& value) {
         obj_->trap.detectable = value.toBool();
         trapsUpdate();
-        emit modified();
     };
 
     trap_detect_dc_ = makeIntegerProperty("Detection DC", obj_->trap.detect_dc, grp_trap);
@@ -296,14 +273,12 @@ void PlaceableProperties::trapsLoad()
     trap_detect_dc_->on_set = [this](const QVariant& value) {
         obj_->trap.detect_dc = static_cast<uint8_t>(value.toInt());
         trapsUpdate();
-        emit modified();
     };
 
     trap_disarmable_ = makeBoolProperty("Disarmable", obj_->trap.disarmable, grp_trap);
     trap_disarmable_->on_set = [this](const QVariant& value) {
         obj_->trap.disarmable = value.toBool();
         trapsUpdate();
-        emit modified();
     };
 
     trap_disarm_dc_ = makeIntegerProperty("Disarm DC", obj_->trap.disarm_dc, grp_trap);
@@ -312,14 +287,12 @@ void PlaceableProperties::trapsLoad()
     trap_detect_dc_->on_set = [this](const QVariant& value) {
         obj_->trap.disarm_dc = static_cast<uint8_t>(value.toInt());
         trapsUpdate();
-        emit modified();
     };
 
     trap_one_shot_ = makeBoolProperty("One Shot", obj_->trap.one_shot, grp_trap);
     trap_one_shot_->on_set = [this](const QVariant& value) {
         obj_->trap.one_shot = value.toBool();
         trapsUpdate();
-        emit modified();
     };
 
     trapsUpdate();

@@ -332,21 +332,18 @@ void MainWindow::onActivateUndoStack(QUndoStack* stack)
     }
 }
 
-void MainWindow::onModified()
+void MainWindow::onModificationChanged(bool modified)
 {
     int idx = ui->tabWidget->currentIndex();
     auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(idx));
     if (!cw) { return; }
 
     auto name = ui->tabWidget->tabText(idx);
-    if (!name.endsWith("*")) {
-        ui->tabWidget->setTabText(idx, name + "*");
-    } else {
-        name.chop(1);
-    }
+    if (name.endsWith("*")) { name.chop(1); }
 
+    ui->tabWidget->setTabText(idx, name + (modified ? "*" : ""));
     ui->actionSave->setText(QString("Save '%1'").arg(name));
-    ui->actionSave->setEnabled(cw->isModified());
+    ui->actionSave->setEnabled(cw->modified());
 }
 
 void MainWindow::onProjectDoubleClicked(ProjectItem* item)
@@ -357,11 +354,12 @@ void MainWindow::onProjectDoubleClicked(ProjectItem* item)
     if (it == std::end(type_to_view_)) { return; }
 
     auto view = it->second(item->res_);
-    connect(view, &ArclightView::modified, this, &MainWindow::onModified);
+    connect(view, &ArclightView::modificationChanged, this, &MainWindow::onModificationChanged);
     connect(view, &ArclightView::activateUndoStack, this, &MainWindow::onActivateUndoStack);
     auto idx = ui->tabWidget->addTab(view, to_qstring(item->res_.filename()));
     ui->tabWidget->setTabsClosable(true);
     ui->tabWidget->setCurrentIndex(idx);
+    ui->actionSave_As->setEnabled(true);
 }
 
 void MainWindow::onProjectViewChanged(int index)
@@ -380,6 +378,11 @@ void MainWindow::onTabCloseRequested(int index)
     auto cw = reinterpret_cast<ArclightView*>(ui->tabWidget->widget(index));
     ui->tabWidget->removeTab(index);
     delete cw;
+    if (ui->tabWidget->count() == 0) {
+        ui->actionSave->setText("Save");
+        ui->actionSave->setEnabled(false);
+        ui->actionSave_As->setEnabled(false);
+    }
 }
 
 void MainWindow::onTabChanged(int index)
@@ -389,7 +392,7 @@ void MainWindow::onTabChanged(int index)
     auto text = ui->tabWidget->tabText(index);
     if (text.endsWith("*")) { text.chop(1); }
     ui->actionSave->setText(QString("Save '%1'").arg(text));
-    ui->actionSave->setEnabled(cw->isModified());
+    ui->actionSave->setEnabled(cw->modified());
 }
 
 void MainWindow::onTreeviewsLoaded()
@@ -421,7 +424,7 @@ void MainWindow::onTreeviewsLoaded()
 void MainWindow::doClose(int index)
 {
     auto alw = qobject_cast<ArclightView*>(ui->tabWidget->widget(index));
-    if (alw && alw->isModified()) {
+    if (alw && alw->modified()) {
         // Save dialog Dialog
     }
     onTabCloseRequested(index);
@@ -430,6 +433,6 @@ void MainWindow::doClose(int index)
 void MainWindow::doSave(int index)
 {
     auto alw = qobject_cast<ArclightView*>(ui->tabWidget->widget(index));
-    if (alw && alw->isModified()) {
+    if (alw && alw->modified()) {
     }
 }

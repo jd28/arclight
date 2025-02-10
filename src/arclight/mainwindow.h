@@ -55,7 +55,7 @@ public slots:
     void onActionOpen(bool checked = false);
     void onActionRecent();
     void onActivateUndoStack(QUndoStack* stack);
-    void onModified();
+    void onModificationChanged(bool modified);
     void onProjectDoubleClicked(ProjectItem* item);
     void onProjectViewChanged(int index);
     void onTabCloseRequested(int index);

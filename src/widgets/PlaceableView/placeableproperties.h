@@ -20,7 +20,6 @@ public:
 
 signals:
     void hasInventoryChanged(bool value);
-    void modified();
 
 private:
     Property* lock_locked_prop_ = nullptr;

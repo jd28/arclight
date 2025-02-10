@@ -23,7 +23,6 @@ public:
 
 signals:
     void appearanceChanged();
-    void modified();
 
 private slots:
     void onAppearanceChanged(int value);
