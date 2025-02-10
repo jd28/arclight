@@ -1,6 +1,8 @@
 #ifndef VARIABLETABLEVIEW_H
 #define VARIABLETABLEVIEW_H
 
+#include "../arclighttab.h"
+
 #include "nw/objects/LocalData.hpp"
 
 #include <QAbstractTableModel>
@@ -75,24 +77,28 @@ private:
 // == VariableTableView =======================================================
 // ============================================================================
 
-class VariableTableView : public QWidget {
+class VariableTableView : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit VariableTableView(QWidget* parent = nullptr);
+    explicit VariableTableView(ArclightView* parent = nullptr);
     ~VariableTableView();
 
     VariableTableModel* model() const { return model_; };
+    bool modified() const noexcept;
     void setLocals(nw::LocalData* locals);
 
 public slots:
     void onAddClicked();
     void onDeleteClicked();
 
+signals:
+    void modificationChanged(bool modified);
+
 private:
     Ui::VariableTableView* ui;
     VariableTableModel* model_ = nullptr;
-    QUndoStack* undo_;
+    bool modified_ = false;
 };
 
 #endif // VARIABLETABLEVIEW_H

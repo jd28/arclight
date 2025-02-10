@@ -155,13 +155,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="variables">
-           <property name="text">
-            <string>Variables</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </item>

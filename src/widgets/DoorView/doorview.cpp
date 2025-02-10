@@ -1,6 +1,7 @@
 #include "doorview.h"
 #include "ui_doorview.h"
 
+#include "../VariableTableView/variabletableview.h"
 #include "../strreftextedit.h"
 #include "../util/strings.h"
 #include "doorgeneralview.h"
@@ -33,6 +34,13 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     ui->tabWidget->addTab(general, "General");
     auto description = new StrrefTextEdit(this);
     description->setLocstring(obj->description);
+
+    auto variables = new VariableTableView(this);
+    variables->setEnabled(!readOnly());
+    variables->setLocals(&obj_->common.locals);
+    ui->tabWidget->addTab(variables, tr("Variables"));
+    connect(variables, &VariableTableView::modificationChanged, this, &DoorView::onModificationChanged);
+
     ui->tabWidget->addTab(description, "Description");
     auto comments = new QTextEdit(this);
     comments->setText(to_qstring(obj_->common.comment));

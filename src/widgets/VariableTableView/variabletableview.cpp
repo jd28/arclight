@@ -284,14 +284,12 @@ bool VariableTableModel::setData(const QModelIndex& idx, const QVariant& value, 
     auto oldValue = data(idx, Qt::EditRole);
     if (oldValue == value) { return false; }
     undo_->push(new VarTableModifyCommand(this, idx, oldValue, value));
-    LOG_F(INFO, "pushing undo");
     return true;
 }
 
 void VariableTableModel::addRow()
 {
     undo_->push(new VarTableAddCommand(this));
-    LOG_F(INFO, "pushing undo");
 }
 
 void VariableTableModel::insertRow(int row, VarTableItem* item)
@@ -343,10 +341,9 @@ bool SinglClickEditFilter::eventFilter(QObject* watched, QEvent* event)
 // == VariableTableView =======================================================
 // ============================================================================
 
-VariableTableView::VariableTableView(QWidget* parent)
-    : QWidget(parent)
+VariableTableView::VariableTableView(ArclightView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::VariableTableView)
-    , undo_{new QUndoStack(this)}
 {
     ui->setupUi(this);
     QStringList types;
@@ -360,11 +357,6 @@ VariableTableView::VariableTableView(QWidget* parent)
     ui->delete_2->setIcon(ZFontIcon::icon(Fa6::FAMILY, Fa6::fa_minus, Qt::red));
     connect(ui->delete_2, &QPushButton::clicked, this, &VariableTableView::onDeleteClicked);
     connect(ui->add, &QPushButton::clicked, this, &VariableTableView::onAddClicked);
-
-    QShortcut* us = new QShortcut(QKeySequence::Undo, this);
-    QShortcut* rs = new QShortcut(QKeySequence::Redo, this);
-    connect(us, &QShortcut::activated, undo_, &QUndoStack::undo);
-    connect(rs, &QShortcut::activated, undo_, &QUndoStack::redo);
 }
 
 VariableTableView::~VariableTableView()
@@ -372,9 +364,14 @@ VariableTableView::~VariableTableView()
     delete ui;
 }
 
+bool VariableTableView::modified() const noexcept
+{
+    return modified_;
+}
+
 void VariableTableView::setLocals(nw::LocalData* locals)
 {
-    model_ = new VariableTableModel(locals, undo_, this);
+    model_ = new VariableTableModel(locals, undoStack(), this);
     model_->sort(0);
     ui->tableView->setModel(model_);
     ui->delete_2->setDisabled(model_->rowCount() == 0);

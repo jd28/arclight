@@ -4,7 +4,9 @@ add_library(VariableTableView STATIC
     variabletableview.cpp
     variabletableview.h
     variabletableview.ui
-    vartabledialog.h vartabledialog.cpp vartabledialog.ui
+
+
+
 )
 
 target_include_directories(VariableTableView PRIVATE
