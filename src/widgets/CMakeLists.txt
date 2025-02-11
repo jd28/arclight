@@ -34,6 +34,8 @@ add_library(arclight-widgets STATIC
     TlkSelector/tlkselector.cpp
     TlkSelector/tlkselector.ui
 
+    util/itemmodels.cpp
+    util/itemmodels.h
     util/restypeicons.cpp
     util/restypeicons.h
     util/objects.cpp

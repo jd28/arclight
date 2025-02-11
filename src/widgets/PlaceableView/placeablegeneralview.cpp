@@ -2,6 +2,7 @@
 #include "ui_placeablegeneralview.h"
 
 #include "../../services/toolsetservice.h"
+#include "../util/itemmodels.h"
 #include "../util/strings.h"
 #include "placeableproperties.h"
 #include "placeableview.h"

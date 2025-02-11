@@ -79,8 +79,4 @@ protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 };
 
-int mapProxyRowToSourceRow(const QSortFilterProxyModel* model, int row);
-int mapSourceRowToProxyRow(const QAbstractItemModel* source,
-    const QSortFilterProxyModel* proxy, int row);
-
 #endif // SERVICES_RULESETMODELS_H

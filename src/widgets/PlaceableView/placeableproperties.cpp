@@ -1,6 +1,7 @@
 #include "placeableproperties.h"
 
 #include "../../services/toolsetservice.h"
+#include "../util/itemmodels.h"
 #include "../util/strings.h"
 
 #include "nw/kernel/Rules.hpp"
@@ -35,22 +36,12 @@ void PlaceableProperties::setObject(nw::Placeable* obj)
 // == Private Methods =========================================================
 // ============================================================================
 
-inline auto find_index(QStandardItemModel* model, int value) -> int
-{
-    for (int i = 0; i < model->rowCount(); ++i) {
-        if (model->item(i)->data().toInt() == value) {
-            return i;
-        }
-    }
-    return -1;
-};
-
 void PlaceableProperties::basicsLoad()
 {
     Property* grp_basic = makeGroup("Basic");
 
     auto model = toolset().faction_model.get();
-    auto index = find_index(model, int(obj_->faction));
+    auto index = findStandardItemIndex(model, int(obj_->faction));
     auto fac = makeEnumProperty("Faction", index, model, grp_basic);
     fac->on_set = [this, model](const QVariant& value) {
         auto idx = model->index(value.toInt(), 0);

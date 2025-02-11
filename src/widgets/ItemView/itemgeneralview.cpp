@@ -6,6 +6,7 @@
 #include "../ColorSelectorDialog/colorselectordialog.h"
 #include "../ColorSelectorDialog/colorselectorview.h"
 #include "../proxymodels.h"
+#include "../util/itemmodels.h"
 #include "../util/objects.h"
 #include "../util/strings.h"
 #include "itemsimplemodelselectordialog.h"
@@ -47,15 +48,6 @@ void ItemPropView::loadAppearanceProperties(nw::BaseItem type)
     auto bi_info = nw::kernel::rules().baseitems.get(type);
     if (!bi_info || !bi_info->valid()) { return; }
 
-    auto find_index = [](QStandardItemModel* model, int value) {
-        for (int i = 0; i < model->rowCount(); ++i) {
-            if (model->item(i)->data().toInt() == value) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
     switch (bi_info->model_type) {
     case nw::ItemModelType::simple:
     case nw::ItemModelType::layered: {
@@ -71,7 +63,7 @@ void ItemPropView::loadAppearanceProperties(nw::BaseItem type)
                 model = toolset().get_layered_models(bi_info->item_class.view());
             }
         }
-        int index = find_index(model, obj_->model_parts[nw::ItemModelParts::model1]);
+        int index = findStandardItemIndex(model, obj_->model_parts[nw::ItemModelParts::model1]);
         auto p = makeEnumProperty("Model", index, model, new_appearance);
         p->on_set = [this, model](const QVariant& value) {
             auto idx = model->index(value.toInt(), 0);
@@ -109,7 +101,7 @@ void ItemPropView::loadAppearanceProperties(nw::BaseItem type)
                 auto color_proxy = new VariantListFilterProxyModel(obj_->model_parts[part_number] / 10, Qt::UserRole + 2, this); \
                 color_proxy->setSourceModel(color_model); \
                 auto top = makeGroup(name, new_appearance); \
-                int index = find_index(top_model, obj_->model_parts[part_number] / 10); \
+                int index = findStandardItemIndex(top_model, obj_->model_parts[part_number] / 10); \
                 auto m = makeEnumProperty("Model", index, top_model, top); \
                 m->on_set = [this, model = top_model, color_proxy](const QVariant& value) { \
                           auto idx = model->index(value.toInt(), 0); \
@@ -119,7 +111,7 @@ void ItemPropView::loadAppearanceProperties(nw::BaseItem type)
                           color_proxy->setTargetValue(model->data(idx, Qt::UserRole + 1).toInt()); \
                           emit updateModel(); \
                   }; \
-                index = find_index(color_model, obj_->model_parts[part_number] % 10); \
+                index = findStandardItemIndex(color_model, obj_->model_parts[part_number] % 10); \
                 index = mapSourceRowToProxyRow(color_model, color_proxy, index); \
                 auto c = makeEnumProperty("Color", index, color_proxy, top); \
                 c->on_set = [this, model = color_proxy](const QVariant& value) { \
@@ -145,7 +137,7 @@ void ItemPropView::loadAppearanceProperties(nw::BaseItem type)
         // clang-format off
 #define ADD_ARMOR_PART(name, part_number, part_model) \
         do { \
-                int index = find_index(part_model, obj_->model_parts[part_number]); \
+                int index = findStandardItemIndex(part_model, obj_->model_parts[part_number]); \
                 Property* property = makeEnumProperty(name, index, part_model, new_appearance); \
                 property->on_set = [this, model = part_model](const QVariant& value) { \
                           auto idx = model->index(value.toInt(), 0); \
