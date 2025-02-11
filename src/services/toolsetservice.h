@@ -56,6 +56,7 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<RuleTypeModel<nw::BaseItemInfo>> baseitem_model;
     std::unique_ptr<RuleFilterProxyModel> class_filter;
     std::unique_ptr<RuleTypeModel<nw::ClassInfo>> class_model;
+    std::unique_ptr<QStandardItemModel> loadscreens_model;
     std::unique_ptr<RuleFilterProxyModel> phenotype_filter;
     std::unique_ptr<RuleTypeModel<nw::PhenotypeInfo>> phenotype_model;
     std::unique_ptr<RuleFilterProxyModel> placeable_filter;

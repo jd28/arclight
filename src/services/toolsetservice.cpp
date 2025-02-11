@@ -12,8 +12,32 @@
 
 #include <QCoreApplication>
 #include <QObject>
+#include <QPainter>
 #include <QStandardItemModel>
 #include <QStringListModel>
+
+QImage merge_loadscreen_image(const QImage& image)
+{
+    int width = image.width();
+    int height = image.height();
+
+    int halfHeight = height / 2;
+
+    QImage result(int(width * 1.5), halfHeight, QImage::Format_ARGB32);
+    result.fill(Qt::transparent);
+
+    QPainter painter(&result);
+    painter.drawImage(QRect(width / 2, 0, width, halfHeight),
+        image,
+        QRect(0, 0, width, halfHeight));
+
+    painter.drawImage(QRect(0, 0, width, halfHeight),
+        image,
+        QRect(0, halfHeight, width, halfHeight));
+    painter.end();
+
+    return result;
+}
 
 const std::type_index ToolsetService::type_index{typeid(ToolsetService)};
 
@@ -68,6 +92,46 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     class_filter->sort(0);
     class_model->moveToThread(QCoreApplication::instance()->thread());
     class_filter->moveToThread(QCoreApplication::instance()->thread());
+    std::string temp_string;
+    int temp_int;
+    auto loadscreens = nw::kernel::twodas().get("loadscreens");
+    loadscreens_model = std::make_unique<QStandardItemModel>();
+    for (size_t i = 0; i < loadscreens->rows(); ++i) {
+        QString name;
+        if (loadscreens->get_to(i, "StrRef", temp_int)) {
+            name = to_qstring(nw::kernel::strings().get(temp_int));
+        } else if (loadscreens->get_to(i, "Label", temp_string)) {
+            name = to_qstring(temp_string);
+        }
+        if (name.isEmpty()) { continue; }
+
+        if (!loadscreens->get_to(i, "BMPResRef", temp_string)) { continue; }
+
+        auto resref = nw::Resref{temp_string};
+        auto item = new QStandardItem(name);
+        auto rdata = nw::kernel::resman().demand_in_order(nw::Resref(resref),
+            {nw::ResourceType::dds, nw::ResourceType::tga});
+
+        if (rdata.bytes.size()) {
+            nw::Image icon{std::move(rdata)};
+            QImage image(icon.release(), icon.width(), icon.height(), icon.channels() == 4 ? QImage::Format_RGBA8888 : QImage::Format_RGB888,
+                [](void* bytes) { if (bytes) { free(bytes); } });
+
+            // stb automatically flips standard dds and tga,
+            // so here for bioware dds which is implemented a bit differently
+            // needs to be flipped back to right side up.
+            if (icon.is_bio_dds()) {
+                image.mirror();
+            }
+
+            image = merge_loadscreen_image(image);
+            item->setIcon(QIcon(QPixmap::fromImage(image)));
+        }
+
+        item->setData(int(i));
+        loadscreens_model->appendRow(item);
+    }
+    loadscreens_model->moveToThread(QCoreApplication::instance()->thread());
 
     phenotype_model.reset(new RuleTypeModel<nw::PhenotypeInfo>(&nw::kernel::rules().phenotypes.entries, QCoreApplication::instance()));
     phenotype_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));

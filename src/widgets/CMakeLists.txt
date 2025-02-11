@@ -66,6 +66,9 @@ add_library(arclight-widgets STATIC
     strreftextedit.ui
     comboboxdelegate.h
     comboboxdelegate.cpp
+    loadscreensview.cpp
+    loadscreensview.h
+    loadscreensview.ui
     spinboxdelegate.h
     spinboxdelegate.cpp
     textboxdialog.h
