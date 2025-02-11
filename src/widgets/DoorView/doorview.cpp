@@ -2,6 +2,7 @@
 #include "ui_doorview.h"
 
 #include "../VariableTableView/variabletableview.h"
+#include "../loadscreensview.h"
 #include "../strreftextedit.h"
 #include "../util/strings.h"
 #include "doorgeneralview.h"
@@ -28,13 +29,20 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
 
     ui->setupUi(this);
     auto width = qApp->primaryScreen()->geometry().width();
-    ui->splitter->setSizes(QList<int>() << width * 1 / 3 << width * 2 / 3);
+    ui->splitter->setSizes(QList<int>() << width * 6 / 10 << width * 4 / 10);
 
     auto general = new DoorGeneralView(obj_, this);
+    general->setEnabled(!readOnly());
     ui->tabWidget->addTab(general, "General");
+    addTab(general);
 
-    auto description = new StrrefTextEdit(this);
-    description->setLocstring(obj->description);
+    auto loadscreens = new LoadscreensView(obj_->loadscreen, this);
+    loadscreens->setEnabled(!readOnly());
+    ui->tabWidget->addTab(loadscreens, tr("Loadscreens"));
+    addTab(loadscreens);
+    connect(loadscreens, &LoadscreensView::valueChanged, this, [this](int value) {
+        obj_->loadscreen = uint16_t(value);
+    });
 
     auto variables = new VariableTableView(this);
     variables->setEnabled(!readOnly());
@@ -43,11 +51,15 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     connect(variables, &VariableTableView::modificationChanged, this, &DoorView::onModificationChanged);
     addTab(variables);
 
+    auto description = new StrrefTextEdit(this);
+    description->setLocstring(obj->description);
     ui->tabWidget->addTab(description, "Description");
+
     auto comments = new QTextEdit(this);
     comments->setText(to_qstring(obj_->common.comment));
     ui->tabWidget->addTab(comments, "Comments");
 
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DoorView::onTabChanged);
     connect(ui->openGLWidget, &BasicModelView::initialized, this, &DoorView::loadModel);
     connect(general, &DoorGeneralView::appearanceChanged, this, &DoorView::loadModel);
 }
@@ -86,4 +98,9 @@ void DoorView::loadModel()
             throw std::runtime_error("[door] failed to load doortypes.2da");
         }
     }
+}
+
+void DoorView::onTabChanged(int index)
+{
+    // ui->openGLWidget->setHidden(index == 1);
 }

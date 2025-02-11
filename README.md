@@ -126,7 +126,9 @@ A tree view for NWN dialogs.  See dlg above.
 
 A widget for doors
 
-![door](screenshots/door-view-2024-06-14.png)
+![door](screenshots/door-view-2025-02-11.png)
+
+![door](screenshots/door-loadscreen-2025-02-11.png)
 
 ### Item View
 

@@ -1,12 +1,15 @@
 #include "doorgeneralview.h"
 #include "ui_doorgeneralview.h"
 
+#include "../../services/toolsetservice.h"
+#include "../statictwodamodel.h"
+#include "../util/itemmodels.h"
 #include "../util/strings.h"
+#include "../util/undocommands.h"
 #include "doorproperties.h"
 
 #include "nw/formats/Image.hpp"
 #include "nw/kernel/Resources.hpp"
-#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Door.hpp"
 
@@ -38,6 +41,8 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, ArclightView* parent)
                 QRect rect(0, 0, 64, 100); // This is specific to medium portraits
                 qi = qi.copy(rect);
                 ui->portrait->setPixmap(QPixmap::fromImage(qi));
+            } else {
+                ui->portrait->setPixmap(QPixmap(":/images/portrait_placeholder.png"));
             }
         }
     } else {
@@ -49,64 +54,12 @@ DoorGeneralView::DoorGeneralView(nw::Door* obj, ArclightView* parent)
     ui->resref->setText(to_qstring(obj->common.resref.view()));
     ui->resref->setEnabled(obj->common.resref.empty());
     ui->properties->setObject(obj_);
+    ui->properties->setUndoStack(undoStack());
 
-    auto doortypes = nw::kernel::twodas().get("doortypes");
-    if (doortypes) {
-        int name;
-        std::string model;
-        int added = 0;
-        for (size_t i = 0; i < doortypes->rows(); ++i) {
-            if (!doortypes->get_to(i, "StringRefGame", name)) { continue; }
-            ui->appearance->addItem(to_qstring(nw::kernel::strings().get(uint32_t(name))), int(i));
-            ++i;
-            if (obj_->appearance == i) {
-                ui->appearance->setCurrentIndex(added);
-            }
-            ++added;
-        }
-    } else {
-        throw std::runtime_error("[door] failed to load doortypes.2da");
-    }
-    // Not sorting the appearance combo due to special "Use Generic Doors"
-
-    auto genericdoors = nw::kernel::twodas().get("genericdoors");
-    if (genericdoors) {
-        int name;
-        std::string model;
-        int added = 0;
-        for (size_t i = 0; i < genericdoors->rows(); ++i) {
-            if (!genericdoors->get_to(i, "Name", name)) { continue; }
-            ui->generic->addItem(to_qstring(nw::kernel::strings().get(uint32_t(name))), int(i));
-            ++i;
-            if (obj_->generic_type == i) {
-                ui->generic->setCurrentIndex(added);
-            }
-            ++added;
-        }
-    } else {
-        throw std::runtime_error("[door] failed to load genericdoors.2da");
-    }
-    ui->generic->model()->sort(0);
-    ui->generic->setEnabled(obj_->appearance == 0);
-
-    connect(ui->appearance, &QComboBox::currentIndexChanged, this, &DoorGeneralView::onAppearanceChanged);
-    connect(ui->generic, &QComboBox::currentIndexChanged, this, &DoorGeneralView::onGenericChanged);
+    connect(ui->properties, &DoorProperties::appearanceChanged, this, &DoorGeneralView::appearanceChanged);
 }
 
 DoorGeneralView::~DoorGeneralView()
 {
     delete ui;
-}
-
-void DoorGeneralView::onAppearanceChanged(int value)
-{
-    obj_->appearance = static_cast<uint32_t>(ui->appearance->itemData(value).toInt());
-    ui->generic->setEnabled(obj_->appearance == 0);
-    emit appearanceChanged();
-}
-
-void DoorGeneralView::onGenericChanged(int value)
-{
-    obj_->generic_type = static_cast<uint32_t>(ui->generic->itemData(value).toInt());
-    emit appearanceChanged();
 }

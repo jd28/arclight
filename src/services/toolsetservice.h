@@ -1,6 +1,8 @@
 #ifndef TOOLSETSERVICE_H
 #define TOOLSETSERVICE_H
 
+#include "../widgets/proxymodels.h"
+#include "../widgets/statictwodamodel.h"
 #include "rulesetmodels.h"
 
 #include "nw/config.hpp"
@@ -56,6 +58,10 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<RuleTypeModel<nw::BaseItemInfo>> baseitem_model;
     std::unique_ptr<RuleFilterProxyModel> class_filter;
     std::unique_ptr<RuleTypeModel<nw::ClassInfo>> class_model;
+    std::unique_ptr<EmptyFilterProxyModel> doortypes_filter;
+    std::unique_ptr<StaticTwoDAModel> doortypes_model;
+    std::unique_ptr<EmptyFilterProxyModel> genericdoors_filter;
+    std::unique_ptr<StaticTwoDAModel> genericdoors_model;
     std::unique_ptr<QStandardItemModel> loadscreens_model;
     std::unique_ptr<RuleFilterProxyModel> phenotype_filter;
     std::unique_ptr<RuleTypeModel<nw::PhenotypeInfo>> phenotype_model;

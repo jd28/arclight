@@ -3,6 +3,7 @@
 #include "nw/kernel/FactionSystem.hpp"
 #include "nw/kernel/Resources.hpp"
 #include "nw/kernel/Rules.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 
 #include <absl/container/btree_map.h>
@@ -92,6 +93,26 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     class_filter->sort(0);
     class_model->moveToThread(QCoreApplication::instance()->thread());
     class_filter->moveToThread(QCoreApplication::instance()->thread());
+
+    auto doortypes = nw::kernel::twodas().get("doortypes");
+    auto name_col = int(doortypes->column_index("StringRefGame"));
+    doortypes_model.reset(new StaticTwoDAModel(doortypes, name_col));
+    doortypes_model->setColumns({name_col});
+    doortypes_filter = std::make_unique<EmptyFilterProxyModel>(0);
+    doortypes_filter->setSourceModel(doortypes_model.get());
+    doortypes_model->moveToThread(QCoreApplication::instance()->thread());
+    doortypes_filter->moveToThread(QCoreApplication::instance()->thread());
+
+    auto genericdoors = nw::kernel::twodas().get("genericdoors");
+    name_col = int(genericdoors->column_index("Name"));
+    genericdoors_model = std::make_unique<StaticTwoDAModel>(genericdoors, name_col);
+    genericdoors_model->setColumns({name_col});
+    genericdoors_filter = std::make_unique<EmptyFilterProxyModel>(0);
+    genericdoors_filter->setSourceModel(genericdoors_model.get());
+    genericdoors_filter->sort(0);
+    genericdoors_model->moveToThread(QCoreApplication::instance()->thread());
+    genericdoors_filter->moveToThread(QCoreApplication::instance()->thread());
+
     std::string temp_string;
     int temp_int;
     auto loadscreens = nw::kernel::twodas().get("loadscreens");
@@ -156,6 +177,7 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
 
     trap_model = std::make_unique<RuleTypeModel<nw::TrapInfo>>(&nw::kernel::rules().traps.entries,
         QCoreApplication::instance());
+    trap_model->moveToThread(QCoreApplication::instance()->thread());
 
     gender_basic_model.reset(new QStringListModel(QCoreApplication::instance()));
     gender_basic_model->setStringList(QStringList()

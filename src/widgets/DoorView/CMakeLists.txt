@@ -10,6 +10,8 @@ add_library(DoorView STATIC
     doorview.h
     doorview.cpp
     doorview.ui
+
+    ../../resources.qrc
 )
 
 target_compile_definitions(DoorView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
@@ -30,14 +32,12 @@ target_include_directories(DoorView SYSTEM PRIVATE
 
 target_link_libraries(DoorView PRIVATE
     arclight-widgets
-    arclight-external
     nw
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
     Qt6::OpenGL
     Qt6::OpenGLWidgets
-    nw
     renderer
     VariableTableView
 )

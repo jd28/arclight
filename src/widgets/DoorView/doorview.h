@@ -25,6 +25,9 @@ public:
 public slots:
     void loadModel();
 
+private slots:
+    void onTabChanged(int index);
+
 private:
     Ui::DoorView* ui;
     nw::Door* obj_ = nullptr;

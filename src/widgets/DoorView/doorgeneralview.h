@@ -22,10 +22,6 @@ public:
 signals:
     void appearanceChanged();
 
-private slots:
-    void onAppearanceChanged(int value);
-    void onGenericChanged(int value);
-
 private:
     Ui::DoorGeneralView* ui = nullptr;
     nw::Door* obj_ = nullptr;
