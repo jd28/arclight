@@ -42,6 +42,8 @@ add_library(arclight-widgets STATIC
     util/objects.h
     util/strings.cpp
     util/strings.h
+    util/undocommands.cpp
+    util/undocommands.h
 
     checkboxdelegate.h
     checkboxdelegate.cpp
