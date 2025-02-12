@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>resources/images/mvpal_armor01.png</file>
-        <file>resources/images/mvpal_cloth.png</file>
-        <file>resources/images/mvpal_hair.png</file>
-        <file>resources/images/mvpal_leather.png</file>
-        <file>resources/images/mvpal_skin.png</file>
-    </qresource>
-</RCC>

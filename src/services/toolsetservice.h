@@ -54,6 +54,8 @@ struct ToolsetService : public nw::kernel::Service {
     // All the below models should be considered lagically const,
     // once created they need to be moved on the main thread,
     // or issues will arise.
+    std::unique_ptr<RuleFilterProxyModel> appearances_filter;
+    std::unique_ptr<RuleTypeModel<nw::AppearanceInfo>> appearances_model;
     std::unique_ptr<RuleFilterProxyModel> baseitem_filter;
     std::unique_ptr<RuleTypeModel<nw::BaseItemInfo>> baseitem_model;
     std::unique_ptr<RuleFilterProxyModel> class_filter;
@@ -67,8 +69,15 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<RuleTypeModel<nw::PhenotypeInfo>> phenotype_model;
     std::unique_ptr<RuleFilterProxyModel> placeable_filter;
     std::unique_ptr<RuleTypeModel<nw::PlaceableInfo>> placeable_model;
+    std::unique_ptr<RuleFilterProxyModel> race_filter;
+    std::unique_ptr<RuleTypeModel<nw::RaceInfo>> race_model;
     std::unique_ptr<QStandardItemModel> faction_model;
     std::unique_ptr<RuleTypeModel<nw::TrapInfo>> trap_model;
+    std::unique_ptr<QStandardItemModel> creaturespeed_model;
+    std::unique_ptr<QStandardItemModel> packages_model;
+    std::unique_ptr<QStandardItemModel> ranges_model;
+    std::unique_ptr<QStandardItemModel> tails_model;
+    std::unique_ptr<QStandardItemModel> wings_model;
 
     absl::flat_hash_map<std::string, CompositeModels> composite_model_map;
     absl::flat_hash_map<std::string, std::unique_ptr<QStandardItemModel>> simple_model_map;

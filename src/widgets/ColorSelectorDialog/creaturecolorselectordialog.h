@@ -3,7 +3,12 @@
 
 #include "nw/objects/Appearance.hpp"
 
+namespace nw {
+struct Creature;
+}
+
 class CreatureColorSelectorView;
+class QUndoStack;
 
 #include <QDialog>
 
@@ -11,7 +16,7 @@ class CreatureColorSelectionDialog : public QDialog {
     Q_OBJECT
 
 public:
-    CreatureColorSelectionDialog(QWidget* parent = nullptr);
+    CreatureColorSelectionDialog(nw::Creature* obj, QUndoStack* undo, QWidget* parent = nullptr);
 
     CreatureColorSelectorView* selector() const noexcept { return selector_; }
 

@@ -14,7 +14,7 @@ add_library(ColorSelectorDialog STATIC
     creaturecolorselectorview.cpp
     creaturecolorselectorview.ui
 
-    resources.qrc
+    ../../resources.qrc
 )
 
 target_compile_definitions(ColorSelectorDialog PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

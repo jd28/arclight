@@ -80,6 +80,13 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     nw::kernel::resman().visit(model_filter, {nw::ResourceType::mdl});
     std::sort(body_part_models.begin(), body_part_models.end());
 
+    appearances_model.reset(new RuleTypeModel<nw::AppearanceInfo>(&nw::kernel::rules().appearances.entries, QCoreApplication::instance()));
+    appearances_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    appearances_filter->setSourceModel(appearances_model.get());
+    appearances_filter->sort(0);
+    appearances_model->moveToThread(QCoreApplication::instance()->thread());
+    appearances_filter->moveToThread(QCoreApplication::instance()->thread());
+
     baseitem_model.reset(new RuleTypeModel<nw::BaseItemInfo>(&nw::kernel::rules().baseitems.entries, QCoreApplication::instance()));
     baseitem_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     baseitem_filter->setSourceModel(baseitem_model.get());
@@ -168,6 +175,13 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     placeable_model->moveToThread(QCoreApplication::instance()->thread());
     placeable_filter->moveToThread(QCoreApplication::instance()->thread());
 
+    race_model.reset(new RuleTypeModel<nw::RaceInfo>(&nw::kernel::rules().races.entries, QCoreApplication::instance()));
+    race_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    race_filter->setSourceModel(race_model.get());
+    race_filter->sort(0);
+    race_model->moveToThread(QCoreApplication::instance()->thread());
+    race_filter->moveToThread(QCoreApplication::instance()->thread());
+
     faction_model = std::make_unique<QStandardItemModel>();
     for (auto& faction : nw::kernel::factions().all()) {
         auto item = new QStandardItem(to_qstring(faction));
@@ -178,6 +192,83 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     trap_model = std::make_unique<RuleTypeModel<nw::TrapInfo>>(&nw::kernel::rules().traps.entries,
         QCoreApplication::instance());
     trap_model->moveToThread(QCoreApplication::instance()->thread());
+
+    auto creaturespeed = nw::kernel::twodas().get("creaturespeed");
+    creaturespeed_model = std::make_unique<QStandardItemModel>();
+    for (size_t i = 0; i < creaturespeed->rows(); ++i) {
+        int temp;
+        if (creaturespeed->get_to(i, "Name", temp)) {
+            auto item = new QStandardItem(to_qstring(nw::kernel::strings().get(temp)));
+            item->setData(int(i));
+            creaturespeed_model->appendRow(item);
+        }
+    }
+    creaturespeed_model->sort(0);
+    creaturespeed_model->moveToThread(QCoreApplication::instance()->thread());
+
+    auto packages = nw::kernel::twodas().get("packages");
+    packages_model = std::make_unique<QStandardItemModel>();
+    for (size_t i = 0; i < packages->rows(); ++i) {
+        int name, package_class;
+        if (packages->get_to(i, "Name", name)
+            && packages->get_to(i, "ClassID", package_class)) {
+            auto item = new QStandardItem(to_qstring(nw::kernel::strings().get(name)));
+            item->setData(int(i), Qt::UserRole + 1);
+            item->setData(package_class, Qt::UserRole + 2);
+            packages_model->appendRow(item);
+        }
+    }
+    packages_model->sort(0);
+    packages_model->moveToThread(QCoreApplication::instance()->thread());
+
+    auto ranges = nw::kernel::twodas().get("ranges");
+    ranges_model = std::make_unique<QStandardItemModel>();
+    for (size_t i = 0; i < ranges->rows(); ++i) {
+        int temp;
+        if (ranges->get_to(i, "Name", temp)) {
+            auto item = new QStandardItem(to_qstring(nw::kernel::strings().get(temp)));
+            item->setData(int(i));
+            ranges_model->appendRow(item);
+        }
+    }
+    ranges_model->sort(0);
+    ranges_model->moveToThread(QCoreApplication::instance()->thread());
+
+    auto tailmodel_2da = nw::kernel::twodas().get("tailmodel");
+    tails_model = std::make_unique<QStandardItemModel>();
+
+    {
+        auto item = new QStandardItem("-- None --");
+        item->setData(0);
+        tails_model->appendRow(item);
+    }
+
+    for (size_t i = 1; i < tailmodel_2da->rows(); ++i) {
+        if (!tailmodel_2da->get_to(i, "LABEL", temp_string) || temp_string.empty()) { continue; }
+        auto item = new QStandardItem(to_qstring(temp_string));
+        item->setData(int(i));
+        tails_model->appendRow(item);
+    }
+    tails_model->sort(0, Qt::AscendingOrder);
+    tails_model->moveToThread(QCoreApplication::instance()->thread());
+
+    auto wingmodel_2da = nw::kernel::twodas().get("wingmodel");
+    wings_model = std::make_unique<QStandardItemModel>();
+
+    {
+        auto item = new QStandardItem("-- None --");
+        item->setData(0);
+        wings_model->appendRow(item);
+    }
+
+    for (size_t i = 1; i < wingmodel_2da->rows(); ++i) {
+        if (!wingmodel_2da->get_to(i, "LABEL", temp_string) || temp_string.empty()) { continue; }
+        auto item = new QStandardItem(to_qstring(temp_string));
+        item->setData(int(i));
+        wings_model->appendRow(item);
+    }
+    wings_model->sort(0, Qt::AscendingOrder);
+    wings_model->moveToThread(QCoreApplication::instance()->thread());
 
     gender_basic_model.reset(new QStringListModel(QCoreApplication::instance()));
     gender_basic_model->setStringList(QStringList()

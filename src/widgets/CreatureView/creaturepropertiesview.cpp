@@ -1,27 +1,19 @@
 #include "creaturepropertiesview.h"
 
+#include "../../services/toolsetservice.h"
+#include "../util/itemmodels.h"
+#include "../util/strings.h"
+
+#include "nw/kernel/FactionSystem.hpp"
+#include "nw/kernel/Rules.hpp"
+#include "nw/kernel/Strings.hpp"
 #include "nw/objects/Creature.hpp"
 
-#include "qtpropertybrowser/qtpropertybrowser.h"
-#include "qtpropertybrowser/qtpropertymanager.h"
-#include "util/strings.h"
-
-#include <nw/kernel/FactionSystem.hpp>
-#include <nw/kernel/Rules.hpp>
-#include <nw/kernel/Strings.hpp>
-#include <nw/kernel/TwoDACache.hpp>
-
-#include <QGridLayout>
-#include <QHeaderView>
-#include <QTableWidget>
+#include <QStandardItemModel>
 
 CreaturePropertiesView::CreaturePropertiesView(QWidget* parent)
-    : PropertiesView(parent)
+    : PropertyBrowser(parent)
 {
-    connect(bools(), &QtBoolPropertyManager::propertyChanged, this, &CreaturePropertiesView::onPropertyChanged);
-    connect(enums(), &QtEnumPropertyManager::propertyChanged, this, &CreaturePropertiesView::onPropertyChanged);
-    connect(ints(), &QtIntPropertyManager::propertyChanged, this, &CreaturePropertiesView::onPropertyChanged);
-    connect(strings(), &QtStringPropertyManager::propertyChanged, this, &CreaturePropertiesView::onPropertyChanged);
 }
 
 CreaturePropertiesView::~CreaturePropertiesView()
@@ -32,245 +24,147 @@ void CreaturePropertiesView::setCreature(nw::Creature* obj)
 {
     obj_ = obj;
     loadProperties();
-
-    QGridLayout* layout = new QGridLayout(this);
-    layout->addWidget(editor());
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
-}
-
-void CreaturePropertiesView::onPropertyChanged(QtProperty* prop)
-{
-    auto it = prop_func_map_.find(prop);
-    if (it == std::end(prop_func_map_)) { return; }
-    it.value()(prop);
 }
 
 void CreaturePropertiesView::loadAbilities()
 {
-    QtProperty* grp = addGroup("Abilities");
-    QList<QtProperty*> entries;
+    Property* grp = makeGroup("Abilities");
 
-    entries << addPropertyInt("Strength", obj_->stats.abilities_[0], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[0] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
+#define ADD_ABILIITY_PROPERTY(name, loc)               \
+    do {                                               \
+        auto p = makeIntegerProperty(name, loc, grp);  \
+        p->int_config.min = 3;                         \
+        p->int_config.max = 255;                       \
+        p->on_set = [this](const QVariant& value) {    \
+            loc = static_cast<uint8_t>(value.toInt()); \
+            emit reloadStats(); /* clazy:skip */       \
+        };                                             \
+    } while (0)
 
-    entries << addPropertyInt("Dexterity", obj_->stats.abilities_[1], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[1] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
+    ADD_ABILIITY_PROPERTY("Strength", obj_->stats.abilities_[0]);
+    ADD_ABILIITY_PROPERTY("Dexterity", obj_->stats.abilities_[1]);
+    ADD_ABILIITY_PROPERTY("Constituion", obj_->stats.abilities_[2]);
+    ADD_ABILIITY_PROPERTY("Intelligence", obj_->stats.abilities_[3]);
+    ADD_ABILIITY_PROPERTY("Wisdom", obj_->stats.abilities_[4]);
+    ADD_ABILIITY_PROPERTY("Charisma", obj_->stats.abilities_[5]);
 
-    entries << addPropertyInt("Constituion", obj_->stats.abilities_[2], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[2] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
+    addProperty(grp);
 
-    entries << addPropertyInt("Constituion", obj_->stats.abilities_[2], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[2] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
-
-    entries << addPropertyInt("Intelligence", obj_->stats.abilities_[3], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[3] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
-
-    entries << addPropertyInt("Wisdom", obj_->stats.abilities_[4], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[4] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
-
-    entries << addPropertyInt("Charisma", obj_->stats.abilities_[5], 3, 255);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->stats.abilities_[5] = static_cast<uint8_t>(ints()->value(prop));
-        emit updateStats();
-    });
-
-    foreach (auto& s, entries) {
-        grp->addSubProperty(s);
-    }
-
-    editor()->addProperty(grp);
+#undef ADD_ABILIITY_PROPERTY
 }
 
 void CreaturePropertiesView::loadBasic()
 {
-    QtProperty* grp_basic = addGroup("Basic");
-    QList<QtProperty*> basic;
+    Property* grp = makeGroup("Basic");
 
-    basic << addPropertyString("Deity", to_qstring(obj_->deity));
-    prop_func_map_.insert(basic.back(), [this](QtProperty* p) {
-        obj_->deity = strings()->value(p).toStdString();
-    });
+    auto p = makeStringProperty("Deity", to_qstring(obj_->deity), grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->deity = value.toString().toStdString();
+    };
 
-    QList<QPair<QString, int>> factions;
-    int i = 0;
-    for (const auto& fac : nw::kernel::factions().all()) {
-        factions << QPair<QString, int>{to_qstring(fac), i};
-        ++i;
-    }
+    int row = findStandardItemIndex(toolset().faction_model.get(), obj_->faction_id);
+    p = makeEnumProperty("Faction", row, toolset().faction_model.get(), grp);
+    p->on_set = [this](const QVariant& value) {
+        auto idx = toolset().faction_model->index(value.toInt(), 0);
+        obj_->faction_id = static_cast<uint16_t>(idx.data(Qt::UserRole + 1).toInt());
+    };
 
-    std::sort(factions.begin(), factions.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-    });
+    row = mapSourceRowToProxyRow(toolset().race_model.get(), toolset().race_filter.get(), *obj_->race);
+    p = makeEnumProperty("Race", row, toolset().race_filter.get(), grp);
+    p->on_set = [this](const QVariant& value) {
+        int v = mapProxyRowToSourceRow(toolset().race_filter.get(), value.toInt());
+        obj_->race = nw::Race::make(v);
+    };
 
-    QStringList names;
-    QList<QVariant> qdata;
+    p = makeStringProperty("Subrace", to_qstring(obj_->subrace), grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->subrace = value.toString().toStdString();
+    };
 
-    int faction_idx = -1;
-    i = 0;
-    foreach (const auto& r, factions) {
-        names << r.first;
-        qdata << r.second;
-        if (r.second == obj_->faction_id) {
-            LOG_F(INFO, "{} {}", r.first.toStdString(), r.second);
-            faction_idx = i;
-        }
-        ++i;
-    }
-
-    basic << addPropertyEnum("Faction", faction_idx, names, qdata);
-    prop_func_map_.insert(basic.back(), [this](QtProperty* prop) {
-        obj_->faction_id = static_cast<uint16_t>(enums()->data(prop).toInt());
-    });
-
-    QList<QPair<QString, int>> race_list;
-    for (size_t j = 0; j < nw::kernel::rules().races.entries.size(); ++j) {
-        if (nw::kernel::rules().races.entries[j].name != 0xFFFFFFFF) {
-            auto name = nw::kernel::strings().get(nw::kernel::rules().races.entries[j].name);
-            race_list.append({to_qstring(name), int(j)});
-        }
-    }
-
-    std::sort(race_list.begin(), race_list.end(), [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    QStringList rnames;
-    QList<QVariant> rdata;
-    int race_index = 0;
-    for (int j = 0; j < race_list.size(); ++j) {
-        rnames << race_list[j].first;
-        rdata << race_list[j].second;
-        if (obj_->race == nw::Race::make(race_list[j].second)) {
-            race_index = j;
-        }
-    }
-
-    basic << addPropertyEnum("Race", race_index, std::move(rnames), std::move(rdata));
-    prop_func_map_.insert(basic.back(), [this](QtProperty* prop) {
-        obj_->race = nw::Race::make(enums()->data(prop).toInt());
-        emit updateStats();
-    });
-
-    basic << addPropertyString("Subrace", to_qstring(obj_->subrace));
-    prop_func_map_.insert(basic.back(), [this](QtProperty* p) {
-        obj_->subrace = strings()->value(p).toStdString();
-    });
-
-    basic << addPropertyString("Tag", to_qstring(obj_->common.tag.view()));
-    prop_func_map_.insert(basic.back(), [this](QtProperty* p) {
-        obj_->common.tag = nw::kernel::strings().intern(strings()->value(p).toStdString());
-    });
-
-    basic << addPropertyString("Template Resref", to_qstring(obj_->common.resref.view()));
-    basic.back()->setEnabled(false);
-
-    foreach (auto& s, basic) {
-        grp_basic->addSubProperty(s);
-    }
-    editor()->addProperty(grp_basic);
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadInterface()
 {
-    QtProperty* grp = addGroup("Interface");
-    QList<QtProperty*> entries;
+    Property* grp = makeGroup("Interface");
 
-    entries << addPropertyInt("Corpse Decay Time", obj_->decay_time / 1000, {}, {});
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->decay_time = ints()->value(prop) * 1000; // Actual value is in ms
-    });
+    auto p = makeIntegerProperty("Corpse Decay Time", obj_->decay_time / 1000, grp);
+    p->int_config.min = 0;
+    p->int_config.min = INT_MAX;
+    p->on_set = [this](const QVariant& value) {
+        obj_->decay_time = value.toInt() * 1000; // Actual value is in ms
+    };
 
-    entries << addPropertyBool("Disarmable", obj_->disarmable);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->disarmable = bools()->value(prop);
-    });
+    p = makeBoolProperty("Disarmable", obj_->disarmable, grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->disarmable = value.toBool();
+    };
 
-    entries << addPropertyBool("Immortal", obj_->immortal);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->immortal = bools()->value(prop);
-    });
+    p = makeBoolProperty("Immortal", obj_->immortal, grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->immortal = value.toBool();
+    };
 
-    entries << addPropertyBool("Lootable Corpse", obj_->lootable);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->lootable = bools()->value(prop);
-    });
+    p = makeBoolProperty("Lootable Corpse", obj_->lootable, grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->lootable = value.toBool();
+    };
 
-    entries << addPropertyBool("No Permanent Death", obj_->chunk_death);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->chunk_death = bools()->value(prop);
-    });
+    p = makeBoolProperty("No Permanent Death", obj_->chunk_death, grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->chunk_death = value.toBool();
+    };
 
-    entries << addPropertyBool("Plot", obj_->plot);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->plot = bools()->value(prop);
-    });
+    p = makeBoolProperty("Plot", obj_->plot, grp);
+    p->on_set = [this](const QVariant& value) {
+        obj_->plot = value.toBool();
+    };
 
-    foreach (auto& e, entries) {
-        grp->addSubProperty(e);
-    }
-
-    editor()->addProperty(grp);
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadSaves()
 {
-    QtProperty* grp_saves = addGroup("Save Bonus");
-    QList<QtProperty*> saves;
+    Property* grp = makeGroup("Save Bonus");
 
-    saves << addPropertyInt("Fortitude", obj_->stats.save_bonus.fort, 0, 255);
-    prop_func_map_.insert(saves.back(), [this](QtProperty* prop) {
-        obj_->stats.save_bonus.fort = static_cast<int16_t>(ints()->value(prop));
-        emit updateStats();
-    });
+    auto p = makeIntegerProperty("Fortitude", obj_->stats.save_bonus.fort, grp);
+    p->int_config.min = 0;
+    p->int_config.max = 255;
+    p->on_set = [this](const QVariant& value) {
+        obj_->stats.save_bonus.fort = static_cast<int16_t>(value.toInt());
+        emit reloadStats();
+    };
 
-    saves << addPropertyInt("Reflex", obj_->stats.save_bonus.reflex, 0, 255);
-    prop_func_map_.insert(saves.back(), [this](QtProperty* prop) {
-        obj_->stats.save_bonus.reflex = static_cast<int16_t>(ints()->value(prop));
-        emit updateStats();
-    });
+    p = makeIntegerProperty("Reflex", obj_->stats.save_bonus.reflex, grp);
+    p->int_config.min = 0;
+    p->int_config.max = 255;
+    p->on_set = [this](const QVariant& value) {
+        obj_->stats.save_bonus.reflex = static_cast<int16_t>(value.toInt());
+        emit reloadStats();
+    };
 
-    saves << addPropertyInt("Will", obj_->stats.save_bonus.will, 0, 255);
-    prop_func_map_.insert(saves.back(), [this](QtProperty* prop) {
-        obj_->stats.save_bonus.will = static_cast<int16_t>(ints()->value(prop));
-        emit updateStats();
-    });
+    p = makeIntegerProperty("Will", obj_->stats.save_bonus.will, grp);
+    p->int_config.min = 0;
+    p->int_config.max = 255;
+    p->on_set = [this](const QVariant& value) {
+        obj_->stats.save_bonus.will = static_cast<int16_t>(value.toInt());
+        emit reloadStats();
+    };
 
-    foreach (auto& s, saves) {
-        grp_saves->addSubProperty(s);
-    }
-
-    editor()->addProperty(grp_saves);
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadScripts()
 {
-    QtProperty* grp = addGroup("Scripts");
-    QList<QtProperty*> entries;
+    Property* grp = makeGroup("Scripts");
 
-#define ADD_SCRIPT(name, resref)                                                 \
-    entries << addPropertyString(name, to_qstring(obj_->scripts.resref.view())); \
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {             \
-        obj_->scripts.resref = nw::Resref(strings()->value(prop).toStdString()); \
-    })
+#define ADD_SCRIPT(name, resref)                                                         \
+    do {                                                                                 \
+        auto p = makeStringProperty(name, to_qstring(obj_->scripts.resref.view()), grp); \
+        p->on_set = [this](const QVariant& value) {                                      \
+            obj_->scripts.resref = nw::Resref{value.toString().toStdString()};           \
+        };                                                                               \
+    } while (0)
 
     ADD_SCRIPT("On Blocked", on_blocked);
     ADD_SCRIPT("On Combat End Round", on_endround);
@@ -286,125 +180,55 @@ void CreaturePropertiesView::loadScripts()
     ADD_SCRIPT("On Spell Cast At", on_spell_cast_at);
     ADD_SCRIPT("On User Defined", on_user_defined);
 
-    foreach (auto& e, entries) {
-        grp->addSubProperty(e);
-    }
-
-    editor()->addProperty(grp);
-
 #undef ADD_SCRIPT
+
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadSkills()
 {
-    QtProperty* grp = addGroup("Skills");
-    QList<QtProperty*> entries;
+    Property* grp = makeGroup("Skills");
 
     int i = 0;
     for (const auto& skill : nw::kernel::rules().skills.entries) {
         if (skill.valid()) {
-            entries << addPropertyInt(to_qstring(nw::kernel::strings().get(skill.name)), obj_->stats.skills_[i], 0, 255);
-            prop_func_map_.insert(entries.back(), [this, i](QtProperty* prop) {
-                obj_->stats.skills_[i] = static_cast<uint8_t>(ints()->value(prop));
-                emit updateStats();
-            });
+            auto p = makeIntegerProperty(to_qstring(nw::kernel::strings().get(skill.name)), obj_->stats.skills_[i], grp);
+            p->int_config.min = 0;
+            p->int_config.max = 255;
+            p->on_set = [this, i](const QVariant& value) {
+                obj_->stats.skills_[i] = static_cast<uint8_t>(value.toInt());
+                emit reloadStats();
+            };
         }
         ++i;
     }
 
-    std::sort(entries.begin(), entries.end(), [](auto lhs, auto rhs) {
-        return lhs->propertyName() < rhs->propertyName();
+    std::sort(grp->children.begin(), grp->children.end(), [](auto lhs, auto rhs) {
+        return lhs->name < rhs->name;
     });
 
-    foreach (auto& s, entries) {
-        grp->addSubProperty(s);
-    }
-
-    editor()->addProperty(grp);
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadAdvanced()
 {
-    QtProperty* grp = addGroup("Advanced");
-    QList<QtProperty*> entries;
+    Property* grp = makeGroup("Advanced");
 
-    // Movement rate
-    QList<QPair<QString, int>> moverates;
-    auto creaturespeed_2da = nw::kernel::twodas().get("creaturespeed");
-    if (creaturespeed_2da) {
-        for (size_t i = 0; i < creaturespeed_2da->rows(); ++i) {
-            int name;
-            if (creaturespeed_2da->get_to(i, "Name", name)) {
-                auto string = nw::kernel::strings().get(uint32_t(name));
-                moverates << QPair<QString, int>{to_qstring(string), int(i)};
-            }
-        }
-    }
+    int row = findStandardItemIndex(toolset().creaturespeed_model.get(), obj_->walkrate);
+    auto p = makeEnumProperty("Movement Rate", row, toolset().creaturespeed_model.get(), grp);
+    p->on_set = [this](const QVariant& value) {
+        auto idx = toolset().creaturespeed_model->index(value.toInt(), 0);
+        obj_->walkrate = static_cast<uint8_t>(idx.data(Qt::UserRole + 1).toInt());
+    };
 
-    QStringList names;
-    QList<QVariant> data;
+    row = findStandardItemIndex(toolset().ranges_model.get(), obj_->perception_range);
+    p = makeEnumProperty("Perception Range", row, toolset().ranges_model.get(), grp);
+    p->on_set = [this](const QVariant& value) {
+        auto idx = toolset().ranges_model->index(value.toInt(), 0);
+        obj_->walkrate = static_cast<uint8_t>(idx.data(Qt::UserRole + 1).toInt());
+    };
 
-    std::sort(moverates.begin(), moverates.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    int creaturespeed_idx = -1;
-    int i = 0;
-    foreach (const auto& r, moverates) {
-        names << r.first;
-        data << r.second;
-        if (r.second == obj_->walkrate) {
-            creaturespeed_idx = i;
-        }
-        ++i;
-    }
-
-    entries << addPropertyEnum("Movement Rate", creaturespeed_idx, names, data);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->walkrate = static_cast<uint8_t>(enums()->data(prop).toInt());
-    });
-
-    // Perception
-    QList<QPair<QString, int>> ranges;
-    auto ranges_2da = nw::kernel::twodas().get("ranges");
-    if (ranges_2da) {
-        for (size_t j = 0; j < ranges_2da->rows(); ++j) {
-            int name;
-            if (ranges_2da->get_to(j, "Name", name)) {
-                auto string = nw::kernel::strings().get(uint32_t(name));
-                ranges << QPair<QString, int>{to_qstring(string), int(j)};
-            }
-        }
-    }
-
-    std::sort(ranges.begin(), ranges.end(), [](const auto& lhs, const auto& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    names.clear();
-    data.clear();
-
-    i = 0;
-    int ranges_idx = -1;
-    foreach (const auto& r, ranges) {
-        names << r.first;
-        data << r.second;
-        if (r.second == obj_->perception_range) {
-            ranges_idx = i;
-        }
-        ++i;
-    }
-
-    entries << addPropertyEnum("Perception Range", ranges_idx, names, data);
-    prop_func_map_.insert(entries.back(), [this](QtProperty* prop) {
-        obj_->perception_range = static_cast<uint8_t>(enums()->data(prop).toInt());
-    });
-
-    foreach (auto& e, entries) {
-        grp->addSubProperty(e);
-    }
-
-    editor()->addProperty(grp);
+    addProperty(grp);
 }
 
 void CreaturePropertiesView::loadProperties()

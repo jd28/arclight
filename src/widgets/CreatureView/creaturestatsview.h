@@ -1,7 +1,11 @@
-#ifndef CREATURESTATSVIEW_H
-#define CREATURESTATSVIEW_H
+#pragma once
 
 #include <QWidget>
+
+// Deprecated
+
+// == Forward Decls ===========================================================
+// ============================================================================
 
 namespace nw {
 struct Creature;
@@ -10,6 +14,9 @@ struct Creature;
 namespace Ui {
 class CreatureStatsView;
 }
+
+// == CreatureStatsView =======================================================
+// ============================================================================
 
 class CreatureStatsView : public QWidget {
     Q_OBJECT
@@ -33,5 +40,3 @@ private:
     Ui::CreatureStatsView* ui;
     nw::Creature* creature_ = nullptr;
 };
-
-#endif // CREATURESTATSVIEW_H

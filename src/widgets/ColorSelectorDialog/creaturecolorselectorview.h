@@ -5,19 +5,25 @@
 
 #include <QWidget>
 
+namespace nw {
+struct Creature;
+}
+
 namespace Ui {
 class CreatureColorSelector;
 }
+
+class QUndoStack;
 
 class CreatureColorSelectorView : public QWidget {
     Q_OBJECT
 
 public:
-    explicit CreatureColorSelectorView(QWidget* parent = nullptr);
+    explicit CreatureColorSelectorView(nw::Creature* obj, QUndoStack* undo = nullptr, QWidget* parent = nullptr);
     ~CreatureColorSelectorView();
 
     void setIndex(nw::CreatureColors::type index);
-    void setColors(std::array<uint8_t, 4> colors);
+    void setColor(int color, int value);
 
 public slots:
     void onColorChanelChanged(int index);
@@ -28,7 +34,8 @@ signals:
 
 private:
     Ui::CreatureColorSelector* ui;
-    std::array<uint8_t, 4> colors_;
+    nw::Creature* obj_;
+    QUndoStack* undo_;
     QPixmap mvpal_hair;
     QPixmap mvpal_skin;
 };

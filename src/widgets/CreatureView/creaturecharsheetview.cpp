@@ -2,6 +2,7 @@
 #include "ui_creaturecharsheetview.h"
 
 #include "../../services/toolsetservice.h"
+#include "../util/itemmodels.h"
 #include "../util/strings.h"
 #include "creatureview.h"
 
@@ -9,9 +10,60 @@
 #include "ZFontIcon/ZFont_fa6.h"
 
 #include "nw/kernel/Resources.hpp"
+#include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
+#include "nw/profiles/nwn1/scriptapi.hpp"
+
+#include <QStandardItemModel>
+
+// == CreaturePackageFilter ===================================================
+// ============================================================================
+
+CreatureClassFilter::CreatureClassFilter(nw::Creature* obj, int slot, QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , obj_{obj}
+    , slot_{slot}
+{
+}
+
+bool CreatureClassFilter::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+{
+    auto idx = sourceModel()->index(source_row, 0, source_parent);
+    int class_id = sourceModel()->data(idx, Qt::UserRole + 1).toInt();
+    const auto is_valid = sourceModel()->data(idx, Qt::UserRole + 2);
+
+    if (!is_valid.toBool()) { return false; }
+    if (slot_ == 0) { return true; }
+
+    // If it occupies some slot below, filter it out.
+    auto cls = nw::Class::make(class_id);
+    for (int i = slot_ - 1; i > 0; --i) {
+        if (obj_->levels.entries[i].id == cls) { return false; }
+    }
+
+    return true;
+}
+
+// == CreaturePackageFilter ===================================================
+// ============================================================================
+
+CreaturePackageFilter::CreaturePackageFilter(nw::Creature* obj, QObject* parent)
+    : QSortFilterProxyModel(parent)
+    , obj_{obj}
+{
+}
+
+bool CreaturePackageFilter::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+{
+    auto idx = sourceModel()->index(source_row, 0, source_parent);
+    int class_id = sourceModel()->data(idx, Qt::UserRole + 2).toInt();
+    return obj_->levels.level_by_class(nw::Class::make(class_id)) > 0;
+}
+
+// == CreatureCharSheetView ===================================================
+// ============================================================================
 
 CreatureCharSheetView::CreatureCharSheetView(nw::Creature* obj, CreatureView* parent)
     : ArclightTab(parent)
@@ -22,7 +74,7 @@ CreatureCharSheetView::CreatureCharSheetView(nw::Creature* obj, CreatureView* pa
     loadPortrait(obj);
     obj_ = obj;
 
-    connect(this, &CreatureCharSheetView::modified, parent, &CreatureView::onModified);
+    connect(this, &CreatureCharSheetView::modificationChanged, parent, &CreatureView::onModified);
 }
 
 CreatureCharSheetView::~CreatureCharSheetView()
@@ -50,7 +102,10 @@ void CreatureCharSheetView::loadCreature(nw::Creature* obj)
         connect(spinbox, &QSpinBox::valueChanged, this, &CreatureCharSheetView::onClassLevelChanged);
         connect(del, &QPushButton::clicked, this, &CreatureCharSheetView::onClassDeleteButtonClicked);
 
-        auto proxy = toolset().class_filter.get();
+        auto proxy = new CreatureClassFilter(obj, int(i), this);
+        cls_filters_.append(proxy);
+        proxy->setSourceModel(toolset().class_model.get());
+        proxy->sort(0);
         combobox->setModel(proxy);
 
         if (obj->levels.entries[i].id != nw::Class::invalid()) {
@@ -72,35 +127,16 @@ void CreatureCharSheetView::loadCreature(nw::Creature* obj)
         }
     }
 
-    QList<QPair<QString, int>> package_list;
-    if (auto packages_2da = nw::kernel::twodas().get("packages")) {
-        for (size_t i = 0; i < packages_2da->rows(); ++i) {
-            if (auto package_class = packages_2da->get<int32_t>(i, "ClassID")) {
-                if (obj->levels.level_by_class(nw::Class::make(*package_class)) <= 0) {
-                    continue;
-                }
-            }
-            if (auto name_id = packages_2da->get<int32_t>(i, "Name")) {
-                auto name = nw::kernel::strings().get(uint32_t(*name_id));
-                package_list.append({to_qstring(name), int(i)});
-            }
-        }
-    }
-
-    std::sort(package_list.begin(), package_list.end(), [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-        return lhs.first < rhs.first;
-    });
-
-    int package_index = 0;
-    for (int i = 0; i < package_list.size(); ++i) {
-        ui->packageComboBox->addItem(package_list[i].first, package_list[i].second);
-        if (obj->starting_package == static_cast<uint32_t>(package_list[i].second)) {
-            package_index = i;
-        }
-    }
-    ui->packageComboBox->setCurrentIndex(package_index);
+    pkg_filter_ = new CreaturePackageFilter(obj, this);
+    pkg_filter_->setSourceModel(toolset().packages_model.get());
+    pkg_filter_->sort(0);
+    ui->packages->setModel(pkg_filter_);
+    int pkg_idx = ui->packages->findData(obj->starting_package, Qt::UserRole + 1);
+    ui->packages->setCurrentIndex(pkg_idx);
 
     obj_ = obj;
+
+    loadStatsAbilities();
 }
 
 void CreatureCharSheetView::loadPortrait(nw::Creature* obj)
@@ -138,6 +174,55 @@ void CreatureCharSheetView::loadPortrait(nw::Creature* obj)
     }
 }
 
+void CreatureCharSheetView::onReloadStats()
+{
+    LOG_F(INFO, "Reloading stats...");
+    ui->stats->clear();
+    loadStatsAbilities();
+}
+
+void CreatureCharSheetView::loadStatsAbilities()
+{
+
+#define ADD_INT_STAT(name, value, grp)                             \
+    do {                                                           \
+        auto p = ui->stats->makeIntegerProperty(name, value, grp); \
+        p->read_only = true;                                       \
+    } while (0)
+
+    Property* grp_abilities = ui->stats->makeGroup("Abilities");
+    ADD_INT_STAT("Strength", nwn1::get_ability_score(obj_, nwn1::ability_strength), grp_abilities);
+    ADD_INT_STAT("Dexterity", nwn1::get_ability_score(obj_, nwn1::ability_dexterity), grp_abilities);
+    ADD_INT_STAT("Constituion", nwn1::get_ability_score(obj_, nwn1::ability_constitution), grp_abilities);
+    ADD_INT_STAT("Intelligence", nwn1::get_ability_score(obj_, nwn1::ability_intelligence), grp_abilities);
+    ADD_INT_STAT("Wisdom", nwn1::get_ability_score(obj_, nwn1::ability_wisdom), grp_abilities);
+    ADD_INT_STAT("Charisma", nwn1::get_ability_score(obj_, nwn1::ability_charisma), grp_abilities);
+    ui->stats->addProperty(grp_abilities);
+
+    Property* grp_saves = ui->stats->makeGroup("Saves");
+    ADD_INT_STAT("Fortitude", nwn1::saving_throw(obj_, nwn1::saving_throw_fort), grp_saves);
+    ADD_INT_STAT("Reflex", nwn1::saving_throw(obj_, nwn1::saving_throw_reflex), grp_saves);
+    ADD_INT_STAT("Will", nwn1::saving_throw(obj_, nwn1::saving_throw_will), grp_saves);
+    ui->stats->addProperty(grp_saves);
+
+    Property* grp_skills = ui->stats->makeGroup("Skills");
+    int i = 0;
+    for (const auto& skill : nw::kernel::rules().skills.entries) {
+        if (skill.valid()) {
+            ADD_INT_STAT(to_qstring(nw::kernel::strings().get(skill.name)),
+                nwn1::get_skill_rank(obj_, nw::Skill::make(i)), grp_skills);
+        }
+        ++i;
+    }
+
+    std::sort(grp_skills->children.begin(), grp_skills->children.end(), [](auto lhs, auto rhs) {
+        return lhs->name < rhs->name;
+    });
+    ui->stats->addProperty(grp_skills);
+
+#undef ADD_INT_STAT
+}
+
 // == Private Slots ===========================================================
 // ============================================================================
 
@@ -149,7 +234,7 @@ void CreatureCharSheetView::onClassChanged(int index)
     auto combobox_id = combobox->objectName().back().digitValue();
 
     auto class_slot = static_cast<size_t>(combobox_id - 1);
-    auto class_id = nw::Class::make(combobox->currentData().toInt());
+    auto class_id = nw::Class::make(combobox->currentData(Qt::UserRole + 1).toInt());
     bool new_class = obj_->levels.entries[class_slot].id == nw::Class::invalid();
     obj_->levels.entries[class_slot].id = class_id;
 
@@ -173,7 +258,11 @@ void CreatureCharSheetView::onClassChanged(int index)
 
         emit classAdded(class_id);
     }
-    emit modified();
+    pkg_filter_->invalidate();
+    foreach (auto it, cls_filters_) {
+        it->invalidate();
+    }
+    onReloadStats();
 }
 
 void CreatureCharSheetView::onClassDeleteButtonClicked()
@@ -211,7 +300,11 @@ void CreatureCharSheetView::onClassDeleteButtonClicked()
     // auto sb = obj_->levels.spells(last_class_id);
 
     emit classRemoved(last_class_id);
-    emit modified();
+    pkg_filter_->invalidate();
+    foreach (auto it, cls_filters_) {
+        it->invalidate();
+    }
+    onReloadStats();
 }
 
 void CreatureCharSheetView::onClassLevelChanged(int value)
@@ -221,5 +314,5 @@ void CreatureCharSheetView::onClassLevelChanged(int value)
     auto spinbox = qobject_cast<QSpinBox*>(sender());
     auto class_slot = spinbox->objectName().back().digitValue() - 1;
     obj_->levels.entries[class_slot].level = int16_t(value);
-    emit modified();
+    onReloadStats();
 }

@@ -74,7 +74,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_right.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_right.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -165,7 +165,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_armor.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_armor.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -217,7 +217,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_arrow.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_arrow.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -242,7 +242,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_sling.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_sling.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -270,7 +270,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_bolts.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_bolts.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -331,7 +331,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_left.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_left.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -362,7 +362,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_belt.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_belt.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -411,7 +411,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_helm.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_helm.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -436,7 +436,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_gloves.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_gloves.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -509,7 +509,7 @@
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources.qrc">:/resources/images/inv_slot_ring.png</pixmap>
+                  <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_ring.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>false</bool>
@@ -540,7 +540,7 @@
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="resources.qrc">:/resources/images/inv_slot_ring.png</pixmap>
+                  <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_ring.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>false</bool>
@@ -574,7 +574,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_amulet.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_amulet.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -663,7 +663,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="resources.qrc">:/resources/images/inv_slot_boots.png</pixmap>
+            <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_boots.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>false</bool>
@@ -730,7 +730,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_cre_1.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_cre_1.png</pixmap>
               </property>
              </widget>
             </item>
@@ -758,7 +758,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_cre_2.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_cre_2.png</pixmap>
               </property>
              </widget>
             </item>
@@ -798,7 +798,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_cre_3.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_cre_3.png</pixmap>
               </property>
              </widget>
             </item>
@@ -826,7 +826,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resources.qrc">:/resources/images/inv_slot_cre_skin.png</pixmap>
+               <pixmap resource="../../resources.qrc">:/resources/images/inv_slot_cre_skin.png</pixmap>
               </property>
              </widget>
             </item>
@@ -849,7 +849,9 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources.qrc"/>
+  <include location="../../resources.qrc"/>
+  <include location="../../resources.qrc"/>
+  <include location="../../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

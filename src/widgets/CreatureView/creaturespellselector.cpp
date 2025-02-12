@@ -1,10 +1,11 @@
 #include "creaturespellselector.h"
 #include "ui_creaturespellselector.h"
 
-#include "checkboxdelegate.h"
-#include "spinboxdelegate.h"
-#include "textboxdialog.h"
-#include "util/strings.h"
+#include "../checkboxdelegate.h"
+#include "../spinboxdelegate.h"
+#include "../textboxdialog.h"
+#include "../util/itemmodels.h"
+#include "../util/strings.h"
 
 #include <nw/kernel/Rules.hpp>
 #include <nw/kernel/Strings.hpp>
@@ -18,11 +19,11 @@ extern "C" {
 #include <QCheckBox>
 #include <QDialog>
 #include <QMap>
+#include <QMouseEvent>
 #include <QPair>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QTextEdit>
-
 
 inline QString metamagic_to_name(nw::MetaMagicFlag meta)
 {
@@ -56,9 +57,9 @@ inline QString generate_memorized_summary(nw::Creature* obj, nw::Class class_)
 
             if (key.second != nw::metamagic_none) {
                 result.append(QString("   %1 x %2 [%3]\n")
-                                  .arg(count)
-                                  .arg(to_qstring(nw::kernel::strings().get(sp_info->name)))
-                                  .arg(key.second != nw::metamagic_none ? metamagic_to_name(key.second) : ""));
+                        .arg(count)
+                        .arg(to_qstring(nw::kernel::strings().get(sp_info->name)))
+                        .arg(key.second != nw::metamagic_none ? metamagic_to_name(key.second) : ""));
             } else {
                 result.append(QString("   %1 x %2\n")
                                   .arg(count)
@@ -91,13 +92,132 @@ inline QString generate_known_summary(nw::Creature* obj, nw::Class class_)
     return result;
 }
 
+// == Undo Commands ===========================================================
+// ============================================================================
+
+ModifySpellCommand::ModifySpellCommand(CreatureSpellSelector* selector, CreatureSpellModel* model,
+    nw::Creature* creature, nw::Class cls, nw::Spell spell, nw::MetaMagicFlag metamagic,
+    int previous, int next, int spellLevel, int currentFilterLevel, QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , selector_(selector)
+    , model_(model)
+    , creature_(creature)
+    , class_(cls)
+    , spell_(spell)
+    , metamagic_(metamagic)
+    , previous_(previous)
+    , next_(next)
+    , spellLevel_(spellLevel)
+    , currentFilterLevel_(currentFilterLevel)
+    , row_(*spell)
+{
+    auto sp_info = nw::kernel::rules().spells.get(spell);
+    if (sp_info) {
+        setText(QString("Modify %1").arg(QString::fromUtf8(nw::kernel::strings().get(sp_info->name))));
+    }
+}
+
+void ModifySpellCommand::updateSpell(int previous, int next)
+{
+    auto spellbook = creature_->levels.spells(class_);
+    if (!spellbook) return;
+
+    auto cls = nw::kernel::rules().classes.get(class_);
+    if (!cls) return;
+
+    if (cls->memorizes_spells) {
+        if (next > previous) {
+            for (int i = 0; i < next - previous; ++i) {
+                nwn1::add_memorized_spell(creature_, class_, spell_, metamagic_);
+            }
+        } else if (next < previous) {
+            for (int i = 0; i < previous - next; ++i) {
+                int slot = spellbook->find_memorized_slot(spellLevel_, spell_, metamagic_);
+                if (slot == -1) { break; }
+                spellbook->clear_memorized_spell_slot(spellLevel_, slot);
+            }
+        }
+    } else {
+        if (next) {
+            spellbook->add_known_spell(spellLevel_, spell_);
+        } else {
+            spellbook->remove_known_spell(spellLevel_, spell_);
+        }
+    }
+
+    QModelIndex changed = model_->index(row_, 2);
+    emit model_->dataChanged(changed, changed);
+}
+
+void ModifySpellCommand::undo()
+{
+    selector_->setClass(class_);
+    selector_->setMetamagic(metamagic_);
+    selector_->setSpellFilterLevel(currentFilterLevel_);
+    updateSpell(next_, previous_);
+    selector_->setSpell(spell_);
+}
+
+void ModifySpellCommand::redo()
+{
+    selector_->setClass(class_);
+    selector_->setMetamagic(metamagic_);
+    selector_->setSpellFilterLevel(currentFilterLevel_);
+    updateSpell(previous_, next_);
+    selector_->setSpell(spell_);
+}
+
+ClearSpellsCommand::ClearSpellsCommand(CreatureSpellSelector* selector, CreatureSpellModel* model,
+    nw::Creature* creature, nw::Class cls, int spellLevel, nw::SpellBook previous, nw::SpellBook next,
+    QUndoCommand* parent)
+    : QUndoCommand(parent)
+    , selector_(selector)
+    , model_(model)
+    , creature_(creature)
+    , class_(cls)
+    , spell_level_(spellLevel)
+    , previous_{previous}
+    , next_{next}
+{
+    setText(QString("Clear Spells"));
+}
+
+void ClearSpellsCommand::notifyModelRangeChanged()
+{
+    QModelIndex topLeft = model_->index(0, 2);
+    QModelIndex bottomRight = model_->index(model_->rowCount() - 1, 2);
+    emit model_->dataChanged(topLeft, bottomRight);
+}
+
+void ClearSpellsCommand::undo()
+{
+    selector_->setClass(class_);
+    selector_->setSpellFilterLevel(spell_level_);
+    auto spellbook = creature_->levels.spells(class_);
+    if (!spellbook) return;
+    *spellbook = previous_;
+    notifyModelRangeChanged();
+}
+
+void ClearSpellsCommand::redo()
+{
+    selector_->setClass(class_);
+    selector_->setSpellFilterLevel(spell_level_);
+
+    auto spellbook = creature_->levels.spells(class_);
+    if (!spellbook) return;
+    *spellbook = next_;
+    notifyModelRangeChanged();
+}
+
 // == CreatureSpellModel ======================================================
 // ============================================================================
 
-CreatureSpellModel::CreatureSpellModel(nw::Creature* creature, nw::Class cls, QObject* parent)
+CreatureSpellModel::CreatureSpellModel(nw::Creature* creature, nw::Class cls, CreatureSpellSelector* parent)
     : QAbstractTableModel(parent)
     , creature_{creature}
     , class_{cls}
+    , parent_{parent}
 {
 }
 
@@ -202,7 +322,6 @@ bool CreatureSpellModel::setData(const QModelIndex& index, const QVariant& value
     auto sp_info = nw::kernel::rules().spells.get(spell);
     if (!sp_info) { return false; }
 
-    auto spellbook = creature_->levels.spells(class_);
     int spell_level = nw::kernel::rules().classes.get_spell_level(class_, spell);
     if (cls->memorizes_spells) {
         if (auto meta_info = nw::kernel::rules().metamagic.get(nwn1::metamagic_flag_to_idx(metamagic_))) {
@@ -212,25 +331,19 @@ bool CreatureSpellModel::setData(const QModelIndex& index, const QVariant& value
         int newval = value.toInt();
         int current = nwn1::get_available_spell_uses(creature_, class_, spell, 0, metamagic_);
 
-        if (newval > current) {
-            for (int i = 0; i < newval - current; ++i) {
-                if (!nwn1::add_memorized_spell(creature_, class_, spell, metamagic_)) {
-                    break;
-                }
-            }
-        } else if (newval < current) {
-            for (int i = 0; i < current - newval; ++i) {
-                int slot = spellbook->find_memorized_slot(spell_level, spell, metamagic_);
-                if (slot == -1) { break; }
-                spellbook->clear_memorized_spell_slot(spell_level, slot);
-            }
+        if (newval != current) {
+            parent_->undoStack()->push(new ModifySpellCommand(
+                parent_, this, creature_, class_, spell, metamagic_,
+                current, newval, spell_level, filter_level_));
         }
     } else {
-        bool add = value.toBool();
-        if (add) {
-            return spellbook->add_known_spell(spell_level, spell);
-        } else {
-            spellbook->remove_known_spell(spell_level, spell);
+        bool newval = value.toBool();
+        bool current = nwn1::get_knows_spell(creature_, class_, spell);
+
+        if (newval != current) {
+            parent_->undoStack()->push(new ModifySpellCommand(
+                parent_, this, creature_, class_, spell, metamagic_,
+                current, newval, spell_level, filter_level_));
         }
     }
 
@@ -269,6 +382,11 @@ void CreatureSpellModel::setMetaMagic(nw::MetaMagicFlag meta)
 {
     if (meta == nw::metamagic_any) { meta = nw::metamagic_none; }
     metamagic_ = meta;
+}
+
+void CreatureSpellModel::setSpellLevel(int level)
+{
+    filter_level_ = level;
 }
 
 // == CreatureSpellSortFilterProxyModel =======================================
@@ -345,8 +463,8 @@ inline void memorized_delegate_config(QSpinBox* spinBox, const QModelIndex& inde
     }
 };
 
-CreatureSpellSelector::CreatureSpellSelector(nw::Creature* creature, QWidget* parent)
-    : QWidget(parent)
+CreatureSpellSelector::CreatureSpellSelector(nw::Creature* creature, ArclightView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::CreatureSpellSelector)
     , creature_{creature}
 {
@@ -386,6 +504,7 @@ CreatureSpellSelector::CreatureSpellSelector(nw::Creature* creature, QWidget* pa
     ui->spells->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->spells->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     ui->spells->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    ui->spells->viewport()->installEventFilter(this);
 
     ui->level->addItem("All");
     for (size_t j = 0; j < nw::kernel::rules().maximum_spell_levels(); ++j) {
@@ -418,6 +537,88 @@ CreatureSpellSelector::CreatureSpellSelector(nw::Creature* creature, QWidget* pa
 CreatureSpellSelector::~CreatureSpellSelector()
 {
     delete ui;
+}
+
+void CreatureSpellSelector::refreshModel()
+{
+    emit model_->layoutChanged();
+    ui->spells->viewport()->update();
+}
+
+void CreatureSpellSelector::setClass(nw::Class cls)
+{
+    if (class_ == cls) { return; }
+
+    class_ = cls;
+    int index = ui->classes->findData(*class_);
+    if (index >= 0) {
+        ui->classes->setCurrentIndex(index);
+    }
+    model_->setClass(class_);
+}
+
+void CreatureSpellSelector::setMetamagic(nw::MetaMagicFlag metamagic)
+{
+    if (metamagic_ == metamagic) { return; }
+    auto meta_idx = nwn1::metamagic_flag_to_idx(metamagic);
+    if (meta_idx == nw::MetaMagic::invalid()) {
+        ui->metamagic->setCurrentIndex(0);
+    } else {
+        int index = ui->metamagic->findData(*meta_idx);
+        LOG_F(INFO, "new index: {}, metamagic: {}", index, *metamagic);
+        if (index >= 0) {
+            ui->metamagic->setCurrentIndex(index);
+        }
+    }
+    model_->setMetaMagic(metamagic);
+}
+
+void CreatureSpellSelector::setSpell(nw::Spell spell)
+{
+    int row = mapSourceRowToProxyRow(model_, proxy_, *spell);
+    if (row >= 0) {
+        QModelIndex index = proxy_->index(row, 0);
+        ui->spells->selectionModel()->clear();
+        QItemSelection selection(index, proxy_->index(row, proxy_->columnCount() - 1));
+
+        ui->spells->selectionModel()->select(selection,
+            QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        ui->spells->selectionModel()->setCurrentIndex(index,
+            QItemSelectionModel::Current | QItemSelectionModel::Rows);
+
+        if (!ui->spells->viewport()->rect().intersects(ui->spells->visualRect(index))) {
+            ui->spells->scrollTo(index, QAbstractItemView::PositionAtCenter);
+        }
+
+        ui->spells->setFocus();
+    }
+}
+
+void CreatureSpellSelector::setSpellFilterLevel(int level)
+{
+    if (level == ui->level->currentIndex()) { return; }
+    ui->level->setCurrentIndex(level);
+}
+
+bool CreatureSpellSelector::eventFilter(QObject* object, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonRelease) {
+        auto mouseEvent = static_cast<QMouseEvent*>(event);
+        QModelIndex index = ui->spells->indexAt(mouseEvent->pos());
+        if (index.isValid() && index.column() == 2) {
+            auto cls = nw::kernel::rules().classes.get(class_);
+            if (!cls) return false;
+
+            if (cls->memorizes_spells) {
+                ui->spells->edit(index);
+            } else {
+                bool currentValue = index.data(Qt::DisplayRole).toBool();
+                ui->spells->model()->setData(index, !currentValue);
+            }
+            return true;
+        }
+    }
+    return ArclightTab::eventFilter(object, event);
 }
 
 void CreatureSpellSelector::onClassChanged(int currentIndex)
@@ -457,10 +658,12 @@ void CreatureSpellSelector::onClearClicked()
 
     auto spellbook = creature_->levels.spells(class_);
     auto spell_level = ui->level->currentIndex() - 1;
+    auto previous = *spellbook;
+    auto next = *spellbook;
 
     int i = 0;
     if (cls->memorizes_spells) {
-        for (auto& it : spellbook->memorized_) {
+        for (auto& it : next.memorized_) {
             if (spell_level == -1 || spell_level == i) {
                 for (auto& entry : it) {
                     entry = nw::SpellEntry{};
@@ -469,7 +672,7 @@ void CreatureSpellSelector::onClearClicked()
             ++i;
         }
     } else {
-        for (auto& it : spellbook->known_) {
+        for (auto& it : next.known_) {
             if (spell_level == -1 || spell_level == i) {
                 it.clear();
             }
@@ -477,10 +680,9 @@ void CreatureSpellSelector::onClearClicked()
         }
     }
 
-    auto topLeft = model_->index(0, 2);
-    auto bottomRight = model_->index(model_->rowCount(), 2);
-    emit model_->dataChanged(topLeft, bottomRight);
-    ui->spells->viewport()->update();
+    undoStack()->push(new ClearSpellsCommand(
+        this, model_, creature_, class_,
+        ui->level->currentIndex(), previous, next));
 }
 
 void CreatureSpellSelector::onFilterChanged(const QString& text)
@@ -504,6 +706,7 @@ void CreatureSpellSelector::onMetaMagicChanged(int currentIndex)
 void CreatureSpellSelector::onSpellLevelChanged(int currentIndex)
 {
     proxy_->setFilterSpellLevel(currentIndex - 1);
+    model_->setSpellLevel(currentIndex); // This is to reset the spell level combobox on undo/redo
 }
 
 void CreatureSpellSelector::onSummaryClicked()

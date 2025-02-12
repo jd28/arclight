@@ -36,7 +36,7 @@
   <customwidget>
    <class>BasicModelView</class>
    <extends>QOpenGLWidget</extends>
-   <header>renderer/basicmodelview.h</header>
+   <header>../renderer/basicmodelview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

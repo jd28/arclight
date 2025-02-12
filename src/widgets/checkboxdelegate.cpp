@@ -11,30 +11,6 @@ CheckBoxDelegate::CheckBoxDelegate(QObject* parent)
 {
 }
 
-bool CheckBoxDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
-{
-    Q_UNUSED(option);
-
-    if ((event->type() == QEvent::MouseButtonRelease) || (event->type() == QEvent::MouseButtonDblClick)) {
-        auto* mouse_event = static_cast<QMouseEvent*>(event);
-        if (mouse_event->button() != Qt::LeftButton || !checkboxRect(option).contains(mouse_event->pos())) {
-            return false;
-        }
-        if (event->type() == QEvent::MouseButtonDblClick) {
-            return false;
-        }
-    } else if (event->type() == QEvent::KeyPress) {
-        if (static_cast<QKeyEvent*>(event)->key() != Qt::Key_Space && static_cast<QKeyEvent*>(event)->key() != Qt::Key_Select) {
-            return false;
-        }
-    } else {
-        return false;
-    }
-
-    bool checked = index.data(Qt::DisplayRole).toBool();
-    return model->setData(index, !checked, Qt::EditRole);
-}
-
 void CheckBoxDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     bool checked = index.model()->data(index, Qt::DisplayRole).toBool();

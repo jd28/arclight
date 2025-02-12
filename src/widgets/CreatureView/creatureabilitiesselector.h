@@ -1,11 +1,11 @@
-#ifndef CREATUREABILITIESSELECTOR_H
-#define CREATUREABILITIESSELECTOR_H
+#pragma once
+
+#include "../arclighttab.h"
 
 #include "nw/rules/Class.hpp"
 
 #include <QAbstractTableModel>
 #include <QSortFilterProxyModel>
-#include <QWidget>
 
 namespace nw {
 struct Creature;
@@ -24,7 +24,7 @@ class CreatureAbilitiesModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    CreatureAbilitiesModel(nw::Creature* creature, QObject* parent = nullptr);
+    CreatureAbilitiesModel(nw::Creature* creature, QUndoStack* undo, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = {}) const override;
     int columnCount(const QModelIndex& parent = {}) const override;
@@ -36,7 +36,8 @@ public:
         int role = Qt::EditRole) override;
 
 private:
-    nw::Creature* creature_;
+    nw::Creature* creature_ = nullptr;
+    QUndoStack* undo_ = nullptr;
 };
 
 // == CreatureAbilitiesSortFilterProxyModel ===================================
@@ -61,11 +62,11 @@ private:
 // == CreatureAbilitiesSelector ============================================
 // ============================================================================
 
-class CreatureAbilitiesSelector : public QWidget {
+class CreatureAbilitiesSelector : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit CreatureAbilitiesSelector(nw::Creature* obj, QWidget* parent = nullptr);
+    explicit CreatureAbilitiesSelector(nw::Creature* obj, ArclightView* parent = nullptr);
     ~CreatureAbilitiesSelector();
 
 private slots:
@@ -80,5 +81,3 @@ private:
     SpinBoxDelegate* level_delegate_ = nullptr;
     SpinBoxDelegate* uses_delegate_ = nullptr;
 };
-
-#endif // CREATUREABILITIESSELECTOR_H

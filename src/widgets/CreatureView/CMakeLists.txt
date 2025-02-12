@@ -17,14 +17,14 @@ add_library(CreatureView STATIC
     creaturefeatselector.cpp
     creaturefeatselector.h
     creaturefeatselector.ui
-    creaturefeatselectormodel.cpp
-    creaturefeatselectormodel.h
-    creaturefeatselectormodel.h
     creatureinventorypanel.cpp
     creatureinventorypanel.h
     creatureinventorypanel.ui
     creaturepartsview.cpp
     creaturepartsview.h
+    creaturepropertiestab.cpp
+    creaturepropertiestab.h
+    creaturepropertiestab.ui
     creaturepropertiesview.cpp
     creaturepropertiesview.h
     creaturespellselector.cpp
@@ -37,14 +37,13 @@ add_library(CreatureView STATIC
     creatureview.h
     creatureview.ui
 
-    resources.qrc
+    ../../resources.qrc
 )
 
 target_compile_definitions(CreatureView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(CreatureView PRIVATE
     ./
-    ../
 )
 
 target_include_directories(CreatureView SYSTEM PRIVATE

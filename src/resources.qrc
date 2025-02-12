@@ -8,5 +8,27 @@
         <file>resources/icons/nwn1-install-disk2.ico</file>
         <file>resources/icons/nwn1-install-disk1.ico</file>
         <file>resources/images/portrait_placeholder.png</file>
+        <file>resources/images/inv_slot_sling.png</file>
+        <file>resources/images/inv_slot_ring.png</file>
+        <file>resources/images/inv_slot_right.png</file>
+        <file>resources/images/inv_slot_left.png</file>
+        <file>resources/images/inv_slot_helm.png</file>
+        <file>resources/images/inv_slot_gloves.png</file>
+        <file>resources/images/inv_slot_cre_skin.png</file>
+        <file>resources/images/inv_slot_cre_3.png</file>
+        <file>resources/images/inv_slot_cre_2.png</file>
+        <file>resources/images/inv_slot_cre_1.png</file>
+        <file>resources/images/inv_slot_cloak.png</file>
+        <file>resources/images/inv_slot_boots.png</file>
+        <file>resources/images/inv_slot_bolts.png</file>
+        <file>resources/images/inv_slot_belt.png</file>
+        <file>resources/images/inv_slot_arrow.png</file>
+        <file>resources/images/inv_slot_armor.png</file>
+        <file>resources/images/inv_slot_amulet.png</file>
+        <file>resources/images/mvpal_skin.png</file>
+        <file>resources/images/mvpal_leather.png</file>
+        <file>resources/images/mvpal_hair.png</file>
+        <file>resources/images/mvpal_cloth.png</file>
+        <file>resources/images/mvpal_armor01.png</file>
     </qresource>
 </RCC>

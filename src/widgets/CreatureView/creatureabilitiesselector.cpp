@@ -1,9 +1,10 @@
 #include "creatureabilitiesselector.h"
 #include "ui_creatureabilitiesselector.h"
 
-#include "spinboxdelegate.h"
-#include "textboxdialog.h"
-#include "util/strings.h"
+#include "../ArclightView.h"
+#include "../spinboxdelegate.h"
+#include "../textboxdialog.h"
+#include "../util/strings.h"
 
 #include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
@@ -15,6 +16,99 @@ extern "C" {
 }
 
 #include <QSpinBox>
+#include <QUndoCommand>
+
+class CreatureAbilitiesModel;
+
+class SetSpecialAbilityLevelCommand : public QUndoCommand {
+public:
+    SetSpecialAbilityLevelCommand(CreatureAbilitiesModel* model, nw::Creature* obj,
+        nw::Spell spell, int previous, int next)
+        : model_(model)
+        , obj_(obj)
+        , spell_(spell)
+        , previous_(previous)
+        , next_(next)
+        , row_(*spell)
+    {
+        auto sp = nw::kernel::rules().spells.get(spell);
+        if (sp) {
+            setText(QString("Set %1 level to %2")
+                    .arg(QString::fromUtf8(nw::kernel::strings().get(sp->name)))
+                    .arg(next_));
+        }
+    }
+
+    void undo() override
+    {
+        nwn1::set_special_ability_level(obj_, spell_, previous_);
+        notifyModel();
+    }
+
+    void redo() override
+    {
+        nwn1::set_special_ability_level(obj_, spell_, next_);
+        notifyModel();
+    }
+
+private:
+    void notifyModel()
+    {
+        if (model_) {
+            QModelIndex index = model_->index(row_, 2);
+            emit model_->dataChanged(index, index);
+        }
+    }
+
+    CreatureAbilitiesModel* model_;
+    nw::Creature* obj_;
+    nw::Spell spell_;
+    int previous_;
+    int next_;
+    int row_;
+};
+
+class SetSpecialAbilityUsesCommand : public QUndoCommand {
+public:
+    SetSpecialAbilityUsesCommand(CreatureAbilitiesModel* model, nw::Creature* obj,
+        nw::Spell spell, int previous, int next)
+        : model_(model)
+        , obj_(obj)
+        , spell_(spell)
+        , previous_(previous)
+        , next_(next)
+        , row_(*spell)
+    {
+    }
+
+    void undo() override
+    {
+        nwn1::set_special_ability_uses(obj_, spell_, previous_);
+        notifyModel();
+    }
+
+    void redo() override
+    {
+        nwn1::set_special_ability_uses(obj_, spell_, next_);
+        notifyModel();
+    }
+
+private:
+    void notifyModel()
+    {
+        if (model_) {
+            QModelIndex index = model_->index(row_, 3);
+            emit model_->dataChanged(index, index);
+        }
+    }
+
+    CreatureAbilitiesModel* model_;
+    nw::Creature* obj_;
+    nw::Spell spell_;
+    int previous_;
+    int next_;
+    int row_;
+};
 
 inline QString generate_abilities_summary(nw::Creature* obj)
 {
@@ -41,9 +135,10 @@ inline QString generate_abilities_summary(nw::Creature* obj)
 // == CreatureAbilitiesModel ==================================================
 // ============================================================================
 
-CreatureAbilitiesModel::CreatureAbilitiesModel(nw::Creature* creature, QObject* parent)
+CreatureAbilitiesModel::CreatureAbilitiesModel(nw::Creature* creature, QUndoStack* undo, QObject* parent)
     : QAbstractTableModel(parent)
     , creature_{creature}
+    , undo_{undo}
 {
 }
 
@@ -134,21 +229,30 @@ Qt::ItemFlags CreatureAbilitiesModel::flags(const QModelIndex& index) const
 
 bool CreatureAbilitiesModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-    if (role != Qt::EditRole || index.column() < 2)
-        return false;
+    if (role != Qt::EditRole || index.column() < 2) { return false; }
 
     auto spell = nw::Spell::make(index.row());
     auto sp = nw::kernel::rules().spells.get(spell);
-    if (!sp || !sp->valid()) { return {}; }
+    if (!sp || !sp->valid()) { return false; }
 
-    int newval = value.toInt();
+    int next = value.toInt();
 
     if (index.column() == 2) {
-        nwn1::set_special_ability_level(creature_, spell, newval);
-        return true;
+        int previous = nwn1::get_special_ability_level(creature_, spell);
+        if (previous != next) {
+            auto* selector = qobject_cast<CreatureAbilitiesSelector*>(parent());
+            if (selector) {
+                selector->undoStack()->push(
+                    new SetSpecialAbilityLevelCommand(this, creature_, spell, previous, next));
+            }
+            return true;
+        }
     } else if (index.column() == 3) {
-        nwn1::set_special_ability_uses(creature_, spell, newval);
-        return true;
+        int previous = nwn1::get_special_ability_uses(creature_, spell);
+        if (previous != next) {
+            undo_->push(new SetSpecialAbilityUsesCommand(this, creature_, spell, previous, next));
+            return true;
+        }
     }
 
     return false;
@@ -224,15 +328,14 @@ inline void uses_delegate_config(QSpinBox* spinBox, const QModelIndex& index)
     spinBox->setMaximum(100); // Dunno?
 };
 
-CreatureAbilitiesSelector::CreatureAbilitiesSelector(nw::Creature* obj, QWidget* parent)
-    : QWidget(parent)
+CreatureAbilitiesSelector::CreatureAbilitiesSelector(nw::Creature* obj, ArclightView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::CreatureAbilitiesSelector)
     , obj_{obj}
 {
     ui->setupUi(this);
 
-    // Set up model and proxy
-    model_ = new CreatureAbilitiesModel(obj_, this);
+    model_ = new CreatureAbilitiesModel(obj_, undoStack(), this);
     proxy_ = new CreatureAbilitiesSortFilterProxyModel(this);
     proxy_->setSourceModel(model_);
     ui->abilities->setModel(proxy_);

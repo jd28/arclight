@@ -1,9 +1,9 @@
 #ifndef CREATUREAPPEARANCEVIEW_H
 #define CREATUREAPPEARANCEVIEW_H
 
-#include <nw/objects/Appearance.hpp>
+#include "../arclighttab.h"
 
-#include <QWidget>
+#include <nw/objects/Appearance.hpp>
 
 namespace nw {
 struct Creature;
@@ -13,25 +13,20 @@ namespace Ui {
 class CreatureAppearanceView;
 }
 
-class CreatureAppearanceView : public QWidget {
+class CreatureAppearanceView : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit CreatureAppearanceView(nw::Creature* creature, QWidget* parent = nullptr);
+    explicit CreatureAppearanceView(nw::Creature* obj, ArclightView* parent = nullptr);
     ~CreatureAppearanceView();
 
 public slots:
-    void onAppearanceChange(int index);
     void onColorChanged(int color, int value);
     void onOpenColorSelector();
-    void onPhenotypeChanged(int index);
-
-signals:
-    emit void dataChanged();
 
 private:
     Ui::CreatureAppearanceView* ui;
-    nw::Creature* creature_ = nullptr;
+    nw::Creature* obj_ = nullptr;
     bool is_dynamic_ = false;
     QPixmap mvpal_hair;
     QPixmap mvpal_skin;

@@ -3,8 +3,11 @@
 
 #include "nw/objects/Creature.hpp"
 
-CreatureInventoryPanel::CreatureInventoryPanel(QWidget* parent)
-    : QWidget(parent)
+// == CreatureInventoryPanel ==================================================
+// ============================================================================
+
+CreatureInventoryPanel::CreatureInventoryPanel(ArclightView* parent)
+    : ArclightTab(parent)
     , ui(new Ui::CreatureInventoryPanel)
 {
     ui->setupUi(this);

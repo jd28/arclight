@@ -83,40 +83,7 @@ Camera Controls:
 
 A view of NWN containers.  See erfheder above.
 
-### Creature View - Properties
-
-The place to edit most things about a creature.  NOTE: Not yet complete.
-
-![props](screenshots/creture-view-props-2024-11-11.png)
-
-### Creature View - Stats
-
-To those familiar, this is essentially a copy of axs' modified toolset layout.  Expanded
-class selection to 8 classes as NWN:EE allows.
-
-![stats](screenshots/creature-view-stats.png)
-
-### Creature View - Feats
-
-Feat selection with handy fuzzy searching.
-
-![feats](screenshots/creature-view-feats.png)
-
-### Creature View - Inventory
-
-![inventory](screenshots/creature-inventory-view-2024-11-04.png)
-
-### Creature View - Appearance
-
-![appearance](screenshots/creature-view-appearance-2024-11-27.gif)
-
-### Creature View - Spells
-
-![spells](screenshots/creature-view-spells-2025-01-20.gif)
-
-### Creature View - Special Abilities
-
-![special_abilities](screenshots/creature-view-special-abilities-2025-01-23.png)
+![props](screenshots/creture-view-2025-02-15.png)
 
 ### Dialog View
 

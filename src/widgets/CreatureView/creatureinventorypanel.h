@@ -1,7 +1,9 @@
-#ifndef CREATUREINVENTORYPANEL_H
-#define CREATUREINVENTORYPANEL_H
+#pragma once
 
-#include <QWidget>
+#include "../arclighttab.h"
+
+// == Forward Decls ===========================================================
+// ============================================================================
 
 namespace nw {
 struct Creature;
@@ -13,11 +15,14 @@ namespace Ui {
 class CreatureInventoryPanel;
 }
 
-class CreatureInventoryPanel : public QWidget {
+// == CreatureInventoryPanel ==================================================
+// ============================================================================
+
+class CreatureInventoryPanel : public ArclightTab {
     Q_OBJECT
 
 public:
-    explicit CreatureInventoryPanel(QWidget* parent = nullptr);
+    explicit CreatureInventoryPanel(ArclightView* parent = nullptr);
     ~CreatureInventoryPanel();
 
     void setCreature(nw::Creature* creature);
@@ -25,5 +30,3 @@ public:
 private:
     Ui::CreatureInventoryPanel* ui;
 };
-
-#endif // CREATUREINVENTORYPANEL_H

@@ -11,8 +11,6 @@ set(SRC_FILES
     toolsetprofile.h
 
     ${CMAKE_SOURCE_DIR}/external/ZFontIcon/ZFontIcon/Fonts.qrc
-    ${CMAKE_SOURCE_DIR}/src/widgets/ColorSelectorDialog/resources.qrc
-    ${CMAKE_SOURCE_DIR}/src/widgets/CreatureView/resources.qrc
     ${CMAKE_SOURCE_DIR}/src/resources.qrc
 
 )
