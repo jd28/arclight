@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/icons/nwn1.ico</file>
+        <file>resources/icons/nwn1-x3-patch-1_69.ico</file>
+        <file>resources/icons/nwn1-x2-hotu.ico</file>
+        <file>resources/icons/nwn1-x1-sou.ico</file>
+        <file>resources/icons/nwn1-toolset.ico</file>
+        <file>resources/icons/nwn1-install-disk2.ico</file>
+        <file>resources/icons/nwn1-install-disk1.ico</file>
+        <file>resources/images/portrait_placeholder.png</file>
+    </qresource>
+</RCC>
