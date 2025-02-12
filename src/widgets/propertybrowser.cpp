@@ -297,6 +297,31 @@ void PropertyModel::addProperty(Property* prop, Property* parent)
     endInsertRows();
 }
 
+void PropertyModel::deleteProperty(Property* prop)
+{
+    if (!prop) { return; }
+
+    QModelIndex index = indexForProperty(prop);
+    if (index.isValid()) {
+        if (prop->parent) {
+            int row = int(prop->parent->children.indexOf(prop));
+            if (row >= 0) {
+                beginRemoveRows(indexForProperty(prop->parent), row, row);
+                prop->parent->children.removeAt(row);
+                endRemoveRows();
+            }
+        } else {
+            int row = int(properties_.indexOf(prop));
+            if (row >= 0) {
+                beginRemoveRows(QModelIndex(), row, row);
+                properties_.removeAt(row);
+                endRemoveRows();
+            }
+        }
+    }
+    delete prop;
+}
+
 QModelIndex PropertyModel::indexForProperty(Property* prop) const
 {
     if (!prop) { return QModelIndex(); }
@@ -613,6 +638,14 @@ void PropertyBrowser::addProperty(Property* prop)
         QModelIndex nameColIndex = model_->index(propIndex.row(), PropertyModel::ColumnName, propIndex.parent());
         expandRecursively(nameColIndex);
     }
+}
+
+void PropertyBrowser::clear()
+{
+    delete model_;
+    model_ = new PropertyModel(this);
+    setModel(model_);
+    setItemDelegateForColumn(PropertyModel::ColumnValue, new PropertyDelegate(this));
 }
 
 void PropertyBrowser::expandAll()

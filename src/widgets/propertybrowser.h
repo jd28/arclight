@@ -210,6 +210,7 @@ public:
     ~PropertyModel();
 
     void addProperty(Property* prop, Property* parent = nullptr);
+    void deleteProperty(Property* prop);
     QModelIndex indexForProperty(Property* prop) const;
     void removeProperty(Property* prop);
     void replaceProperty(Property* old, Property* replacement);
@@ -245,6 +246,7 @@ public:
     Property* makeStringProperty(QString name, QString value, Property* parent = nullptr);
 
     void addProperty(Property* prop);
+    void clear();
     void expandAll();
     PropertyModel* model() const noexcept;
     void setUndoStack(QUndoStack* undo);
