@@ -48,7 +48,6 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     variables->setEnabled(!readOnly());
     variables->setLocals(&obj_->common.locals);
     ui->tabWidget->addTab(variables, tr("Variables"));
-    connect(variables, &VariableTableView::modificationChanged, this, &DoorView::onModificationChanged);
     addTab(variables);
 
     auto description = new StrrefTextEdit(this);

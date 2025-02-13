@@ -9,6 +9,7 @@ class ArclightTab : public QWidget {
     Q_OBJECT
 public:
     explicit ArclightTab(ArclightView* parent = nullptr);
+    ~ArclightTab();
 
     bool modified() const noexcept;
     QUndoStack* undoStack() const noexcept;

@@ -13,6 +13,7 @@ ArclightView::ArclightView(QWidget* parent)
 
 void ArclightView::addTab(ArclightTab* tab)
 {
+    connect(tab, &ArclightTab::modificationChanged, this, &ArclightView::onModificationChanged);
     tabs_.append(tab);
 }
 

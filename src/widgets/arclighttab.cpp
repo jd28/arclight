@@ -23,6 +23,11 @@ ArclightTab::ArclightTab(ArclightView* parent)
     undo_->setClean();
 }
 
+ArclightTab::~ArclightTab()
+{
+    disconnect(undo_, &QUndoStack::cleanChanged, this, nullptr);
+}
+
 bool ArclightTab::modified() const noexcept
 {
     return modified_;

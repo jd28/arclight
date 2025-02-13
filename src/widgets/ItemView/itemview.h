@@ -15,9 +15,6 @@ class ItemView;
 
 class InventoryView;
 
-class QtProperty;
-class QtIntPropertyManager;
-class QtStringPropertyManager;
 class QUndoStack;
 
 
