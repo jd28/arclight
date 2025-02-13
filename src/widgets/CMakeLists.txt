@@ -59,8 +59,8 @@ add_library(arclight-widgets STATIC
     arclighttreeview.cpp
     strreflineedit.h
     strreflineedit.cpp
-    propertiesview.h
-    propertiesview.cpp
+
+
     strreftextedit.h
     strreftextedit.cpp
     strreftextedit.ui
@@ -94,6 +94,5 @@ target_link_libraries(arclight-widgets PRIVATE
     arclight-external
     arclight-services
     WaitingSpinnerWidget
-    qtpropertybrowser
     Qt6::Widgets
 )

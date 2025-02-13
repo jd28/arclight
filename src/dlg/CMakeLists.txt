@@ -53,7 +53,6 @@ target_link_libraries(dlg PRIVATE
     nw
     sqlite3
     arclight-external
-    qtpropertybrowser
     DialogView
     Qt6::Widgets
     Qt6::Multimedia

@@ -56,7 +56,6 @@ target_link_libraries(arclight PUBLIC
     nw
     sqlite3
     arclight-external
-    qtpropertybrowser
     LanguageMenu
     AreaView
     ColorSelectorDialog
