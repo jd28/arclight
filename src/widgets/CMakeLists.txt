@@ -23,6 +23,7 @@ add_subdirectory(renderer)
 add_subdirectory(TlkView)
 add_subdirectory(TriggerView)
 add_subdirectory(VariableTableView)
+add_subdirectory(WaypointView)
 add_subdirectory(QtWaitingSpinner)
 
 add_library(arclight-widgets STATIC

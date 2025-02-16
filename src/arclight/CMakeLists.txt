@@ -70,6 +70,7 @@ target_link_libraries(arclight PUBLIC
     TriggerView
     VariableTableView
     WaitingSpinnerWidget
+    WaypointView
     Qt6::Widgets
     Qt6::Multimedia
 )
