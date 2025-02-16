@@ -62,6 +62,7 @@ target_link_libraries(arclight PUBLIC
     CreatureView
     DialogView
     DoorView
+    EncounterView
     ItemView
     PlaceableView
     VariableTableView

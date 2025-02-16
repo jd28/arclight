@@ -8,6 +8,7 @@
 #include "widgets/DialogView/dialogmodel.h"
 #include "widgets/DialogView/dialogview.h"
 #include "widgets/DoorView/doorview.h"
+#include "widgets/EncounterView/encounterview.h"
 #include "widgets/ItemView/itemview.h"
 #include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
@@ -105,6 +106,11 @@ void MainWindow::loadCallbacks()
     type_to_view_.emplace(nw::ResourceType::utd,
         [this](nw::Resource res) -> ArclightView* {
             auto tv = new DoorView(res, this);
+            return tv;
+        });
+    type_to_view_.emplace(nw::ResourceType::ute,
+        [this](nw::Resource res) -> ArclightView* {
+            auto tv = new EncounterView(res, this);
             return tv;
         });
     type_to_view_.emplace(nw::ResourceType::utp,
