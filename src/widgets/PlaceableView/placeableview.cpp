@@ -38,7 +38,7 @@ PlaceableView::PlaceableView(nw::Placeable* obj, QWidget* parent)
 
     inventory_ = new InventoryView(this);
     inventory_->setEnabled(!readOnly() && obj_->has_inventory);
-    inventory_->setObject(obj_);
+    inventory_->setObject(obj_, &obj_->inventory);
     inventory_->setDragEnabled(false);
     ui->tabWidget->addTab(inventory_, tr("Inventory"));
 

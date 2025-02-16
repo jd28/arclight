@@ -234,7 +234,7 @@ bool ProjectModel::canDropMimeData(const QMimeData* data, Qt::DropAction action,
     if (row != -1) { return false; }
 
     auto parent_node = reinterpret_cast<ProjectItem*>(parent.internalPointer());
-    Q_ASSERT(parent_node);
+    if (!parent_node) { return false; } // [TODO] Resasses this later
 
     if (parent_node->is_folder_) {
         return true;

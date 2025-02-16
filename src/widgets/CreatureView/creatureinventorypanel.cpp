@@ -23,5 +23,5 @@ CreatureInventoryPanel::~CreatureInventoryPanel()
 void CreatureInventoryPanel::setCreature(nw::Creature* creature)
 {
     ui->equips->setCreature(creature);
-    ui->inventory->setObject(creature);
+    ui->inventory->setObject(creature, &creature->inventory);
 }

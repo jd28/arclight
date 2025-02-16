@@ -2,6 +2,7 @@
 #include "ui_inventoryview.h"
 
 #include "../CreatureView/creatureequipview.h"
+#include "../checkboxdelegate.h"
 #include "../projectview.h"
 #include "../util/objects.h"
 #include "../util/strings.h"
@@ -10,6 +11,7 @@
 #include "ZFontIcon/ZFont_fa6.h"
 
 #include "nw/kernel/Objects.hpp"
+#include "nw/kernel/Rules.hpp"
 #include "nw/kernel/Strings.hpp"
 #include "nw/log.hpp"
 #include "nw/objects/Creature.hpp"
@@ -30,85 +32,69 @@ InventoryTable::InventoryTable(QWidget* parent)
 
 void InventoryTable::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton && dragEnabled()) {
-        QModelIndex index = indexAt(event->pos());
-        auto idx = model()->index(index.row(), 0, index.parent());
-        if (index.isValid()) {
-            QMimeData* mimeData = new QMimeData();
-            nw::Item* item = reinterpret_cast<nw::Item*>(idx.internalPointer());
-            mimeData->setData("application/x-inventory-item", serialize_obj_handle(item->handle()));
+    if (event->button() == Qt::LeftButton) {
+        auto model = static_cast<InventoryModel*>(this->model());
+        if (!model || !model->object()) {
+            QTableView::mousePressEvent(event);
+            return;
+        }
 
-            QPixmap img = model()->data(idx, Qt::DecorationRole).value<QPixmap>();
-            QPoint hotspot = QPoint(img.width() / 2, img.height() / 2);
+        if (model->object()->as_creature() && dragEnabled()) {
+            QModelIndex index = indexAt(event->pos());
+            auto idx = model->index(index.row(), 0, index.parent());
+            if (index.isValid()) {
+                QMimeData* mimeData = new QMimeData();
+                nw::Item* item = reinterpret_cast<nw::Item*>(idx.internalPointer());
+                mimeData->setData("application/x-inventory-item", serialize_obj_handle(item->handle()));
 
-            QDrag* drag = new QDrag(this);
-            drag->setMimeData(mimeData);
-            drag->setPixmap(img);
-            drag->setHotSpot(hotspot);
-            drag->exec(Qt::MoveAction);
+                QPixmap img = model->data(idx, Qt::DecorationRole).value<QPixmap>();
+                QPoint hotspot = QPoint(img.width() / 2, img.height() / 2);
+
+                QDrag* drag = new QDrag(this);
+                drag->setMimeData(mimeData);
+                drag->setPixmap(img);
+                drag->setHotSpot(hotspot);
+                drag->exec(Qt::MoveAction);
+                return;
+            }
         }
     }
     QTableView::mousePressEvent(event);
 }
 
-void InventoryTable::dragEnterEvent(QDragEnterEvent* event)
+void InventoryTable::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (event->source() == this) {
-        event->ignore();
-    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
-        event->acceptProposedAction();
-    } else if (event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
-        QByteArray data_ = event->mimeData()->data("application/x-arclight-projectitem");
-        QDataStream stream(&data_, QIODevice::ReadOnly);
-        qint64 senderPid;
-        stream >> senderPid;
-        if (senderPid != QCoreApplication::applicationPid()) {
-            event->ignore();
-            return;
-        }
+    if (event->button() == Qt::LeftButton) {
+        QModelIndex index = indexAt(event->pos());
+        auto model = static_cast<InventoryModel*>(this->model());
 
-        qlonglong ptr;
-        stream >> ptr;
-        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
-        if (!node) {
-            event->ignore();
-            return;
-        }
-        if (node->res_.type == nw::ResourceType::uti) {
-            event->acceptProposedAction();
+        if (index.isValid() && index.column() == 3 && model && model->object() && model->object()->as_store()) {
+            bool current = model->data(index, Qt::DisplayRole).toBool();
+            // InventoryView* view = qobject_cast<InventoryView*>(parent());
+            model->setData(index, !current, Qt::EditRole);
             return;
         }
     }
+
+    QTableView::mouseReleaseEvent(event);
+}
+
+void InventoryTable::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("application/x-equip-item") || event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
+        event->acceptProposedAction();
+        return;
+    }
+    QTableView::dragEnterEvent(event);
 }
 
 void InventoryTable::dragMoveEvent(QDragMoveEvent* event)
 {
-    if (event->source() == this) {
-        event->ignore();
-    } else if (event->mimeData()->hasFormat("application/x-equip-item")) {
+    if (event->mimeData()->hasFormat("application/x-equip-item") || event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
         event->acceptProposedAction();
-    } else if (event->mimeData()->hasFormat("application/x-arclight-projectitem")) {
-        QByteArray data_ = event->mimeData()->data("application/x-arclight-projectitem");
-        QDataStream stream(&data_, QIODevice::ReadOnly);
-        qint64 senderPid;
-        stream >> senderPid;
-        if (senderPid != QCoreApplication::applicationPid()) {
-            event->ignore();
-            return;
-        }
-
-        qlonglong ptr;
-        stream >> ptr;
-        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
-        if (!node) {
-            event->ignore();
-            return;
-        }
-        if (node->res_.type == nw::ResourceType::uti) {
-            event->acceptProposedAction();
-            return;
-        }
+        return;
     }
+    QTableView::dragMoveEvent(event);
 }
 
 void InventoryTable::dropEvent(QDropEvent* event)
@@ -117,12 +103,18 @@ void InventoryTable::dropEvent(QDropEvent* event)
         QByteArray itemData = event->mimeData()->data("application/x-equip-item");
         auto item_handle = deserialize_obj_handle(itemData);
         auto item = nw::kernel::objects().get<nw::Item>(item_handle);
-        if (!item) { return; }
+        if (!item) {
+            event->ignore();
+            return;
+        }
 
         auto m = static_cast<InventoryModel*>(model());
 
         auto cre = m->object() ? m->object()->as_creature() : nullptr;
-        if (!cre) { return; }
+        if (!cre) {
+            event->ignore();
+            return;
+        }
 
         int i = 0;
         for (const auto& it : cre->equipment.equips) {
@@ -142,6 +134,7 @@ void InventoryTable::dropEvent(QDropEvent* event)
         qint64 senderPid;
         stream >> senderPid;
         if (senderPid != QCoreApplication::applicationPid()) {
+            event->ignore();
             return;
         }
 
@@ -149,36 +142,41 @@ void InventoryTable::dropEvent(QDropEvent* event)
         stream >> ptr;
         const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
         if (!node) { return; }
-        if (node->res_.type != nw::ResourceType::uti) { return; }
+        if (node->res_.type != nw::ResourceType::uti) {
+            event->ignore();
+            return;
+        }
 
-        auto item = nw::kernel::objects().load<nw::Item>(node->res_.resref);
-        if (!item) { return; }
         auto m = static_cast<InventoryModel*>(model());
+        auto item = nw::kernel::objects().load<nw::Item>(node->res_.resref);
+        if (!item) {
+            event->ignore();
+            return;
+        }
+
+        if (m->object()->as_store()) {
+            auto bi_info = nw::kernel::rules().baseitems.get(item->baseitem);
+            if (!bi_info || !bi_info->valid()) {
+                nw::kernel::objects().destroy(item->handle());
+                event->ignore();
+                return;
+            }
+            if (bi_info->store_panel != m->store_tab()) {
+                nw::kernel::objects().destroy(item->handle());
+                event->ignore();
+                return;
+            }
+        }
+
         m->addItem(item);
         resizeRowsToContents();
         event->acceptProposedAction();
+        return;
     }
+    event->ignore();
+    QTableView::dropEvent(event);
 }
 
-QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent) const
-{
-    if (!hasIndex(row, column, parent)) { return {}; }
-
-    nw::Inventory* inv = nullptr;
-    if (const auto cre = obj_->as_creature()) {
-        inv = &cre->inventory;
-    } else if (const auto it = obj_->as_item()) {
-        inv = &it->inventory;
-    } else if (const auto place = obj_->as_placeable()) {
-        inv = &place->inventory;
-    }
-    if (!inv) { return {}; }
-
-    nw::Item* item = inv->items[row].item.as<nw::Item*>();
-    if (!item) { return {}; }
-
-    return createIndex(row, column, item);
-}
 // == InventoryItemDelegate ===================================================
 // ============================================================================
 
@@ -229,74 +227,99 @@ QSize InventoryItemDelegate::sizeHint(const QStyleOptionViewItem& option, const 
 // == InventoryModel ==========================================================
 // ============================================================================
 
-InventoryModel::InventoryModel(nw::ObjectBase* obj, QObject* parent)
+InventoryModel::InventoryModel(nw::ObjectBase* obj, nw::Inventory* inventory, int store_tab, QObject* parent)
     : QAbstractTableModel(parent)
     , obj_{obj}
+    , inventory_{inventory}
+    , store_tab_{store_tab}
 {
 }
 
-QVariant InventoryModel::headerData(int section, Qt::Orientation orientation, int role) const
+void InventoryModel::addItem(nw::Item* item)
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
-        switch (section) {
-        case 0:
-            return "Icon";
-        case 1:
-            return "Name";
-        case 2:
-            return "Stack Size";
-        default:
-            return QVariant();
+    if (inventory_->can_add_item(item)) {
+        beginInsertRows(QModelIndex(), int(inventory_->items.size()), int(inventory_->items.size()));
+        inventory_->add_item(item);
+        endInsertRows();
+    }
+}
+
+nw::ObjectBase* InventoryModel::object() const noexcept
+{
+    return obj_;
+}
+
+void InventoryModel::removeItem(nw::Item* item)
+{
+    auto it = std::find_if(inventory_->items.begin(), inventory_->items.end(),
+        [item](const nw::InventoryItem& ii) { return ii.item == item; });
+
+    if (it != std::end(inventory_->items)) {
+        int index = int(std::distance(inventory_->items.begin(), it));
+        beginRemoveRows(QModelIndex(), index, index);
+        inventory_->remove_item(item);
+        endRemoveRows();
+    }
+}
+
+int InventoryModel::store_tab() const noexcept
+{
+    return store_tab_;
+}
+
+bool InventoryModel::canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
+{
+    Q_UNUSED(action);
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
+
+    if (data->hasFormat("application/x-equip-item")) {
+        return true;
+    } else if (data->hasFormat("application/x-arclight-projectitem")) {
+        QByteArray data_ = data->data("application/x-arclight-projectitem");
+        QDataStream stream(&data_, QIODevice::ReadOnly);
+        qint64 senderPid;
+        stream >> senderPid;
+        if (senderPid != QCoreApplication::applicationPid()) {
+            return false;
+        }
+
+        qlonglong ptr;
+        stream >> ptr;
+        const ProjectItem* node = reinterpret_cast<const ProjectItem*>(ptr);
+        if (!node) { return false; }
+
+        if (node->res_.type == nw::ResourceType::uti) {
+            if (store_tab_ == -1) { return true; }
+            auto item = nw::kernel::objects().load<nw::Item>(node->res_.resref);
+            if (!item) { return false; }
+            auto bi_info = nw::kernel::rules().baseitems.get(item->baseitem);
+            if (!bi_info || !bi_info->valid()) { return false; }
+            return bi_info->store_panel == store_tab_;
         }
     }
-    return QAbstractTableModel::headerData(section, orientation, role);
-}
-
-int InventoryModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    if (!obj_) { return 0; }
-
-    const nw::Inventory* inv = nullptr;
-    if (const auto cre = obj_->as_creature()) {
-        inv = &cre->inventory;
-    } else if (const auto item = obj_->as_item()) {
-        inv = &item->inventory;
-    } else if (const auto place = obj_->as_placeable()) {
-        inv = &place->inventory;
-    }
-
-    return inv ? static_cast<int>(inv->items.size()) : 0;
+    return false;
 }
 
 int InventoryModel::columnCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);
-    return 3;
+    return obj_->as_store() ? 4 : 3;
 }
 
 QVariant InventoryModel::data(const QModelIndex& index, int role) const
 {
-    const nw::Inventory* inv = nullptr;
-    if (const auto cre = obj_->as_creature()) {
-        inv = &cre->inventory;
-    } else if (const auto item = obj_->as_item()) {
-        inv = &item->inventory;
-    } else if (const auto place = obj_->as_placeable()) {
-        inv = &place->inventory;
-    }
-    if (!inv) { return {}; }
-
-    if (!obj_) { return QVariant(); }
-    if (!index.isValid() || index.row() >= static_cast<int>(inv->items.size())) {
-        return QVariant();
-    }
-
-    if (!inv->items[index.row()].item.is<nw::Item*>()) {
+    if (!obj_ || !inventory_) { return {}; }
+    if (!index.isValid() || index.row() >= static_cast<int>(inventory_->items.size())) {
         return {};
     }
 
-    const auto item = inv->items[index.row()].item.as<nw::Item*>();
+    if (!inventory_->items[index.row()].item.is<nw::Item*>()) {
+        return {};
+    }
+
+    const auto item = inventory_->items[index.row()].item.as<nw::Item*>();
     if (!item) { return {}; }
 
     switch (index.column()) {
@@ -314,6 +337,13 @@ QVariant InventoryModel::data(const QModelIndex& index, int role) const
     case 2:
         if (role == Qt::DisplayRole) {
             return item->stacksize;
+        } else if (role == Qt::TextAlignmentRole) {
+            return Qt::AlignCenter;
+        }
+        break;
+    case 3:
+        if (role == Qt::DisplayRole) {
+            return inventory_->items[index.row()].infinite;
         }
         break;
     }
@@ -326,51 +356,61 @@ Qt::ItemFlags InventoryModel::flags(const QModelIndex& index) const
     return flags;
 }
 
-void InventoryModel::addItem(nw::Item* item)
+QVariant InventoryModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    nw::Inventory* inv = nullptr;
-    if (const auto cre = obj_->as_creature()) {
-        inv = &cre->inventory;
-    } else if (const auto it = obj_->as_item()) {
-        inv = &it->inventory;
-    } else if (const auto place = obj_->as_placeable()) {
-        inv = &place->inventory;
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+        switch (section) {
+        case 0:
+            return "Icon";
+        case 1:
+            return "Name";
+        case 2:
+            return "Stack Size";
+        case 3:
+            return "Infinite";
+        default:
+            return QVariant();
+        }
     }
-    if (!inv) { return; }
-
-    if (inv->can_add_item(item)) {
-        beginInsertRows(QModelIndex(), int(inv->items.size()), int(inv->items.size()));
-        inv->add_item(item);
-        endInsertRows();
-    }
+    return QAbstractTableModel::headerData(section, orientation, role);
 }
 
-nw::ObjectBase* InventoryModel::object() const noexcept
+QModelIndex InventoryModel::index(int row, int column, const QModelIndex& parent) const
 {
-    return obj_;
+    if (!hasIndex(row, column, parent)) { return {}; }
+    if (!obj_ || !inventory_) { return {}; }
+
+    nw::Item* item = inventory_->items[row].item.as<nw::Item*>();
+    if (!item) { return {}; }
+
+    return createIndex(row, column, item);
 }
 
-void InventoryModel::removeItem(nw::Item* item)
+int InventoryModel::rowCount(const QModelIndex& parent) const
 {
-    nw::Inventory* inv = nullptr;
-    if (const auto cre = obj_->as_creature()) {
-        inv = &cre->inventory;
-    } else if (const auto it = obj_->as_item()) {
-        inv = &it->inventory;
-    } else if (const auto place = obj_->as_placeable()) {
-        inv = &place->inventory;
-    }
-    if (!inv) { return; }
+    Q_UNUSED(parent);
+    if (!obj_ || !inventory_) { return 0; }
+    return static_cast<int>(inventory_->items.size());
+}
 
-    auto it = std::find_if(inv->items.begin(), inv->items.end(),
-        [item](const nw::InventoryItem& ii) { return ii.item == item; });
-
-    if (it != std::end(inv->items)) {
-        int index = int(std::distance(inv->items.begin(), it));
-        beginRemoveRows(QModelIndex(), index, index);
-        inv->remove_item(item);
-        endRemoveRows();
+bool InventoryModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (!index.isValid() || !obj_ || !inventory_ || index.row() >= static_cast<int>(inventory_->items.size())) {
+        return false;
     }
+
+    if (role == Qt::EditRole && index.column() == 3 && obj_->as_store()) {
+        inventory_->items[index.row()].infinite = value.toBool();
+        emit dataChanged(index, index);
+        return true;
+    }
+
+    return false;
+}
+
+Qt::DropActions InventoryModel::supportedDropActions() const
+{
+    return Qt::CopyAction | Qt::MoveAction;
 }
 
 // == InventoryView ===========================================================
@@ -401,12 +441,15 @@ void InventoryView::setDragEnabled(bool value)
     ui->inventoryView->setDragEnabled(value);
 }
 
-void InventoryView::setObject(nw::ObjectBase* obj)
+void InventoryView::setObject(nw::ObjectBase* obj, nw::Inventory* inventory, int store_tab)
 {
     obj_ = obj;
-    model_ = new InventoryModel(obj_, this);
+    model_ = new InventoryModel(obj_, inventory, store_tab, this);
     ui->inventoryView->setModel(model_);
-    ui->inventoryView->setItemDelegate(new InventoryItemDelegate(this));
+    ui->inventoryView->setItemDelegateForColumn(0, new InventoryItemDelegate(this));
+    if (obj_->as_store()) {
+        ui->inventoryView->setItemDelegateForColumn(3, new CheckBoxDelegate(this));
+    }
     ui->inventoryView->setColumnWidth(0, 64);
     ui->inventoryView->setColumnWidth(2, 80);
 

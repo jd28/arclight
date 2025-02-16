@@ -12,6 +12,7 @@
 #include "widgets/ItemView/itemview.h"
 #include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
+#include "widgets/StoreView/storeview.h"
 #include "widgets/arclighttreeview.h"
 #include "widgets/arealistview.h"
 #include "widgets/explorerview.h"
@@ -19,10 +20,8 @@
 #include "widgets/util/strings.h"
 
 #include "nw/formats/Dialog.hpp"
-#include "nw/kernel/Objects.hpp"
 #include "nw/kernel/Resources.hpp"
 #include "nw/log.hpp"
-#include "nw/objects/Creature.hpp"
 #include "nw/serialization/Gff.hpp"
 
 #include <QDir>
@@ -118,7 +117,11 @@ void MainWindow::loadCallbacks()
             auto tv = new PlaceableView(res, this);
             return tv;
         });
-
+    type_to_view_.emplace(nw::ResourceType::utm,
+        [this](nw::Resource res) -> ArclightView* {
+            auto tv = new StoreView(res, this);
+            return tv;
+        });
     type_to_view_.emplace(nw::ResourceType::uti,
         [this](nw::Resource res) -> ArclightView* {
             auto tv = new ItemView(res, this);

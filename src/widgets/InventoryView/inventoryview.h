@@ -13,6 +13,7 @@ namespace nw {
 struct ObjectBase;
 struct Creature;
 enum struct EquipSlot;
+struct Inventory;
 struct Item;
 struct Placable;
 }
@@ -33,6 +34,7 @@ signals:
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
@@ -59,21 +61,27 @@ class InventoryModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    InventoryModel(nw::ObjectBase* obj, QObject* parent = nullptr);
+    InventoryModel(nw::ObjectBase* obj, nw::Inventory* inventory, int store_tab, QObject* parent = nullptr);
 
+    void addItem(nw::Item* item);
+    nw::ObjectBase* object() const noexcept;
+    void removeItem(nw::Item* item);
+    int store_tab() const noexcept;
+
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-
-    void addItem(nw::Item* item);
-    nw::ObjectBase* object() const noexcept;
-    void removeItem(nw::Item* item);
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    Qt::DropActions supportedDropActions() const override;
 
 private:
     nw::ObjectBase* obj_;
+    nw::Inventory* inventory_;
+    int store_tab_ = -1;
 };
 
 namespace Ui {
@@ -90,7 +98,7 @@ public:
     void connectSlots(CreatureEquipView* equips);
     InventoryModel* model() const noexcept { return model_; }
     void setDragEnabled(bool value);
-    void setObject(nw::ObjectBase* obj);
+    void setObject(nw::ObjectBase* obj, nw::Inventory* inventory, int store_tab = -1);
 
 public slots:
     void removeItemFromInventory(nw::Item* item);

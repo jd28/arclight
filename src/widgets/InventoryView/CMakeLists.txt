@@ -12,7 +12,6 @@ target_compile_definitions(InventoryView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)
 
 target_include_directories(InventoryView PRIVATE
     ./
-    ../
 )
 
 target_include_directories(InventoryView SYSTEM PRIVATE
