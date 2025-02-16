@@ -83,7 +83,11 @@ Camera Controls:
 
 A view of NWN containers.  See erfheder above.
 
-![props](screenshots/creture-view-2025-02-15.png)
+### Creature View 
+
+A widget for creatures
+
+![view](screenshots/creature-view-2025-02-15.gif)
 
 ### Dialog View
 
