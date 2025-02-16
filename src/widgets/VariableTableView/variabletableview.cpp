@@ -48,6 +48,7 @@ private:
     VariableTableModel* model_;
     int row_;
 };
+
 class VarTableDeleteCommand : public QUndoCommand {
 public:
     VarTableDeleteCommand(VariableTableModel* model, int row, VarTableItem* item, QUndoCommand* parent = nullptr)
@@ -76,7 +77,7 @@ public:
 private:
     VariableTableModel* model_;
     int row_;
-    VarTableItem item_; // Store a copy, no need for manual memory management
+    VarTableItem item_;
 };
 
 class VarTableModifyCommand : public QUndoCommand {
@@ -243,8 +244,7 @@ QVariant VariableTableModel::data(const QModelIndex& index, int role) const
 
 QVariant VariableTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    Q_UNUSED(orientation);
-    if (role != Qt::DisplayRole) {
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal) {
         return QVariant();
     }
 
