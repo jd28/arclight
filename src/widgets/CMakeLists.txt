@@ -21,6 +21,7 @@ add_subdirectory(SoundView)
 add_subdirectory(StoreView)
 add_subdirectory(renderer)
 add_subdirectory(TlkView)
+add_subdirectory(TriggerView)
 add_subdirectory(VariableTableView)
 add_subdirectory(QtWaitingSpinner)
 
