@@ -65,6 +65,7 @@ target_link_libraries(arclight PUBLIC
     EncounterView
     ItemView
     PlaceableView
+    SoundView
     VariableTableView
     WaitingSpinnerWidget
     Qt6::Widgets
