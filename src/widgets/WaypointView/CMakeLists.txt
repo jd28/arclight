@@ -6,6 +6,7 @@ add_library(WaypointView STATIC
     waypointview.ui
 
     ../../resources.qrc
+    waypointgeneralview.h waypointgeneralview.cpp waypointgeneralview.ui
 )
 
 target_compile_definitions(WaypointView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

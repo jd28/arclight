@@ -78,6 +78,7 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<QStandardItemModel> ranges_model;
     std::unique_ptr<QStandardItemModel> tails_model;
     std::unique_ptr<QStandardItemModel> wings_model;
+    std::unique_ptr<QStandardItemModel> waypoint_model;
 
     absl::flat_hash_map<std::string, CompositeModels> composite_model_map;
     absl::flat_hash_map<std::string, std::unique_ptr<QStandardItemModel>> simple_model_map;

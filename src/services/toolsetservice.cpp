@@ -270,6 +270,17 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     wings_model->sort(0, Qt::AscendingOrder);
     wings_model->moveToThread(QCoreApplication::instance()->thread());
 
+    auto waypoint_2da = nw::kernel::twodas().get("waypoint");
+    waypoint_model = std::make_unique<QStandardItemModel>();
+
+    for (size_t i = 1; i < waypoint_2da->rows(); ++i) {
+        if (!waypoint_2da->get_to(i, "strref", temp_int)) { continue; }
+        auto item = new QStandardItem(to_qstring(nw::kernel::strings().get(uint32_t(temp_int))));
+        item->setData(int(i));
+        waypoint_model->appendRow(item);
+    }
+    waypoint_model->moveToThread(QCoreApplication::instance()->thread());
+
     gender_basic_model.reset(new QStringListModel(QCoreApplication::instance()));
     gender_basic_model->setStringList(QStringList()
         << QStringListModel::tr("Male")
