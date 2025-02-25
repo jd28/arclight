@@ -73,6 +73,9 @@ target_link_libraries(arclight PUBLIC
     WaypointView
     Qt6::Widgets
     Qt6::Multimedia
+
+    Diligent-GraphicsEngine
+    Diligent-Common
 )
 
 if(LINUX)
@@ -85,4 +88,18 @@ if(APPLE)
 install(TARGETS arclight RUNTIME DESTINATION bin BUNDLE DESTINATION bin)
 else()
 install(TARGETS arclight)
+endif()
+
+if(WIN32)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineD3D12-static
+    )
+elseif(APPLE)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineMetal-static
+    )
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineVk-static
+    )
 endif()

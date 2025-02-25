@@ -4,3 +4,6 @@
 [submodule "external/rollnw"]
 	path = external/rollnw
 	url = https://github.com/jd28/rollnw
+[submodule "external/DiligentCore"]
+	path = external/DiligentCore
+	url = https://github.com/DiligentGraphics/DiligentCore.git

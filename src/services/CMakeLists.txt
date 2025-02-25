@@ -6,6 +6,10 @@ add_library(arclight-services
     toolsetservice.h
     rulesetmodels.cpp
     rulesetmodels.h
+    renderservice.cpp
+    renderservice.h
+    shadermanager.cpp
+    shadermanager.h
 )
 
 target_include_directories(arclight-services SYSTEM PRIVATE
@@ -24,4 +28,20 @@ target_link_libraries(arclight-services PRIVATE
     nw
     arclight-external
     Qt6::Widgets
+    Diligent-GraphicsEngine
+    Diligent-Common
 )
+
+if(WIN32)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineD3D12-static
+    )
+elseif(APPLE)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineMetal-static
+    )
+elseif(UNIX AND NOT APPLE)
+    target_link_libraries(arclight-services PRIVATE
+        Diligent-GraphicsEngineVk-static
+    )
+endif()
