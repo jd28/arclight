@@ -40,11 +40,9 @@
             }
         },
         {
-            "name": "windows",
+            "name": "windows-ninja",
             "inherits": "default",
             "generator": "Ninja",
-            "displayName": "Windows-only configuration",
-            "description": "This build is only available on Windows",
             "binaryDir": "${sourceDir}/build",
             "condition": {
                 "type": "equals",
@@ -60,10 +58,17 @@
             }
         },
         {
-            "name": "windows-debug",
-            "inherits": "windows",
+            "name": "windows-vs2019",
+            "inherits": "windows-ninja",
             "generator": "Visual Studio 16 2019",
-            "binaryDir": "${sourceDir}/build-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "windows-vs2019-debug",
+            "inherits": "windows-vs2019",
+            "generator": "Visual Studio 16 2019",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
@@ -71,7 +76,11 @@
         {
             "name": "macos",
             "inherits": "default",
-            "displayName": "Default Config for macOS",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
             "cacheVariables": {
                 "CMAKE_OSX_DEPLOYMENT_TARGET": "13",
                 "CMAKE_OSX_ARCHITECTURES": "x86_64;arm64"
@@ -85,7 +94,7 @@
         },
         {
             "name": "windows-debug",
-            "configurePreset": "windows-debug"
+            "configurePreset": "windows-vs2019-debug"
         }
     ],
     "testPresets": [
