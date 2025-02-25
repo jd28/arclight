@@ -80,21 +80,21 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     nw::kernel::resman().visit(model_filter, {nw::ResourceType::mdl});
     std::sort(body_part_models.begin(), body_part_models.end());
 
-    appearances_model.reset(new RuleTypeModel<nw::AppearanceInfo>(&nw::kernel::rules().appearances.entries, QCoreApplication::instance()));
+    appearances_model.reset(new RuleTypeModel<nw::AppearanceInfo>(&nw::kernel::rules().appearances.entries));
     appearances_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     appearances_filter->setSourceModel(appearances_model.get());
     appearances_filter->sort(0);
     appearances_model->moveToThread(QCoreApplication::instance()->thread());
     appearances_filter->moveToThread(QCoreApplication::instance()->thread());
 
-    baseitem_model.reset(new RuleTypeModel<nw::BaseItemInfo>(&nw::kernel::rules().baseitems.entries, QCoreApplication::instance()));
+    baseitem_model.reset(new RuleTypeModel<nw::BaseItemInfo>(&nw::kernel::rules().baseitems.entries));
     baseitem_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     baseitem_filter->setSourceModel(baseitem_model.get());
     baseitem_filter->sort(0);
     baseitem_model->moveToThread(QCoreApplication::instance()->thread());
     baseitem_filter->moveToThread(QCoreApplication::instance()->thread());
 
-    class_model.reset(new RuleTypeModel<nw::ClassInfo>(&nw::kernel::rules().classes.entries, QCoreApplication::instance()));
+    class_model.reset(new RuleTypeModel<nw::ClassInfo>(&nw::kernel::rules().classes.entries));
     class_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     class_filter->setSourceModel(class_model.get());
     class_filter->sort(0);
@@ -161,21 +161,21 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     }
     loadscreens_model->moveToThread(QCoreApplication::instance()->thread());
 
-    phenotype_model.reset(new RuleTypeModel<nw::PhenotypeInfo>(&nw::kernel::rules().phenotypes.entries, QCoreApplication::instance()));
+    phenotype_model.reset(new RuleTypeModel<nw::PhenotypeInfo>(&nw::kernel::rules().phenotypes.entries));
     phenotype_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     phenotype_filter->setSourceModel(phenotype_model.get());
     phenotype_filter->sort(-1);
     phenotype_model->moveToThread(QCoreApplication::instance()->thread());
     phenotype_filter->moveToThread(QCoreApplication::instance()->thread());
 
-    placeable_model.reset(new RuleTypeModel<nw::PlaceableInfo>(&nw::kernel::rules().placeables.entries, QCoreApplication::instance()));
+    placeable_model.reset(new RuleTypeModel<nw::PlaceableInfo>(&nw::kernel::rules().placeables.entries));
     placeable_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     placeable_filter->setSourceModel(placeable_model.get());
     placeable_filter->sort(0);
     placeable_model->moveToThread(QCoreApplication::instance()->thread());
     placeable_filter->moveToThread(QCoreApplication::instance()->thread());
 
-    race_model.reset(new RuleTypeModel<nw::RaceInfo>(&nw::kernel::rules().races.entries, QCoreApplication::instance()));
+    race_model.reset(new RuleTypeModel<nw::RaceInfo>(&nw::kernel::rules().races.entries));
     race_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
     race_filter->setSourceModel(race_model.get());
     race_filter->sort(0);
