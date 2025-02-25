@@ -265,6 +265,15 @@ void PropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, 
     }
 }
 
+QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    QSize size = QStyledItemDelegate::sizeHint(option, index);
+#ifdef Q_OS_WINDOWS
+    size.setHeight(size.height() + 6);
+#endif
+    return size;
+}
+
 // == PropertyModel ===========================================================
 // ============================================================================
 
