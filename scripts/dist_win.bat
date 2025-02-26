@@ -3,7 +3,7 @@
 IF "%Qt6_DIR%"=="" ECHO Environment variable Qt6_DIR not set, do you have Qt installed?
 
 echo "Configuring..."
-cmake --preset windows
+cmake --preset windows-ninja
 
 echo "Building..."
 cmake --build --preset default
