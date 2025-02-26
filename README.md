@@ -101,6 +101,12 @@ A widget for doors
 
 ![door](screenshots/door-loadscreen-2025-02-11.png)
 
+### Encounter View
+
+A widget for encounters, for spawn lists current drag-n-drop to add, DEL to remove.
+
+![encounter](screenshots/encounter-view-2025-02-26.png)
+
 ### Item View
 
 A widget for items.
@@ -113,12 +119,17 @@ A widget for items.
 
 ![item](screenshots/item-view-inventory-2025-02-06.gif)
 
-
 ### Placeable View
 
 A widget for placeables
 
 ![placeable](screenshots/placeable-view-2025-02-09.png)
+
+### Trigger View
+
+A widget for triggers
+
+![trigger](screenshots/trigger-view-2025-02-26.png)
 
 ### Variable Table View
 
@@ -126,7 +137,6 @@ A widget for editing variable tables.  Error indicators on duplicates,
 warning indicator on string variables with values convertible to int or float.
 
 ![vartable](screenshots/vartable-view-2024-06-17.png)
-
 
 
 ## The Views

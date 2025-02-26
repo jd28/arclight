@@ -81,21 +81,21 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     std::sort(body_part_models.begin(), body_part_models.end());
 
     appearances_model.reset(new RuleTypeModel<nw::AppearanceInfo>(&nw::kernel::rules().appearances.entries));
-    appearances_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    appearances_filter.reset(new RuleFilterProxyModel());
     appearances_filter->setSourceModel(appearances_model.get());
     appearances_filter->sort(0);
     appearances_model->moveToThread(QCoreApplication::instance()->thread());
     appearances_filter->moveToThread(QCoreApplication::instance()->thread());
 
     baseitem_model.reset(new RuleTypeModel<nw::BaseItemInfo>(&nw::kernel::rules().baseitems.entries));
-    baseitem_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    baseitem_filter.reset(new RuleFilterProxyModel());
     baseitem_filter->setSourceModel(baseitem_model.get());
     baseitem_filter->sort(0);
     baseitem_model->moveToThread(QCoreApplication::instance()->thread());
     baseitem_filter->moveToThread(QCoreApplication::instance()->thread());
 
     class_model.reset(new RuleTypeModel<nw::ClassInfo>(&nw::kernel::rules().classes.entries));
-    class_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    class_filter.reset(new RuleFilterProxyModel());
     class_filter->setSourceModel(class_model.get());
     class_filter->sort(0);
     class_model->moveToThread(QCoreApplication::instance()->thread());
@@ -162,21 +162,21 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     loadscreens_model->moveToThread(QCoreApplication::instance()->thread());
 
     phenotype_model.reset(new RuleTypeModel<nw::PhenotypeInfo>(&nw::kernel::rules().phenotypes.entries));
-    phenotype_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    phenotype_filter.reset(new RuleFilterProxyModel());
     phenotype_filter->setSourceModel(phenotype_model.get());
     phenotype_filter->sort(-1);
     phenotype_model->moveToThread(QCoreApplication::instance()->thread());
     phenotype_filter->moveToThread(QCoreApplication::instance()->thread());
 
     placeable_model.reset(new RuleTypeModel<nw::PlaceableInfo>(&nw::kernel::rules().placeables.entries));
-    placeable_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    placeable_filter.reset(new RuleFilterProxyModel());
     placeable_filter->setSourceModel(placeable_model.get());
     placeable_filter->sort(0);
     placeable_model->moveToThread(QCoreApplication::instance()->thread());
     placeable_filter->moveToThread(QCoreApplication::instance()->thread());
 
     race_model.reset(new RuleTypeModel<nw::RaceInfo>(&nw::kernel::rules().races.entries));
-    race_filter.reset(new RuleFilterProxyModel(QCoreApplication::instance()));
+    race_filter.reset(new RuleFilterProxyModel());
     race_filter->setSourceModel(race_model.get());
     race_filter->sort(0);
     race_model->moveToThread(QCoreApplication::instance()->thread());
@@ -189,9 +189,11 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
         faction_model->appendRow(item);
     }
 
-    trap_model = std::make_unique<RuleTypeModel<nw::TrapInfo>>(&nw::kernel::rules().traps.entries,
-        QCoreApplication::instance());
+    trap_model = std::make_unique<RuleTypeModel<nw::TrapInfo>>(&nw::kernel::rules().traps.entries);
     trap_model->moveToThread(QCoreApplication::instance()->thread());
+    trap_filter = std::make_unique<RuleFilterProxyModel>();
+    trap_filter->setSourceModel(trap_model.get());
+    trap_filter->moveToThread(QCoreApplication::instance()->thread());
 
     auto creaturespeed = nw::kernel::twodas().get("creaturespeed");
     creaturespeed_model = std::make_unique<QStandardItemModel>();
@@ -281,13 +283,13 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     }
     waypoint_model->moveToThread(QCoreApplication::instance()->thread());
 
-    gender_basic_model.reset(new QStringListModel(QCoreApplication::instance()));
+    gender_basic_model.reset(new QStringListModel());
     gender_basic_model->setStringList(QStringList()
         << QStringListModel::tr("Male")
         << QStringListModel::tr("Female"));
     gender_basic_model->moveToThread(QCoreApplication::instance()->thread());
 
-    dynamic_appearance_model.reset(new QStandardItemModel(QCoreApplication::instance()));
+    dynamic_appearance_model.reset(new QStandardItemModel());
     for (size_t i = 0; i < nw::kernel::rules().appearances.entries.size(); ++i) {
         const auto& app = nw::kernel::rules().appearances.entries[i];
         if (!app.valid()) { continue; }

@@ -13,6 +13,7 @@
 #include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
 #include "widgets/StoreView/storeview.h"
+#include "widgets/TriggerView/triggerview.h"
 #include "widgets/WaypointView/waypointview.h"
 #include "widgets/arclighttreeview.h"
 #include "widgets/arealistview.h"
@@ -128,6 +129,12 @@ void MainWindow::loadCallbacks()
             auto tv = new ItemView(res, this);
             return tv;
         });
+    type_to_view_.emplace(nw::ResourceType::utt,
+        [this](nw::Resource res) -> ArclightView* {
+            auto tv = new TriggerView(res, this);
+            return tv;
+        });
+
     type_to_view_.emplace(nw::ResourceType::utw,
         [this](nw::Resource res) -> ArclightView* {
             auto tv = new WaypointView(res, this);

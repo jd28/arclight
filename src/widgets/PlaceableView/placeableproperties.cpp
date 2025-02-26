@@ -247,9 +247,11 @@ void PlaceableProperties::trapsLoad()
         trapsUpdate();
     };
 
-    trap_type_ = makeEnumProperty("Type", *obj_->trap.type, toolset().trap_model.get(), grp_trap);
+    auto index = mapSourceRowToProxyRow(toolset().trap_model.get(), toolset().trap_filter.get(), *obj_->trap.type);
+    trap_type_ = makeEnumProperty("Type", index, toolset().trap_filter.get(), grp_trap);
     trap_type_->on_set = [this](const QVariant& value) {
-        obj_->trap.type = nw::TrapType::make(value.toInt());
+        int index = mapProxyRowToSourceRow(toolset().trap_filter.get(), value.toInt());
+        obj_->trap.type = nw::TrapType::make(index);
     };
 
     trap_detectable_ = makeBoolProperty("Detectable", obj_->trap.detectable, grp_trap);

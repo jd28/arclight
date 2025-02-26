@@ -6,6 +6,7 @@ add_library(TriggerView STATIC
     triggerview.ui
 
     ../../resources.qrc
+    triggergeneralview.h triggergeneralview.cpp triggergeneralview.ui
 )
 
 target_compile_definitions(TriggerView PUBLIC -DGLM_ENABLE_EXPERIMENTAL)

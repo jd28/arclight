@@ -155,6 +155,19 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent, const QStyleOptionViewI
         }
         return ed;
     }
+    case PropertyType2::Double: {
+        auto ed = new AutoCommitDoubleSpinBox(parent);
+        if (prop->double_config.min.isValid()) {
+            ed->setMinimum(prop->double_config.min.toDouble());
+        }
+        if (prop->double_config.max.isValid()) {
+            ed->setMaximum(prop->double_config.max.toDouble());
+        }
+        if (prop->double_config.step.isValid()) {
+            ed->setSingleStep(prop->double_config.step.toDouble());
+        }
+        return ed;
+    }
     case PropertyType2::String: {
         auto ed = new AutoCommitLineEdit(parent);
         if (prop->string_config.completer) {
@@ -229,6 +242,12 @@ void PropertyDelegate::setEditorData(QWidget* editor, const QModelIndex& index) 
         }
         break;
     }
+    case PropertyType2::Double: {
+        auto ed = qobject_cast<AutoCommitDoubleSpinBox*>(editor);
+        ed->setValue(prop->value.toDouble());
+        ed->setInitialized();
+        break;
+    }
     }
 }
 
@@ -260,6 +279,11 @@ void PropertyDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, 
     case PropertyType2::String: {
         auto ed = qobject_cast<AutoCommitLineEdit*>(editor);
         model->setData(index, ed->text());
+        break;
+    }
+    case PropertyType2::Double: {
+        auto ed = qobject_cast<AutoCommitDoubleSpinBox*>(editor);
+        model->setData(index, ed->value());
         break;
     }
     }
@@ -594,6 +618,19 @@ Property* PropertyBrowser::makeBoolProperty(QString name, bool value, Property* 
     result->type = PropertyType2::Boolean;
     result->parent = parent;
     if (result->parent) {
+        result->parent->children.append(result);
+    }
+    return result;
+}
+
+Property* PropertyBrowser::makeDoubleProperty(QString name, double value, Property* parent)
+{
+    auto result = new Property;
+    result->name = std::move(name);
+    result->value = value;
+    result->type = PropertyType2::Double;
+    if (parent) {
+        result->parent = parent;
         result->parent->children.append(result);
     }
     return result;

@@ -70,6 +70,33 @@ private:
     bool init_ = false;
 };
 
+class AutoCommitDoubleSpinBox : public QDoubleSpinBox {
+    Q_OBJECT
+public:
+    AutoCommitDoubleSpinBox(QWidget* parent = nullptr)
+        : QDoubleSpinBox(parent)
+    {
+        connect(this, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &AutoCommitDoubleSpinBox::onValueChanged);
+    }
+    void setInitialized() { init_ = true; }
+
+private slots:
+    void onValueChanged()
+    {
+        if (init_) {
+            if (QAbstractItemView* view = qobject_cast<QAbstractItemView*>(parent()->parent())) {
+                QAbstractItemModel* model = view->model();
+                QModelIndex index = view->currentIndex();
+                model->setData(index, value(), Qt::EditRole);
+            }
+        }
+    }
+
+private:
+    bool init_ = false;
+};
+
 class AutoCommitLineEdit : public QLineEdit {
     Q_OBJECT
 public:
@@ -130,6 +157,7 @@ enum struct PropertyType2 {
     Enum,
     Integer,
     String,
+    Double,
 };
 
 struct EnumPropConfig {
@@ -142,6 +170,12 @@ struct StringPropConfig {
 };
 
 struct IntPropConfig {
+    QVariant min;
+    QVariant max;
+    QVariant step;
+};
+
+struct DoublePropConfig {
     QVariant min;
     QVariant max;
     QVariant step;
@@ -166,6 +200,7 @@ public:
     PropertyType2 type;
     bool read_only = false;
 
+    DoublePropConfig double_config;
     EnumPropConfig enum_config;
     IntPropConfig int_config;
     StringPropConfig string_config;
@@ -242,6 +277,7 @@ public:
 
     Property* makeGroup(QString name, Property* parent = nullptr);
     Property* makeBoolProperty(QString name, bool value, Property* parent = nullptr);
+    Property* makeDoubleProperty(QString name, double value, Property* parent = nullptr);
     Property* makeEnumProperty(QString name, int value, QAbstractItemModel* model, Property* parent = nullptr);
     Property* makeIntegerProperty(QString name, int value, Property* parent = nullptr);
     Property* makeStringProperty(QString name, QString value, Property* parent = nullptr);
