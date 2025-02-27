@@ -1,6 +1,5 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Multimedia)
-find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 set(SRC_FILES
     main.cpp
@@ -52,7 +51,8 @@ target_include_directories(arclight SYSTEM PRIVATE
 
 target_link_libraries(arclight PUBLIC
     arclight-widgets
-    arclight-services
+    toolset-service
+    renderer-service
     nw
     sqlite3
     arclight-external
@@ -88,18 +88,4 @@ if(APPLE)
 install(TARGETS arclight RUNTIME DESTINATION bin BUNDLE DESTINATION bin)
 else()
 install(TARGETS arclight)
-endif()
-
-if(WIN32)
-    target_link_libraries(arclight-services PRIVATE
-        Diligent-GraphicsEngineD3D12-static
-    )
-elseif(APPLE)
-    target_link_libraries(arclight-services PRIVATE
-        Diligent-GraphicsEngineMetal-static
-    )
-elseif(UNIX AND NOT APPLE)
-    target_link_libraries(arclight-services PRIVATE
-        Diligent-GraphicsEngineVk-static
-    )
 endif()

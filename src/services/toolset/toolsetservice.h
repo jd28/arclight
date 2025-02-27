@@ -1,8 +1,8 @@
 #ifndef TOOLSETSERVICE_H
 #define TOOLSETSERVICE_H
 
-#include "../widgets/proxymodels.h"
-#include "../widgets/statictwodamodel.h"
+#include "../../widgets/proxymodels.h"
+#include "../../widgets/statictwodamodel.h"
 #include "rulesetmodels.h"
 
 #include "nw/config.hpp"

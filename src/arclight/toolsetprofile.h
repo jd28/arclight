@@ -1,8 +1,8 @@
 #ifndef TOOLSETPROFILE_H
 #define TOOLSETPROFILE_H
 
-#include "../services/renderservice.h"
-#include "../services/toolsetservice.h"
+#include "../services/renderer/renderservice.h"
+#include "../services/toolset/toolsetservice.h"
 
 #include "nw/profiles/nwn1/Profile.hpp"
 

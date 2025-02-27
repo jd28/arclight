@@ -3,7 +3,7 @@
 #include <nw/config.hpp>
 #include <nw/resources/Resref.hpp>
 
-#include "../widgets/util/strings.h"
+#include "../../widgets/util/strings.h"
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>

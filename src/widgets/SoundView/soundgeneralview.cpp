@@ -1,7 +1,7 @@
 #include "soundgeneralview.h"
 #include "ui_soundgeneralview.h"
 
-#include "../../services/toolsetservice.h"
+#include "../../services/toolset/toolsetservice.h"
 #include "../util/strings.h"
 
 #include <nw/kernel/Resources.hpp>

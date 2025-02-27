@@ -58,8 +58,8 @@ DoorView::DoorView(nw::Door* obj, QWidget* parent)
     comments->setText(to_qstring(obj_->common.comment));
     ui->tabWidget->addTab(comments, "Comments");
 
+    loadModel();
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &DoorView::onTabChanged);
-    connect(ui->openGLWidget, &BasicModelView::initialized, this, &DoorView::loadModel);
     connect(general, &DoorGeneralView::appearanceChanged, this, &DoorView::loadModel);
 }
 
@@ -73,13 +73,12 @@ DoorView::~DoorView()
 
 void DoorView::loadModel()
 {
-    ui->openGLWidget->makeCurrent();
     if (obj_->appearance == 0) {
         auto genericdoors = nw::kernel::twodas().get("genericdoors");
         if (genericdoors) {
             std::string model;
             if (genericdoors->get_to(obj_->generic_type, "ModelName", model)) {
-                auto mdl = load_model(model, ui->openGLWidget->funcs());
+                auto mdl = load_model(model);
                 ui->openGLWidget->setModel(std::move(mdl));
             }
         } else {
@@ -90,7 +89,7 @@ void DoorView::loadModel()
         if (doortypes) {
             std::string model;
             if (doortypes->get_to(obj_->appearance, "Model", model)) {
-                auto mdl = load_model(model, ui->openGLWidget->funcs());
+                auto mdl = load_model(model);
                 ui->openGLWidget->setModel(std::move(mdl));
             }
         } else {

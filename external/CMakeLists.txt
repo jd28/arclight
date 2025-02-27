@@ -10,5 +10,5 @@ target_link_libraries(arclight-external PRIVATE
     Qt6::Widgets
 )
 
-add_subdirectory(rollnw)
-add_subdirectory(DiligentCore)
+add_subdirectory(rollnw EXCLUDE_FROM_ALL)
+add_subdirectory(DiligentCore EXCLUDE_FROM_ALL)

@@ -1,5 +1,4 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(DoorView STATIC
     doorgeneralview.h
@@ -33,11 +32,10 @@ target_include_directories(DoorView SYSTEM PRIVATE
 target_link_libraries(DoorView PRIVATE
     arclight-widgets
     nw
+    renderer
+    VariableTableView
+
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
-    renderer
-    VariableTableView
 )

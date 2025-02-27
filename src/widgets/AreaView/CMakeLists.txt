@@ -1,5 +1,4 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(AreaView STATIC
     areaview.cpp
@@ -25,9 +24,8 @@ target_link_libraries(AreaView PRIVATE
     arclight-widgets
     arclight-external
     nw
+    renderer
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
 )

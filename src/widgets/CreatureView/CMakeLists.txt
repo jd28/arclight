@@ -1,5 +1,4 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS OpenGL OpenGLWidgets)
 
 add_library(CreatureView STATIC
     creatureabilitiesselector.cpp
@@ -63,8 +62,6 @@ target_link_libraries(CreatureView PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Gui
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
     nw
     renderer
     ColorSelectorDialog

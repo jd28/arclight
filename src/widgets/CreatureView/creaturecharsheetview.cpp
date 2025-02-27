@@ -1,7 +1,7 @@
 #include "creaturecharsheetview.h"
 #include "ui_creaturecharsheetview.h"
 
-#include "../../services/toolsetservice.h"
+#include "../../services/toolset/toolsetservice.h"
 #include "../util/itemmodels.h"
 #include "../util/strings.h"
 #include "creatureview.h"

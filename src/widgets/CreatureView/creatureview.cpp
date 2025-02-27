@@ -17,6 +17,7 @@
 #include "creaturestatsview.h"
 
 #include "nw/kernel/Objects.hpp"
+#include "nw/kernel/TwoDACache.hpp"
 #include "nw/objects/Creature.hpp"
 
 #include <QApplication>
@@ -36,7 +37,6 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     if (!obj) { return; }
 
     ui->setupUi(this);
-    ui->openGLWidget->setCreature(obj);
 
     auto width = qApp->primaryScreen()->geometry().width();
     ui->splitter->setSizes(QList<int>() << int(width * 0.5) << int(width * 0.5));
@@ -90,6 +90,29 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     comments->setText(to_qstring(obj->common.comment));
     ui->tabWidget->addTab(comments, "Comments");
 
+    auto appearances_2da = nw::kernel::twodas().get("appearance");
+    std::string model_name;
+    // [TODO] Can't do parts based models yet..
+    if (!appearances_2da->get_to(*obj->appearance.id, "RACE", model_name) || model_name.length() <= 1) {
+        LOG_F(INFO, "Can't render model.");
+    } else {
+        nw::Resref resref{model_name};
+
+        LOG_F(INFO, "Loading model: {}", resref.view());
+        auto model = load_model(resref.view());
+        if (!model) {
+            LOG_F(ERROR, "Failed to load model: {}", resref.view());
+            return;
+        }
+
+        if (!model->load_animation("pause1")) {
+            model->load_animation("cpause1");
+        }
+        LOG_F(INFO, "Model loaded: {}, nodes={}", resref.view(), model->nodes_.size());
+        ui->openGLWidget->setModel(std::move(model));
+        LOG_F(INFO, "Model set on RenderWidget");
+    }
+
     obj_ = obj;
 }
 
@@ -104,5 +127,4 @@ CreatureView::~CreatureView()
 void CreatureView::onModified()
 {
     // setModified(true);
-    ui->openGLWidget->onDataChanged();
 }

@@ -1,8 +1,8 @@
 #include "itemgeneralview.h"
 #include "ui_itemgeneralview.h"
 
-#include "../../services/rulesetmodels.h"
-#include "../../services/toolsetservice.h"
+#include "../../services/toolset/rulesetmodels.h"
+#include "../../services/toolset/toolsetservice.h"
 #include "../ColorSelectorDialog/colorselectordialog.h"
 #include "../ColorSelectorDialog/colorselectorview.h"
 #include "../proxymodels.h"

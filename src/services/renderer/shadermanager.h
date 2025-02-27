@@ -18,7 +18,8 @@ public:
     Diligent::IShader* get(nw::InternedString name) const;
 
     /// Load shader from source code strings, handling platform differences
-    Diligent::IShader* load(nw::InternedString name, Diligent::SHADER_TYPE shaderType, const std::string& source);
+    Diligent::IShader* load(nw::InternedString name, Diligent::SHADER_TYPE type, const std::string& source,
+        const std::vector<std::pair<std::string, std::string>>& macros = {});
 
 private:
     Diligent::IRenderDevice* device_ = nullptr;
