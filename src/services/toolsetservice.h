@@ -77,6 +77,7 @@ struct ToolsetService : public nw::kernel::Service {
     std::unique_ptr<QStandardItemModel> creaturespeed_model;
     std::unique_ptr<QStandardItemModel> packages_model;
     std::unique_ptr<QStandardItemModel> ranges_model;
+    std::unique_ptr<SoundModel> sound_model;
     std::unique_ptr<QStandardItemModel> tails_model;
     std::unique_ptr<QStandardItemModel> wings_model;
     std::unique_ptr<QStandardItemModel> waypoint_model;

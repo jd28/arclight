@@ -236,6 +236,9 @@ void ToolsetService::initialize(nw::kernel::ServiceInitTime time)
     ranges_model->sort(0);
     ranges_model->moveToThread(QCoreApplication::instance()->thread());
 
+    sound_model = std::make_unique<SoundModel>();
+    sound_model->moveToThread(QCoreApplication::instance()->thread());
+
     auto tailmodel_2da = nw::kernel::twodas().get("tailmodel");
     tails_model = std::make_unique<QStandardItemModel>();
 

@@ -1,6 +1,9 @@
 find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 add_library(SoundView STATIC
+    soundgeneralview.cpp
+    soundgeneralview.h
+    soundgeneralview.ui
     soundview.h
     soundview.cpp
     soundview.ui

@@ -125,6 +125,13 @@ A widget for placeables
 
 ![placeable](screenshots/placeable-view-2025-02-09.png)
 
+### Sound View
+
+A widget for sounds. Double clicking sounds whether in the available
+or the current list will play that sound.
+
+![sound](screenshots/sound-view-2025-03-02.gif)
+
 ### Trigger View
 
 A widget for triggers

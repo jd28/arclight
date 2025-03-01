@@ -12,6 +12,7 @@
 #include "widgets/ItemView/itemview.h"
 #include "widgets/PlaceableView/placeableview.h"
 #include "widgets/QtWaitingSpinner/waitingspinnerwidget.h"
+#include "widgets/SoundView/soundview.h"
 #include "widgets/StoreView/storeview.h"
 #include "widgets/TriggerView/triggerview.h"
 #include "widgets/WaypointView/waypointview.h"
@@ -127,6 +128,11 @@ void MainWindow::loadCallbacks()
     type_to_view_.emplace(nw::ResourceType::uti,
         [this](nw::Resource res) -> ArclightView* {
             auto tv = new ItemView(res, this);
+            return tv;
+        });
+    type_to_view_.emplace(nw::ResourceType::uts,
+        [this](nw::Resource res) -> ArclightView* {
+            auto tv = new SoundView(res, this);
             return tv;
         });
     type_to_view_.emplace(nw::ResourceType::utt,
