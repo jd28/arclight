@@ -110,7 +110,7 @@ QMimeData* SoundModel::mimeData(const QModelIndexList& indexes) const
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    stream << reinterpret_cast<uintptr_t>(this);
+    stream << reinterpret_cast<qlonglong>(this);
     for (const QModelIndex& index : indexes) {
         if (index.isValid()) {
             stream << sounds_[index.row()];
@@ -135,7 +135,7 @@ bool SoundModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int 
     QByteArray encodedData = data->data("application/x-sound-list");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
-    uintptr_t source_ptr;
+    qlonglong source_ptr;
     stream >> source_ptr;
     auto source = reinterpret_cast<const SoundModel*>(source_ptr);
 
