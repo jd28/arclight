@@ -223,7 +223,11 @@ void MainWindow::open(const QString& path)
         recentActions_[i]->setVisible(true);
     }
 
-    spinner_->start();
+    nw::kernel::services().shutdown();
+    // Since module is loading we're just creating services on the main thread.
+    nw::kernel::services().create();
+    nw::kernel::services().set_module_loading(true);
+
     mod_load_watcher_ = new QFutureWatcher<QList<nw::Module*>>(this);
     connect(mod_load_watcher_, &QFutureWatcher<QList<nw::Module*>>::finished, this, &MainWindow::loadTreeviews);
 
@@ -231,6 +235,8 @@ void MainWindow::open(const QString& path)
         return QList<nw::Module*>{nw::kernel::load_module(path, false)};
     });
     mod_load_watcher_->setFuture(mod_load_future_);
+
+    spinner_->start();
 }
 
 void MainWindow::readSettings()
