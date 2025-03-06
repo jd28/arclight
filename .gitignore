@@ -1,6 +1,7 @@
 # Build
 build/
 build-debug/
+build_debug/
 build-doc/
 vcpkg/
 vcpkg_installed/
