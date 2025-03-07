@@ -215,13 +215,13 @@ bool EncounterCreatureModel::dropMimeData(const QMimeData* data, Qt::DropAction 
     if (!cre) { return false; }
 
     nw::SpawnCreature creature;
+    creature.cr = cre->cr;
     creature.resref = node->res_.resref;
     creature.name = nw::kernel::strings().get(cre->name_first);
     nw::String temp = nw::kernel::strings().get(cre->name_last);
     if (!temp.empty()) { creature.name += " " + temp; }
     creature.tag = cre->tag();
     nw::kernel::objects().destroy(cre->handle());
-    creature.cr = 0.0f;
     creature.single_spawn = false;
 
     undo_->push(new AddEncounterCreatureCommand(obj_, creature, this));
