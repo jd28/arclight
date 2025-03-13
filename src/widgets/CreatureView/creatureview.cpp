@@ -56,6 +56,7 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     appearance->setEnabled(!readOnly());
     ui->tabWidget->addTab(appearance, "Appearance");
     addTab(appearance);
+    connect(appearance, &CreatureAppearanceView::updateModel, this, &CreatureView::onUpdateModel);
 
     auto inv = new CreatureInventoryPanel(this);
     inv->setEnabled(!readOnly());
@@ -90,10 +91,24 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
     comments->setText(to_qstring(obj->common.comment));
     ui->tabWidget->addTab(comments, "Comments");
 
+    obj_ = obj;
+    onUpdateModel();
+}
+
+CreatureView::~CreatureView()
+{
+    delete ui;
+    if (owned_ && obj_) {
+        nw::kernel::objects().destroy(obj_->handle());
+    }
+}
+
+void CreatureView::onUpdateModel()
+{
     auto appearances_2da = nw::kernel::twodas().get("appearance");
     std::string model_name;
     // [TODO] Can't do parts based models yet..
-    if (!appearances_2da->get_to(*obj->appearance.id, "RACE", model_name) || model_name.length() <= 1) {
+    if (!appearances_2da->get_to(*obj_->appearance.id, "RACE", model_name) || model_name.length() <= 1) {
         LOG_F(INFO, "Can't render model.");
     } else {
         nw::Resref resref{model_name};
@@ -112,19 +127,4 @@ CreatureView::CreatureView(nw::Creature* obj, QWidget* parent)
         ui->openGLWidget->setModel(std::move(model));
         LOG_F(INFO, "Model set on RenderWidget");
     }
-
-    obj_ = obj;
-}
-
-CreatureView::~CreatureView()
-{
-    delete ui;
-    if (owned_ && obj_) {
-        nw::kernel::objects().destroy(obj_->handle());
-    }
-}
-
-void CreatureView::onModified()
-{
-    // setModified(true);
 }

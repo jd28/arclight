@@ -24,6 +24,9 @@ public slots:
     void onColorChanged(int color, int value);
     void onOpenColorSelector();
 
+signals:
+    void updateModel();
+
 private:
     Ui::CreatureAppearanceView* ui;
     nw::Creature* obj_ = nullptr;
