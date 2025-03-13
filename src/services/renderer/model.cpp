@@ -452,47 +452,129 @@ void Model::update(int32_t dt)
 {
     if (!anim_) { return; }
 
+    // Update animation cursor with wrapping
     if (dt + anim_cursor_ > int32_t(anim_->length * 1000)) {
         anim_cursor_ = dt + anim_cursor_ - int32_t(anim_->length * 1000);
     } else {
         anim_cursor_ += dt;
     }
 
+    float time_ms = static_cast<float>(anim_cursor_);
+
     for (const auto& anim : anim_->nodes) {
-        // LOG_F(INFO, "animation node: {}, cursor: {}", anim->name, anim_cursor_);
         auto node = find(anim->name);
-        if (node) {
-            auto poskey = anim->get_controller(nw::model::ControllerType::Position, true);
-            // LOG_F(INFO, "time size: {}, data size: {}", poskey.time.size(), poskey.data.size());
-            if (poskey.time.size()) {
-                int i = 0;
-                int end = 0;
-                while (size_t(i) < poskey.time.size() && anim_cursor_ >= int32_t(poskey.time[i] * 1000)) {
-                    ++i;
+        if (!node) { continue; }
+
+        auto poskey = anim->get_controller(nw::model::ControllerType::Position, true);
+        if (poskey.time.size() > 0) {
+
+            int idx1 = -1;
+            int idx2 = 0;
+            float t = 0.0f;
+
+            for (size_t i = 0; i < poskey.time.size(); ++i) {
+                if (time_ms >= poskey.time[i] * 1000) {
+                    idx1 = static_cast<int>(i);
+                } else {
+                    idx2 = static_cast<int>(i);
+                    break;
                 }
-                end = i;
-                if (size_t(end) >= poskey.time.size()) { end = 0; }
-                node->position_ = glm::vec3{poskey.data[end * 3], poskey.data[end * 3 + 1], poskey.data[end * 3 + 2]};
             }
 
-            auto orikey = anim->get_controller(nw::model::ControllerType::Orientation, true);
-            if (orikey.time.size()) {
-                int i = 0;
-                int end = 0;
-                while (size_t(i) < orikey.time.size() && anim_cursor_ >= int32_t(orikey.time[i] * 1000)) {
-                    ++i;
-                }
-                end = i;
-                if (size_t(end) >= orikey.time.size()) { end = 0; }
-                // start = i - 1;
-                // if (start < 0) { start = poskey.time.size() - 1; }
-                node->rotation_ = glm::qua{
-                    orikey.data[end * 4 + 3],
-                    orikey.data[end * 4],
-                    orikey.data[end * 4 + 1],
-                    orikey.data[end * 4 + 2],
-                };
+            if (idx1 == -1) {
+                idx1 = static_cast<int>(poskey.time.size() - 1);
+                idx2 = 0;
+            } else if (idx2 == 0 && idx1 != -1) {
+                idx2 = 0;
             }
+
+            float time1 = poskey.time[idx1] * 1000;
+            float time2 = (size_t(idx2) < poskey.time.size()) ? poskey.time[idx2] * 1000 : poskey.time[0] * 1000 + anim_->length * 1000;
+
+            if (time2 > time1) {
+                t = (time_ms - time1) / (time2 - time1);
+            } else {
+                t = (time_ms - time1) / ((anim_->length * 1000) - time1);
+            }
+
+            t = std::max(0.0f, std::min(1.0f, t));
+
+            glm::vec3 pos1(
+                poskey.data[idx1 * 3],
+                poskey.data[idx1 * 3 + 1],
+                poskey.data[idx1 * 3 + 2]);
+
+            glm::vec3 pos2;
+            if (size_t(idx2) < poskey.time.size()) {
+                pos2 = glm::vec3(
+                    poskey.data[idx2 * 3],
+                    poskey.data[idx2 * 3 + 1],
+                    poskey.data[idx2 * 3 + 2]);
+            } else {
+                pos2 = glm::vec3(
+                    poskey.data[0],
+                    poskey.data[1],
+                    poskey.data[2]);
+            }
+
+            node->position_ = glm::mix(pos1, pos2, t);
+        }
+
+        auto orikey = anim->get_controller(nw::model::ControllerType::Orientation, true);
+        if (orikey.time.size() > 0) {
+
+            int idx1 = -1;
+            int idx2 = 0;
+            float t = 0.0f;
+
+            for (size_t i = 0; i < orikey.time.size(); ++i) {
+                if (time_ms >= orikey.time[i] * 1000) {
+                    idx1 = static_cast<int>(i);
+                } else {
+                    idx2 = static_cast<int>(i);
+                    break;
+                }
+            }
+
+            if (idx1 == -1) {
+                idx1 = static_cast<int>(orikey.time.size() - 1);
+                idx2 = 0;
+            } else if (idx2 == 0 && idx1 != -1) {
+                idx2 = 0;
+            }
+
+            float time1 = orikey.time[idx1] * 1000;
+            float time2 = (size_t(idx2) < orikey.time.size()) ? orikey.time[idx2] * 1000 : orikey.time[0] * 1000 + anim_->length * 1000;
+
+            if (time2 > time1) {
+                t = (time_ms - time1) / (time2 - time1);
+            } else {
+                t = (time_ms - time1) / ((anim_->length * 1000) - time1);
+            }
+
+            t = std::max(0.0f, std::min(1.0f, t));
+
+            glm::quat rot1(
+                orikey.data[idx1 * 4 + 3],
+                orikey.data[idx1 * 4],
+                orikey.data[idx1 * 4 + 1],
+                orikey.data[idx1 * 4 + 2]);
+
+            glm::quat rot2;
+            if (size_t(idx2) < orikey.time.size()) {
+                rot2 = glm::quat(
+                    orikey.data[idx2 * 4 + 3],
+                    orikey.data[idx2 * 4],
+                    orikey.data[idx2 * 4 + 1],
+                    orikey.data[idx2 * 4 + 2]);
+            } else {
+                rot2 = glm::quat(
+                    orikey.data[0 + 3],
+                    orikey.data[0],
+                    orikey.data[1],
+                    orikey.data[2]);
+            }
+            node->rotation_ = glm::slerp(rot1, rot2, t);
         }
     }
 }
