@@ -86,7 +86,7 @@ void Mesh::draw(RenderContext& ctx, const glm::mat4x4& mtx)
         }
 
         if (texture0) {
-            srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE));
+            srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0_view);
         } else {
             LOG_F(WARNING, "No texture for mesh");
         }
@@ -192,7 +192,7 @@ void Skin::draw(RenderContext& ctx, const glm::mat4x4& mtx)
     }
 
     if (texture0) {
-        srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE));
+        srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0_view);
     } else {
         LOG_F(WARNING, "No texture for mesh");
     }
@@ -294,6 +294,7 @@ Node* Model::load_node(nw::model::Node* node, Node* parent)
             Skin* skin = new Skin;
             skin->rps_.has_skin = true;
             skin->rps_.has_diffuse = true;
+            auto [pso, srb] = renderer().get_pso(rps_);
 
             // Create vertex buffer
             Diligent::BufferDesc VBDesc;
@@ -321,6 +322,7 @@ Node* Model::load_node(nw::model::Node* node, Node* parent)
             if (tex) {
                 skin->texture0 = tex->first;
                 skin->texture0_is_plt = tex->second;
+                skin->texture0_view = skin->texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
                 if (skin->texture0_is_plt) {
                 }
@@ -394,6 +396,7 @@ Node* Model::load_node(nw::model::Node* node, Node* parent)
             if (tex) {
                 mesh->texture0 = tex->first;
                 mesh->texture0_is_plt = tex->second;
+                mesh->texture0_view = mesh->texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
                 if (mesh->texture0_is_plt) {
                 }

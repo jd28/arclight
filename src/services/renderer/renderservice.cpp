@@ -193,108 +193,6 @@ void RenderService::initialize(nw::kernel::ServiceInitTime time)
     textures_.load_samplers();
 }
 
-RenderContext RenderService::create(void* hndl)
-{
-    if (!hndl) {
-        throw std::runtime_error("Null window handle provided");
-    }
-
-    auto it = contexts_.find(hndl);
-    if (it != contexts_.end()) {
-        return it->second;
-    }
-
-    RenderContext context;
-    context.immediate_ctx = immediate_ctx_;
-
-    Diligent::SwapChainDesc swapChainDesc;
-    swapChainDesc.Width = 0;
-    swapChainDesc.Height = 0;
-    swapChainDesc.ColorBufferFormat = Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB;
-    swapChainDesc.DepthBufferFormat = Diligent::TEX_FORMAT_D32_FLOAT;
-    swapChainDesc.BufferCount = 2;
-    swapChainDesc.DefaultDepthValue = 1.0f;
-
-#if defined(_WIN32)
-    if (device_type_ != Diligent::RENDER_DEVICE_TYPE_D3D12) {
-        throw std::runtime_error("Device type mismatch: expected D3D12");
-    }
-    auto* ef = static_cast<Diligent::IEngineFactoryD3D12*>(engine_factory_.RawPtr());
-    if (!ef) {
-        throw std::runtime_error("Invalid D3D12 engine factory");
-    }
-    if (!IsWindow(static_cast<HWND>(hndl))) {
-        throw std::runtime_error("Invalid window handle for D3D12 swap chain");
-    }
-    Diligent::Win32NativeWindow native(static_cast<HWND>(hndl));
-    ef->CreateSwapChainD3D12(
-        device_,
-        immediate_ctx_,
-        swapChainDesc,
-        Diligent::FullScreenModeDesc{},
-        native,
-        &context.swapchain);
-#elif defined(__APPLE__)
-    if (device_type_ != Diligent::RENDER_DEVICE_TYPE_METAL) {
-        throw std::runtime_error("Device type mismatch: expected Metal");
-    }
-    auto* ef = static_cast<Diligent::IEngineFactoryMtl*>(engine_factory_.RawPtr());
-    if (!ef) {
-        throw std::runtime_error("Invalid Metal engine factory");
-    }
-    Diligent::MacOSNativeWindowDesc windowDesc;
-    windowDesc.pNSView = hndl; // Assuming hndl is a valid NSView*
-    ef->CreateSwapChainMtl(
-        device_,
-        immediate_ctx_,
-        swapChainDesc,
-        windowDesc,
-        &context.swapchain);
-#else // Linux
-    if (device_type_ != Diligent::RENDER_DEVICE_TYPE_VULKAN) {
-        throw std::runtime_error("Device type mismatch: expected Vulkan");
-    }
-    auto* ef = static_cast<Diligent::IEngineFactoryVk*>(engine_factory_.RawPtr());
-    if (!ef) {
-        throw std::runtime_error("Invalid Vulkan engine factory");
-    }
-#if defined(VK_USE_PLATFORM_XCB_KHR)
-    Display* display = XOpenDisplay(nullptr);
-    if (!display) {
-        throw std::runtime_error("Failed to open X11 display");
-    }
-    Diligent::LinuxNativeWindow windowDesc;
-    windowDesc.WindowId = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(hndl));
-    windowDesc.Connection = XGetXCBConnection(display);
-    ef->CreateSwapChainVk(
-        device_,
-        immediate_ctx_,
-        swapChainDesc,
-        windowDesc,
-        &context.swapchain);
-    XCloseDisplay(display); // Clean up
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    Diligent::LinuxNativeWindow windowDesc;
-    windowDesc.pSurface = hndl; // Assuming hndl is a wl_surface*
-    ef->CreateSwapChainVk(
-        device_,
-        immediate_ctx_,
-        swapChainDesc,
-        windowDesc,
-        &context.swapchain);
-#else
-    throw std::runtime_error("Unsupported window system for Vulkan");
-#endif
-#endif
-
-    if (!context.swapchain) {
-        throw std::runtime_error("Failed to create swap chain");
-    }
-
-    contexts_[hndl] = context;
-    return context;
-}
-
 std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_pso(const RenderPipelineState& rps)
 {
     auto hash = rps.hash();
@@ -358,13 +256,13 @@ std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_p
         vars = {
             {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
             {Diligent::SHADER_TYPE_VERTEX, "Joints", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
             {Diligent::SHADER_TYPE_PIXEL, "g_Texture_sampler", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
         };
     } else {
         vars = {
             {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
             {Diligent::SHADER_TYPE_PIXEL, "g_Texture_sampler", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
         };
     }
@@ -388,18 +286,8 @@ std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_p
     if (pso && srb) {
         pso_map_.insert({hash, {pso, srb}});
     }
-    return {pso, srb};
-}
 
-void RenderService::release(RenderContext context)
-{
-    for (auto it = contexts_.begin(); it != contexts_.end(); ++it) {
-        if (it->second.immediate_ctx == context.immediate_ctx
-            && it->second.swapchain == context.swapchain) {
-            contexts_.erase(it);
-            return;
-        }
-    }
+    return {pso, srb};
 }
 
 std::string RenderService::device_type_as_string() const

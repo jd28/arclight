@@ -18,9 +18,6 @@
 #include <unordered_map>
 
 struct RenderContext {
-    Diligent::RefCntAutoPtr<Diligent::ISwapChain> swapchain;
-    Diligent::RefCntAutoPtr<Diligent::IDeviceContext> immediate_ctx;
-
     glm::mat4 view;
     glm::mat4 projection;
 };
@@ -40,12 +37,6 @@ public:
     virtual ~RenderService();
 
     virtual void initialize(nw::kernel::ServiceInitTime time) override;
-
-    /// Create a rendering context for a specific widget/window
-    RenderContext create(void* hndl);
-
-    /// Release a rendering context
-    void release(RenderContext context);
 
     /// Get the render device - shared across all contexts
     Diligent::IRenderDevice* device() const noexcept { return device_; }

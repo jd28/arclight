@@ -65,12 +65,6 @@ void BasicModelView::wheelEvent(QWheelEvent* event)
 void BasicModelView::do_render()
 {
     if (!current_model_) {
-        LOG_F(INFO, "No model loaded");
-        return;
-    }
-
-    if (!ctx_.swapchain) {
-        LOG_F(WARNING, "Swapchain not ready in do_render");
         return;
     }
 
@@ -86,9 +80,10 @@ void BasicModelView::do_render()
     float aspect = float(this->width()) / float(this->height());
     auto proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
-    ctx_.view = view;
-    ctx_.projection = proj;
+    RenderContext ctx;
+    ctx.view = view;
+    ctx.projection = proj;
 
     auto mtx = glm::mat4(1.0f);
-    current_model_->draw(ctx_, mtx);
+    current_model_->draw(ctx, mtx);
 }

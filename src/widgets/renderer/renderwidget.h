@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../../services/renderer/renderservice.h"
-
 #include <DiligentCore/Common/interface/RefCntAutoPtr.hpp>
 #include <DiligentCore/Graphics/GraphicsEngine/interface/DeviceContext.h>
 #include <DiligentCore/Graphics/GraphicsEngine/interface/Fence.h>
@@ -11,36 +9,41 @@
 
 #include <QWidget>
 
+class QImage;
+
 class RenderWidget : public QWidget {
     Q_OBJECT
+
 public:
     explicit RenderWidget(QWidget* parent = nullptr);
     ~RenderWidget() override;
 
-    QPaintEngine* paintEngine() const override;
+    void initialize();
+    void render();
+    void cleanup();
 
 protected:
     void showEvent(QShowEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
 
-    // New method to handle rendering
-    void render();
+    // Override this method in subclasses to implement custom rendering
+    virtual void do_render() { }
 
-    virtual void do_render() = 0;
-    // Initialize rendering resources
-    void initialize();
+private:
+    void renderToFBO();
+    void transferFBOToQImage();
 
-protected:
-    RenderContext ctx_;
-    Diligent::ITextureView* pRTV_ = nullptr;
-    Diligent::RefCntAutoPtr<Diligent::ITexture> depth_texture_;
-    Diligent::ITextureView* pDSV_ = nullptr;
+    // FBO-related members
+    Diligent::RefCntAutoPtr<Diligent::ITexture> fboTexture_;
+    Diligent::RefCntAutoPtr<Diligent::ITextureView> fboRTV_;
+    Diligent::RefCntAutoPtr<Diligent::ITexture> depthTexture_;
+    Diligent::RefCntAutoPtr<Diligent::ITextureView> pDSV_;
+    Diligent::RefCntAutoPtr<Diligent::ITexture> stagingTexture_;
 
-    // Synchronization objects
-    Diligent::RefCntAutoPtr<Diligent::IFence> fence_;
-    Diligent::Uint64 fenceValue_ = 0;
-    uint64_t frameCounter_ = 0;
-    float height_ = 0.0f;
-    float width_ = 0.0f;
+    // Qt-related members
+    QImage* outputImage_;
+
+    int frameCounter_;
+    bool initialized_;
 };

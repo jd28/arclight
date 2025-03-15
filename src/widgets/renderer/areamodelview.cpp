@@ -5,6 +5,8 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
+#include "../../services/renderer/renderservice.h"
+
 #include <QMouseEvent>
 #include <QTimer>
 #include <QWheelEvent>
@@ -112,21 +114,16 @@ void ModelView::wheelEvent(QWheelEvent* event)
 
 void ModelView::do_render()
 {
-    const float clear_color[] = {0.2f, 0.3f, 0.3f, 1.0f};
-    renderer().immediate_context()->ClearRenderTarget(pRTV_, clear_color, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-    renderer().immediate_context()->ClearDepthStencil(pDSV_, Diligent::CLEAR_DEPTH_FLAG, 1.0f, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
     if (node_) {
         glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
 
         float aspect = static_cast<float>(this->width()) / static_cast<float>(this->height());
         auto proj = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
-        ctx_.view = view;
-        ctx_.projection = proj;
 
+        RenderContext ctx{view, proj};
         glm::mat4 mtx{1.0f};
-        renderer().immediate_context()->SetRenderTargets(1, &pRTV_, pDSV_, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-        node_->draw(ctx_, mtx);
+        node_->draw(ctx, mtx);
     }
 }
 

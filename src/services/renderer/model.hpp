@@ -59,6 +59,7 @@ struct Mesh : public Node {
 
     nw::PltColors plt_colors_{};
     Diligent::RefCntAutoPtr<Diligent::ITexture> texture0;
+    Diligent::RefCntAutoPtr<Diligent::ITextureView> texture0_view;
     bool texture0_is_plt = false;
 };
 
@@ -82,6 +83,7 @@ struct Skin : public Node {
     Diligent::RefCntAutoPtr<Diligent::IBuffer> constant_buffer;
     Diligent::RefCntAutoPtr<Diligent::IBuffer> instance_buffer;
     Diligent::RefCntAutoPtr<Diligent::IBuffer> joint_constant_buffer;
+    Diligent::RefCntAutoPtr<Diligent::ITextureView> texture0_view;
 
     void build_inverse_binds();
     nw::PltColors plt_colors_{};

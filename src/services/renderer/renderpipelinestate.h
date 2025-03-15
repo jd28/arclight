@@ -12,7 +12,6 @@ struct RenderPipelineState {
 
     auto operator<=>(const RenderPipelineState&) const = default;
 
-    // Hash function for use in containers
     size_t hash() const
     {
         return XXH3_64bits(this, sizeof(*this));
