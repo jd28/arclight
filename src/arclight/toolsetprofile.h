@@ -10,7 +10,6 @@ struct ToolsetProfile : public nwn1::Profile {
     virtual void load_custom_services() override
     {
         nw::kernel::services().add<ToolsetService>();
-        nw::kernel::services().add<RenderService>();
     }
 };
 
