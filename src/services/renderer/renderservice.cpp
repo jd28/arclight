@@ -66,7 +66,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
 
     shaders_ = ShaderManager(device_);
 
-    shaders_.load(nw::kernel::strings().intern("basic_vs"),
+    shaders_.load("basic_vs",
         Diligent::SHADER_TYPE_VERTEX,
         R"(struct VSInput
         {
@@ -100,7 +100,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
             PSIn.TexIndex = g_TexIndex;
         })");
 
-    shaders_.load(nw::kernel::strings().intern("skin_vs"),
+    shaders_.load("skin_vs",
         Diligent::SHADER_TYPE_VERTEX,
         R"(
         struct VS_INPUT {
@@ -161,7 +161,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
             return output;
         })");
 
-    shaders_.load(nw::kernel::strings().intern("basic_ps"),
+    shaders_.load("basic_ps",
         Diligent::SHADER_TYPE_PIXEL,
         R"(
         Texture2D<float4> g_Textures[512] : register(t0);
@@ -216,8 +216,8 @@ std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_p
     pso_desc.Name = "Mesh Rendering PSO";
     pso_desc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 
-    pso_ci.pVS = renderer().shaders().get(nw::kernel::strings().intern(rps.has_skin ? "skin_vs" : "basic_vs"));
-    pso_ci.pPS = renderer().shaders().get(nw::kernel::strings().intern("basic_ps"));
+    pso_ci.pVS = renderer().shaders().get(rps.has_skin ? "skin_vs" : "basic_vs");
+    pso_ci.pPS = renderer().shaders().get("basic_ps");
     if (!pso_ci.pVS || !pso_ci.pPS) {
         LOG_F(ERROR, "Failed to get shaders for PSO");
         return {};
