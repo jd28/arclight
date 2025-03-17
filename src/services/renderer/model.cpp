@@ -29,9 +29,6 @@ void Node::draw(RenderContext& ctx, const glm::mat4x4& mtx)
     }
 }
 
-// == Mesh ====================================================================s
-// ============================================================================
-
 glm::mat4 Node::get_transform() const
 {
     auto parent = glm::mat4{1.0f};
@@ -45,6 +42,14 @@ glm::mat4 Node::get_transform() const
     trans = glm::scale(trans, scale_);
 
     return trans;
+}
+
+// == Mesh ====================================================================s
+// ============================================================================
+
+Mesh::~Mesh()
+{
+    renderer().textures().release(texture0);
 }
 
 void Mesh::draw(RenderContext& ctx, const glm::mat4x4& mtx)
@@ -77,18 +82,13 @@ void Mesh::draw(RenderContext& ctx, const glm::mat4x4& mtx)
             constants->model = trans;
             constants->view = ctx.view;
             constants->projection = ctx.projection;
+            constants->texture = texture0.id;
         }
 
         if (constant_buffer) {
             srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(constant_buffer);
         } else {
             LOG_F(ERROR, "Constant buffer is null");
-        }
-
-        if (texture0) {
-            srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0_view);
-        } else {
-            LOG_F(WARNING, "No texture for mesh");
         }
 
         renderer().immediate_context()->SetPipelineState(pso);
@@ -114,6 +114,11 @@ void Mesh::draw(RenderContext& ctx, const glm::mat4x4& mtx)
 
 // == Skin ====================================================================
 // ============================================================================
+
+Skin::~Skin()
+{
+    renderer().textures().release(texture0);
+}
 
 inline void build_inverse_bind_array(Skin* parent, Node* node, glm::mat4 parent_transform, std::vector<glm::mat4>& binds)
 {
@@ -159,6 +164,7 @@ void Skin::draw(RenderContext& ctx, const glm::mat4x4& mtx)
     uniforms.projection = ctx.projection;
     uniforms.view = ctx.view;
     uniforms.model = mtx; // [NOTE] Model transform is already included!
+    uniforms.texture = texture0.id;
     {
         Diligent::MapHelper<SkinConstants> constants(renderer().immediate_context(), constant_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
         if (!constants) {
@@ -189,12 +195,6 @@ void Skin::draw(RenderContext& ctx, const glm::mat4x4& mtx)
         srb->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Joints")->Set(joint_constant_buffer);
     } else {
         LOG_F(ERROR, "Joint constant buffer is null");
-    }
-
-    if (texture0) {
-        srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture0_view);
-    } else {
-        LOG_F(WARNING, "No texture for mesh");
     }
 
     renderer().immediate_context()->SetPipelineState(pso);
@@ -318,16 +318,12 @@ Node* Model::load_node(nw::model::Node* node, Node* parent)
             IBData.DataSize = IBDesc.Size;
             renderer().device()->CreateBuffer(IBDesc, &IBData, &skin->indices);
 
-            auto tex = renderer().textures().load(n->bitmap);
-            if (tex) {
-                skin->texture0 = tex->first;
-                skin->texture0_is_plt = tex->second;
-                skin->texture0_view = skin->texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+            auto [tex, is_plt] = renderer().textures().load(n->bitmap);
 
-                if (skin->texture0_is_plt) {
-                }
-            } else {
-                LOG_F(FATAL, "Failed to bind texture");
+            skin->texture0 = tex;
+            skin->texture0_is_plt = is_plt;
+
+            if (skin->texture0_is_plt) {
             }
 
             // Constant Buffer Creation
@@ -392,16 +388,11 @@ Node* Model::load_node(nw::model::Node* node, Node* parent)
             renderer().device()->CreateBuffer(indexBufferDesc, &indexBufferData, &mesh->indices);
 
             // Texture Creation
-            auto tex = renderer().textures().load(n->bitmap);
-            if (tex) {
-                mesh->texture0 = tex->first;
-                mesh->texture0_is_plt = tex->second;
-                mesh->texture0_view = mesh->texture0->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+            auto [tex, is_plt] = renderer().textures().load(n->bitmap);
+            mesh->texture0 = tex;
+            mesh->texture0_is_plt = is_plt;
 
-                if (mesh->texture0_is_plt) {
-                }
-            } else {
-                LOG_F(FATAL, "Failed to bind texture");
+            if (mesh->texture0_is_plt) {
             }
 
             // Constant Buffer Creation

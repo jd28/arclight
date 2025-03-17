@@ -1,4 +1,5 @@
 add_library(renderer-service
+    placeholder_texture.h
     renderservice.cpp
     renderservice.h
     shadermanager.cpp

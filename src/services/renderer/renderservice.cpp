@@ -19,6 +19,7 @@ const std::type_index RenderService::type_index = std::type_index(typeid(RenderS
 RenderService::RenderService(nw::MemoryResource* memory)
     : nw::kernel::Service(memory)
     , device_type_(Diligent::RENDER_DEVICE_TYPE_UNDEFINED)
+    , textures_{512}
 {
 
 #if defined(_WIN32)
@@ -81,6 +82,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
         {
             float4 Position : SV_POSITION;
             float2 TexCoord : TEX_COORD;
+            uint TexIndex : TEX_INDEX;
         };
         
         cbuffer Constants : register(b0)
@@ -88,6 +90,8 @@ RenderService::RenderService(nw::MemoryResource* memory)
             float4x4 g_Model;
             float4x4 g_View;
             float4x4 g_Projection;
+            uint g_TexIndex;
+            uint3 g_Padding;
         };
         
         void main(in  VSInput VSIn,
@@ -95,6 +99,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
         {
             PSIn.Position = mul(g_Projection, mul(g_View, mul(g_Model, float4(VSIn.Position, 1.0))));
             PSIn.TexCoord = VSIn.TexCoord;
+            PSIn.TexIndex = g_TexIndex;
         })");
 
     shaders_.load(nw::kernel::strings().intern("skin_vs"),
@@ -112,12 +117,15 @@ RenderService::RenderService(nw::MemoryResource* memory)
         struct VS_OUTPUT {
             float4 Position : SV_POSITION;
             float2 TexCoord : TEX_COORD;
+            uint TexIndex : TEX_INDEX;
         };
         
         cbuffer Constants : register(b0) {
             float4x4 model;
             float4x4 view;
             float4x4 projection;
+            uint g_TexIndex;
+            uint3 g_Padding;
         };
         
         static const int MAX_BONES = 64;
@@ -150,6 +158,7 @@ RenderService::RenderService(nw::MemoryResource* memory)
             
             output.Position = mul(projection, mul(view, mul(model, localPosition)));
             output.TexCoord = input.aTexCoord;
+            output.TexIndex = g_TexIndex;
             
             return output;
         })");
@@ -157,18 +166,19 @@ RenderService::RenderService(nw::MemoryResource* memory)
     shaders_.load(nw::kernel::strings().intern("basic_ps"),
         Diligent::SHADER_TYPE_PIXEL,
         R"(
-        Texture2D    g_Texture;
+        Texture2D<float4> g_Textures[512] : register(t0);
         SamplerState g_Texture_sampler;
         
         struct PSInput
         {
             float4 Position : SV_POSITION;
             float2 TexCoord : TEX_COORD;
+            uint TexIndex : TEX_INDEX;
         };
         
         float4 main(in PSInput PSIn) : SV_Target
         {
-            return g_Texture.Sample(g_Texture_sampler, PSIn.TexCoord);
+            return g_Textures[PSIn.TexIndex].Sample(g_Texture_sampler, PSIn.TexCoord);
         })");
 }
 
@@ -256,13 +266,13 @@ std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_p
         vars = {
             {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
             {Diligent::SHADER_TYPE_VERTEX, "Joints", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+            {Diligent::SHADER_TYPE_PIXEL, "g_Textures", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
             {Diligent::SHADER_TYPE_PIXEL, "g_Texture_sampler", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
         };
     } else {
         vars = {
             {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-            {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+            {Diligent::SHADER_TYPE_PIXEL, "g_Textures", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
             {Diligent::SHADER_TYPE_PIXEL, "g_Texture_sampler", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
         };
     }
@@ -283,11 +293,43 @@ std::pair<RenderService::pso_type, RenderService::srb_type> RenderService::get_p
         return {};
     }
 
+    std::vector<Diligent::IDeviceObject*> textureViewPtrs(textures().texture_views.size());
+    for (size_t i = 0; i < textures().texture_views.size(); ++i) {
+        textureViewPtrs[i] = textures().texture_views[i].RawPtr();
+    }
+
+    srb->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")
+        ->SetArray(textureViewPtrs.data(),
+            0,
+            static_cast<Diligent::Uint32>(textureViewPtrs.size()),
+            Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+
     if (pso && srb) {
         pso_map_.insert({hash, {pso, srb}});
     }
 
     return {pso, srb};
+}
+
+void RenderService::pre_frame()
+{
+    renderer().immediate_context()->WaitForIdle();
+
+    if (textures().dirty()) {
+        std::vector<Diligent::IDeviceObject*> textureViewPtrs(textures().texture_views.size());
+        for (size_t i = 0; i < textures().texture_views.size(); ++i) {
+            textureViewPtrs[i] = textures().texture_views[i].RawPtr();
+        }
+
+        for (auto& [_, v] : pso_map_) {
+            v.second->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")
+                ->SetArray(textureViewPtrs.data(),
+                    0,
+                    static_cast<Diligent::Uint32>(textureViewPtrs.size()),
+                    Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+        }
+        textures().set_dirty(false);
+    }
 }
 
 std::string RenderService::device_type_as_string() const

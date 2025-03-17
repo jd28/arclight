@@ -1,5 +1,6 @@
 #include "TextureCache.hpp"
 
+#include "placeholder_texture.h"
 #include "renderservice.h"
 
 #include <nw/kernel/Resources.hpp>
@@ -29,7 +30,7 @@ std::pair<Diligent::RefCntAutoPtr<Diligent::ITexture>, bool> load_texture(std::s
 
         Diligent::TextureDesc TexDesc;
         TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-        TexDesc.Name = data.name.resref.view().data();
+        TexDesc.Name = data.name.resref.view().data(); // Safe for NWN:EE since our resref is 32 in length.
         TexDesc.Width = img.width();
         TexDesc.Height = img.height();
         TexDesc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM;
@@ -56,7 +57,6 @@ std::pair<Diligent::RefCntAutoPtr<Diligent::ITexture>, bool> load_texture(std::s
             src_data = rgba_data.data();
             stride = img.width() * 4;
         } else {
-
             src_data = img.data();
             stride = img.width() * img.channels();
         }
@@ -85,7 +85,7 @@ std::pair<Diligent::RefCntAutoPtr<Diligent::ITexture>, bool> load_texture(std::s
         TexDesc.Format = Diligent::TEX_FORMAT_RG8_UNORM;
         TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
         TexDesc.Usage = Diligent::USAGE_DEFAULT;
-        TexDesc.MipLevels = 0;
+        TexDesc.MipLevels = 1;
 
         Diligent::TextureSubResData SubResData;
         SubResData.pData = plt.pixels();
@@ -100,24 +100,43 @@ std::pair<Diligent::RefCntAutoPtr<Diligent::ITexture>, bool> load_texture(std::s
     }
 }
 
-TextureCache::TextureCache()
+TextureCache::TextureCache(uint32_t max_textures)
+    : max_texture_id_{max_textures}
 {
+    texture_views.resize(max_texture_id_);
+    id_to_resref_.resize(max_texture_id_);
+    map_.reserve(max_texture_id_);
 }
 
-std::optional<std::pair<Diligent::RefCntAutoPtr<Diligent::ITexture>, bool>> TextureCache::load(std::string_view resref)
+bool TextureCache::dirty() const noexcept
 {
-    absl::string_view needle{resref.data(), resref.size()};
-    auto it = map_.find(needle);
+    return is_dirty_;
+}
+
+void TextureCache::set_dirty(bool dirty)
+{
+    is_dirty_ = dirty;
+}
+
+std::pair<TextureID, bool> TextureCache::load(std::string_view resref)
+{
+    auto it = map_.find(resref);
     if (it == std::end(map_)) {
         auto [texture, is_plt] = load_texture(resref);
         if (!texture) {
-            return std::make_pair(place_holder_, false);
+            LOG_F(WARNING, "[textures] failed to load texture: '{}'", resref);
+            return std::make_pair(TextureID{}, false);
         }
-        auto i = map_.emplace(resref, TexturePayload{{}, texture, is_plt, 1});
-        return std::make_pair(i.first->second.handle_, i.first->second.is_plt);
+        auto tex = allocate_texture_id();
+        LOG_F(INFO, "Assigning texture ID: {} to texture: {}", tex.id, resref);
+        texture_views[tex.id] = texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+        id_to_resref_[tex.id] = resref;
+        map_.emplace(resref, TexturePayload{tex, texture, is_plt, 1});
+        is_dirty_ = true;
+        return {tex, is_plt};
     } else {
         ++it->second.refcount_;
-        return std::make_pair(it->second.handle_, it->second.is_plt);
+        return {it->second.id, it->second.is_plt};
     }
 }
 
@@ -126,6 +145,9 @@ void TextureCache::load_palette_texture()
     for (size_t i = 0; i < 10; ++i) {
         auto img = nw::kernel::resman().palette_texture(static_cast<nw::PltLayer>(i));
         if (!img->valid()) { continue; }
+
+        nw::Resref name{fmt::format("pallette_{}", i)};
+        auto tex = allocate_texture_id();
         Diligent::TextureDesc TexDesc;
         TexDesc.Name = "Palette";
         TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
@@ -169,14 +191,31 @@ void TextureCache::load_palette_texture()
         Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
         renderer().device()->CreateTexture(TexDesc, &TexData, &texture);
         palette_texture_[i] = texture;
+
+        texture_views[tex.id] = texture->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+        is_dirty_ = true;
+        id_to_resref_[tex.id] = name;
+        map_.insert({name,
+            TexturePayload{
+                tex,
+                texture,
+                false,
+                1,
+            }});
     }
 }
 
 void TextureCache::load_placeholder()
 {
-    place_holder_image_ = std::make_unique<nw::Image>(":/resrouces/images/templategrid_albedo.png");
+    nw::ResourceData rd;
+    rd.name = nw::Resource(nw::Resref("<placeholder>"), nw::ResourceType::png);
+    rd.bytes.append(placeholder_texture, placeholder_texture_len);
+
+    place_holder_image_ = std::make_unique<nw::Image>(std::move(rd));
 
     if (place_holder_image_->valid()) {
+        auto tex = allocate_texture_id();
+
         Diligent::TextureDesc TexDesc;
         TexDesc.Type = Diligent::RESOURCE_DIM_TEX_2D;
         TexDesc.Width = place_holder_image_->width();
@@ -184,7 +223,7 @@ void TextureCache::load_placeholder()
         TexDesc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM;
         TexDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
         TexDesc.Usage = Diligent::USAGE_IMMUTABLE;
-        TexDesc.MipLevels = 0;
+        TexDesc.MipLevels = 1;
 
         Diligent::TextureSubResData SubResData;
         SubResData.pData = place_holder_image_->data();
@@ -195,6 +234,22 @@ void TextureCache::load_placeholder()
         TexData.NumSubresources = 1;
 
         renderer().device()->CreateTexture(TexDesc, &TexData, &place_holder_);
+
+        texture_views[tex.id] = place_holder_->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+        id_to_resref_[tex.id] = "<placeholder>";
+        map_.insert({nw::Resref{"<placeholder>"},
+            TexturePayload{
+                tex,
+                place_holder_,
+                false,
+                1,
+            }});
+
+        // Set all texture view to placeholder.
+        for (uint32_t i = 1; i < max_texture_id_; ++i) {
+            texture_views[i] = texture_views[tex.id];
+        }
+        is_dirty_ = true;
     }
 }
 
@@ -234,4 +289,35 @@ void TextureCache::load_samplers()
     sam_desc.MagFilter = Diligent::FILTER_TYPE_COMPARISON_LINEAR;
     sam_desc.MipFilter = Diligent::FILTER_TYPE_COMPARISON_LINEAR;
     renderer().device()->CreateSampler(sam_desc, &shadow_sampler);
+}
+
+TextureID TextureCache::allocate_texture_id()
+{
+    TextureID result;
+    if (texture_id_free_list_.size()) {
+        result = texture_id_free_list_.back();
+        texture_id_free_list_.pop_back();
+    } else if (next_texture_id_ + 1 < max_texture_id_) {
+        result.id = next_texture_id_++;
+    }
+    return result;
+}
+
+void TextureCache::release(TextureID tex)
+{
+    // Never release palettes and placeholder.
+    if (tex.id < 11) { return; }
+    auto it = map_.find(id_to_resref_[tex.id]);
+    if (it == std::end(map_)) {
+        LOG_F(ERROR, "[textures] attempting to release a non extant texture id: {}", tex.id);
+        return;
+    }
+
+    if (--it->second.refcount_ == 0) {
+        id_to_resref_[tex.id] = std::string_view{};
+        texture_views[tex.id] = texture_views[0];
+        is_dirty_ = true;
+        map_.erase(it);
+        texture_id_free_list_.push_back(tex);
+    }
 }

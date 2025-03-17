@@ -53,6 +53,9 @@ public:
     /// Gets PSO and SRB
     std::pair<pso_type, srb_type> get_pso(const RenderPipelineState& rps);
 
+    /// Does pre-frame activities
+    void pre_frame();
+
     /// Get shader manager
     ShaderManager& shaders() { return shaders_; }
     const ShaderManager& shaders() const { return shaders_; }

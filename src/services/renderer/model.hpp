@@ -1,12 +1,12 @@
 #pragma once
 
+#include "TextureCache.hpp"
 #include "renderpipelinestate.h"
 
 #include <DiligentCore/Common/interface/BasicMath.hpp>
 #include <DiligentCore/Common/interface/RefCntAutoPtr.hpp>
 #include <DiligentCore/Graphics/GraphicsEngine/interface/Buffer.h>
 #include <DiligentCore/Graphics/GraphicsEngine/interface/PipelineState.h>
-#include <DiligentCore/Graphics/GraphicsEngine/interface/Texture.h>
 
 #include <nw/formats/Plt.hpp>
 #include <nw/model/Mdl.hpp>
@@ -46,9 +46,13 @@ struct MeshConstants {
     glm::mat4 model;
     glm::mat4 view;
     glm::mat4 projection;
+    uint32_t texture;
+    uint32_t padding[3];
 };
 
-struct Mesh : public Node {
+struct Mesh final : public Node {
+    ~Mesh();
+
     virtual void reset() override { }
     virtual void draw(RenderContext& ctx, const glm::mat4& mtx) override;
 
@@ -58,8 +62,7 @@ struct Mesh : public Node {
     Diligent::RefCntAutoPtr<Diligent::IBuffer> instance_buffer;
 
     nw::PltColors plt_colors_{};
-    Diligent::RefCntAutoPtr<Diligent::ITexture> texture0;
-    Diligent::RefCntAutoPtr<Diligent::ITextureView> texture0_view;
+    TextureID texture0;
     bool texture0_is_plt = false;
 };
 
@@ -67,13 +70,16 @@ struct SkinConstants {
     glm::mat4 model;
     glm::mat4 view;
     glm::mat4 projection;
+    uint32_t texture;
+    uint32_t padding[3];
 };
 
 struct JointConstants {
     std::array<glm::mat4, 64> data;
 };
 
-struct Skin : public Node {
+struct Skin final : public Node {
+    ~Skin();
     virtual void reset() override { }
     // Submits mesh data to the GPU
     virtual void draw(RenderContext& ctx, const glm::mat4& mtx) override;
@@ -91,7 +97,7 @@ struct Skin : public Node {
     SkinConstants uniforms;
     JointConstants joints;
 
-    Diligent::RefCntAutoPtr<Diligent::ITexture> texture0;
+    TextureID texture0;
     bool texture0_is_plt = false;
 };
 

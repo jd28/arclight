@@ -182,6 +182,7 @@ void RenderWidget::render()
         return;
     }
 
+    renderer().pre_frame();
     renderToFBO();
     transferFBOToQImage();
     renderer().immediate_context()->Flush();
