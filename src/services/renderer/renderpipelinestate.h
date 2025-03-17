@@ -1,7 +1,5 @@
 #pragma once
 
-#include <xxhash/xxh3.h>
-
 #include <compare>
 
 struct RenderPipelineState {
@@ -12,8 +10,5 @@ struct RenderPipelineState {
 
     auto operator<=>(const RenderPipelineState&) const = default;
 
-    size_t hash() const
-    {
-        return XXH3_64bits(this, sizeof(*this));
-    }
+    size_t hash() const;
 };
