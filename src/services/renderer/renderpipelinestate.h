@@ -1,6 +1,7 @@
 #pragma once
 
 #include <compare>
+#include <cstddef>
 
 struct RenderPipelineState {
     bool has_diffuse = false;
