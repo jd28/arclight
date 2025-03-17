@@ -1,12 +1,10 @@
 #include "renderservice.h"
 
+#include <nw/kernel/Memory.hpp>
 #include <nw/kernel/Strings.hpp>
 #include <nw/model/Mdl.hpp>
 
 #if defined(_WIN32)
-#define WINDOWS_LEAN_AND_MEAN
-#include <Windows.h>
-
 #include <DiligentCore/Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h>
 #elif defined(__APPLE__)
 #include <DiligentCore/Graphics/GraphicsEngineMetal/interface/EngineFactoryMtl.h>
@@ -193,8 +191,7 @@ RenderService::~RenderService()
 
 void RenderService::initialize(nw::kernel::ServiceInitTime time)
 {
-    if (time != nw::kernel::ServiceInitTime::kernel_start
-        && time != nw::kernel::ServiceInitTime::module_pre_load) {
+    if (time != nw::kernel::ServiceInitTime::kernel_start) {
         return;
     }
 
@@ -344,4 +341,9 @@ std::string RenderService::device_type_as_string() const
     default:
         return "Unknown";
     }
+}
+
+RenderService& renderer() {
+    static RenderService s_renderer{nw::kernel::global_allocator()};
+    return s_renderer;
 }

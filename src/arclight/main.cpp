@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 
+#include "../services/renderer/renderservice.h"
 #include "toolsetprofile.h"
 
 #include <ZFontIcon/ZFontIcon.h>
@@ -46,6 +47,9 @@ int main(int argc, char* argv[])
 
     // FA6 Free
     ZFontIcon::addFont(":/fa6/" + Fa6::FA6_TTF_FILE_FREE_SOLID);
+
+    // Renderer service is special...
+    renderer().initialize(nw::kernel::ServiceInitTime::kernel_start);
 
     MainWindow main;
     main.showMaximized();

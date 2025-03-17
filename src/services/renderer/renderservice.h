@@ -77,11 +77,4 @@ private:
     absl::flat_hash_map<uint64_t, std::pair<pso_type, srb_type>> pso_map_;
 };
 
-inline RenderService& renderer()
-{
-    auto res = nw::kernel::services().get_mut<RenderService>();
-    if (!res) {
-        throw std::runtime_error("kernel: unable to load render service");
-    }
-    return *res;
-}
+RenderService& renderer();
