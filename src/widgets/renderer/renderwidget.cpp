@@ -187,6 +187,7 @@ void RenderWidget::render()
     transferFBOToQImage();
     renderer().immediate_context()->Flush();
     renderer().immediate_context()->WaitForIdle();
+    renderer().immediate_context()->FinishFrame();
     update();
     frameCounter_++;
 }
