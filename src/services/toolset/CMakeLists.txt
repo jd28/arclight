@@ -1,7 +1,7 @@
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-add_library(toolset-service
+add_library(toolset-service STATIC
     toolsetservice.cpp
     toolsetservice.h
     rulesetmodels.cpp

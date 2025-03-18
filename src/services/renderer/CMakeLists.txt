@@ -1,4 +1,4 @@
-add_library(renderer-service
+add_library(renderer-service STATIC
     placeholder_texture.h
     renderservice.cpp
     renderservice.h
