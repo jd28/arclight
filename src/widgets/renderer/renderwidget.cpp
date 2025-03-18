@@ -2,6 +2,7 @@
 
 #include "../../services/renderer/renderservice.h"
 
+#include <QApplication>
 #include <QImage>
 #include <QPainter>
 #include <QResizeEvent>
@@ -178,7 +179,9 @@ void RenderWidget::renderToFBO()
 
 void RenderWidget::render()
 {
-    if (!isVisible() || !initialized_) {
+    bool isInActiveTab = isVisible() && isVisibleTo(QApplication::activeWindow());
+
+    if (!isInActiveTab || !isActiveWindow() || !initialized_ || isMinimized() || !window()->isActiveWindow()) {
         return;
     }
 
