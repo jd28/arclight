@@ -433,7 +433,7 @@ int PropertyModel::columnCount(const QModelIndex& parent) const
 
     Property* pp = static_cast<Property*>(parent.internalPointer());
     if (pp && !pp->children.isEmpty()) {
-        return 1;
+        return 2;
     }
 
     return ColumnCount;
@@ -587,13 +587,6 @@ PropertyBrowser::PropertyBrowser(QWidget* parent)
     // in mousePressEvent
     setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
     header()->setSectionResizeMode(QHeaderView::Stretch);
-
-    QTimer::singleShot(0, this, [this]() {
-        expandRecursively(model_->index(0, 0));
-        for (int column = 0; column < model()->columnCount(); ++column) {
-            resizeColumnToContents(column);
-        }
-    });
 }
 
 Property* PropertyBrowser::makeGroup(QString name, Property* parent)
@@ -692,14 +685,6 @@ void PropertyBrowser::clear()
     model_ = new PropertyModel(this);
     setModel(model_);
     setItemDelegateForColumn(PropertyModel::ColumnValue, new PropertyDelegate(this));
-}
-
-void PropertyBrowser::expandAll()
-{
-    for (int i = 0; i < model()->rowCount(); ++i) {
-        QModelIndex idx = model()->index(i, 0);
-        expandRecursively(idx);
-    }
 }
 
 PropertyModel* PropertyBrowser::model() const noexcept

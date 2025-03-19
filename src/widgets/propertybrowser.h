@@ -284,7 +284,6 @@ public:
 
     void addProperty(Property* prop);
     void clear();
-    void expandAll();
     PropertyModel* model() const noexcept;
     void setUndoStack(QUndoStack* undo);
 
