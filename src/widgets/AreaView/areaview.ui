@@ -17,7 +17,7 @@
    <item>
     <widget class="ModelView" name="openGLWidget">
      <property name="focusPolicy">
-      <enum>Qt::StrongFocus</enum>
+      <enum>Qt::FocusPolicy::StrongFocus</enum>
      </property>
     </widget>
    </item>
@@ -27,7 +27,7 @@
   <customwidget>
    <class>ModelView</class>
    <extends>QOpenGLWidget</extends>
-   <header>../renderer/modelview.h</header>
+   <header>../renderer/areamodelview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

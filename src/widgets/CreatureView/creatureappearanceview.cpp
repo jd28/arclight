@@ -22,6 +22,7 @@ CreatureAppearanceView::CreatureAppearanceView(nw::Creature* obj, ArclightView* 
     connect(ui->skin, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
     connect(ui->tatoo1, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
     connect(ui->tatoo2, &QPushButton::clicked, this, &CreatureAppearanceView::onOpenColorSelector);
+    connect(ui->parts, &CreaturePartsView::updateModel, this, &CreatureAppearanceView::updateModel);
 
     obj_ = obj;
     is_dynamic_ = nw::string::icmp(nw::kernel::rules().appearances.entries[*obj_->appearance.id].model_type, "P");

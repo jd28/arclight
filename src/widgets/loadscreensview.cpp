@@ -1,7 +1,7 @@
 #include "loadscreensview.h"
 #include "ui_loadscreensview.h"
 
-#include "../services/toolsetservice.h"
+#include "../services/toolset/toolsetservice.h"
 #include "util/itemmodels.h"
 #include "util/undocommands.h"
 

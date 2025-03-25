@@ -3,7 +3,7 @@
 
 #include "encountercreaturemodel.h"
 
-#include "../../services/toolsetservice.h"
+#include "../../services/toolset/toolsetservice.h"
 #include "../checkboxdelegate.h"
 #include "../util/itemmodels.h"
 #include "../util/strings.h"

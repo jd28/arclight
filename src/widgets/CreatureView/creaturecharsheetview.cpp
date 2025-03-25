@@ -1,7 +1,7 @@
 #include "creaturecharsheetview.h"
 #include "ui_creaturecharsheetview.h"
 
-#include "../../services/toolsetservice.h"
+#include "../../services/toolset/toolsetservice.h"
 #include "../util/itemmodels.h"
 #include "../util/strings.h"
 #include "creatureview.h"
@@ -73,8 +73,6 @@ CreatureCharSheetView::CreatureCharSheetView(nw::Creature* obj, CreatureView* pa
     loadCreature(obj);
     loadPortrait(obj);
     obj_ = obj;
-
-    connect(this, &CreatureCharSheetView::modificationChanged, parent, &CreatureView::onModified);
 }
 
 CreatureCharSheetView::~CreatureCharSheetView()

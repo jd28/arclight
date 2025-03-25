@@ -30,5 +30,6 @@
         <file>resources/images/mvpal_hair.png</file>
         <file>resources/images/mvpal_cloth.png</file>
         <file>resources/images/mvpal_armor01.png</file>
+        <file>resources/images/templategrid_albedo.png</file>
     </qresource>
 </RCC>

@@ -27,7 +27,7 @@ public:
     void loadCreature(nw::Creature* creature);
 
 public slots:
-    void onModified();
+    void onUpdateModel();
 
 private:
     Ui::CreatureView* ui;

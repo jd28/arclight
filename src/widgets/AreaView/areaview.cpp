@@ -12,8 +12,7 @@ AreaView::AreaView(nw::Resource area, QWidget* parent)
     obj_->instantiate();
 
     ui->setupUi(this);
-    ui->openGLWidget->makeCurrent();
-    connect(ui->openGLWidget, &ModelView::initialized, this, &AreaView::loadModel);
+    loadModel();
 }
 
 AreaView::~AreaView()
@@ -27,8 +26,7 @@ AreaView::~AreaView()
 void AreaView::loadModel()
 {
     ui->openGLWidget->setFocus(Qt::ActiveWindowFocusReason);
-    ui->openGLWidget->makeCurrent();
     area_model_ = std::make_unique<BasicTileArea>(obj_);
-    area_model_->load_tile_models(ui->openGLWidget->funcs());
+    area_model_->load_tile_models();
     ui->openGLWidget->setNode(area_model_.get());
 }

@@ -59,7 +59,7 @@ PlaceableView::PlaceableView(nw::Placeable* obj, QWidget* parent)
     comments->setText(to_qstring(obj_->common.comment));
     ui->tabWidget->addTab(comments, tr("Comments"));
 
-    connect(ui->openGLWidget, &BasicModelView::initialized, this, &PlaceableView::loadModel);
+    loadModel();
     connect(general, &PlaceableGeneralView::appearanceChanged, this, &PlaceableView::loadModel);
 }
 
@@ -70,11 +70,26 @@ PlaceableView::~PlaceableView()
 
 void PlaceableView::loadModel()
 {
-    ui->openGLWidget->makeCurrent();
+    LOG_F(INFO, "loadModel called for appearance: {}", obj_->appearance);
     auto plc = nw::kernel::rules().placeables.get(nw::PlaceableType::make(obj_->appearance));
-    if (plc && !plc->model.empty()) {
-        ui->openGLWidget->setModel(load_model(plc->model.view(), ui->openGLWidget->funcs()));
+    if (!plc) {
+        LOG_F(ERROR, "No placeable data for appearance: {}", obj_->appearance);
+        return;
     }
+    if (plc->model.empty()) {
+        LOG_F(WARNING, "Empty model string for appearance: {}", obj_->appearance);
+        return;
+    }
+
+    LOG_F(INFO, "Loading model: {}", plc->model.view());
+    auto model = load_model(plc->model.view());
+    if (!model) {
+        LOG_F(ERROR, "Failed to load model: {}", plc->model.view());
+        return;
+    }
+    LOG_F(INFO, "Model loaded: {}, nodes={}", plc->model.view(), model->nodes_.size());
+    ui->openGLWidget->setModel(std::move(model));
+    LOG_F(INFO, "Model set on RenderWidget");
 }
 
 void PlaceableView::onHasInvetoryChanged(bool value)

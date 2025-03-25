@@ -53,15 +53,19 @@ An editor for DLG conversation files and rollnw DLG json files.  A project of th
 
 ## The Renderer
 
-Currently the built in renderer only supports the most basic models.  It uses OpenGL 3.3
-just as NWN:EE does.  Ultimately, the goal is to replace this with a more advanced graphics
-API like [DiligentEngine](https://github.com/DiligentGraphics/DiligentEngine)
+Currently the built in renderer only supports basic models. Now that it has been converted
+to using [DiligentEngine](https://github.com/DiligentGraphics/DiligentEngine) as the cross-platform
+API, it will be easier to add new features.
 
 Features:
-* Basic Meshses
+* Meshses
 * Skin Meshes
-* Un-lerped Animations
-* Very basic area viewing
+* (s)lerped Animations
+* basic area viewing
+
+Caveats:
+* No parts based models yet, emmitters, dangly meshes, etc.
+* Diligent uses HLSL which is different from what the game uses.
 
 -----------------------------------------------------------------------------
 
