@@ -15,9 +15,13 @@ jobs:
   build:
     env:
       buildDir: "${{ github.workspace }}/build/"
+      CC: clang
+      CXX: clang++
+      CXXFLAGS: "-stdlib=libc++"
+      LDFLAGS: "-stdlib=libc++ -fuse-ld=lld"
 
     name: build on linux
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -33,13 +37,13 @@ jobs:
           sudo apt install software-properties-common
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo apt-get update
-          sudo apt-get install -y ccache gcc-11 g++-11 cpp-11 gperf build-essential libgl1-mesa-dev libxkbcommon-x11-0 \
+          sudo apt-get install -y ccache clang-14 lld-14 libc++-14-dev libc++abi-14-dev gperf build-essential libgl1-mesa-dev libxkbcommon-x11-0 \
             libpulse-dev libxcb-util1 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
             libxcb-randr0 libxcb-render-util0 libxcb-render0 libxcb-shape0 libxcb-shm0 \
             libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb1 \
             at curl unzip tar libxt-dev libxaw7-dev cifs-utils \
             zip libx11-dev libxkbcommon-x11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxinerama-dev libxxf86vm-dev \
-            libxcursor-dev yasm libnuma1 libnuma-dev python-six python3-six python-yaml \
+            libxcursor-dev yasm libnuma1 libnuma-dev python-six python3-six python3-yaml \
             flex libbison-dev autoconf libudev-dev libncurses5-dev libtool libxrandr-dev \
             xutils-dev dh-autoreconf autoconf-archive libgles2-mesa-dev ruby-full \
             pkg-config meson libxext-dev libxfixes-dev libxrender-dev \
@@ -49,8 +53,8 @@ jobs:
             libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev \
             libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xinput-dev libkrb5-dev \
             libxcb-res0-dev python3-setuptools python3-mako python3-pip libxcb-cursor0
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
-
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 110
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 110
       - name: setup ccache
         run: |
           ccache --set-config=cache_dir=${{ github.workspace }}/.ccache

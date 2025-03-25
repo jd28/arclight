@@ -12,7 +12,7 @@ ShaderManager::ShaderManager(Diligent::IRenderDevice* device)
 Diligent::IShader* ShaderManager::get(std::string_view name) const
 {
     auto it = shaders_.find(name);
-    return it != shaders_.end() ? it->second : nullptr;
+    return it != shaders_.end() ? it->second.RawPtr() : nullptr;
 }
 
 Diligent::IShader* ShaderManager::load(const std::string& name, Diligent::SHADER_TYPE type, const std::string& source,
