@@ -17,8 +17,6 @@ jobs:
       buildDir: "${{ github.workspace }}/build/"
       CC: clang
       CXX: clang++
-      CXXFLAGS: "-stdlib=libc++"
-      LDFLAGS: "-stdlib=libc++ -fuse-ld=lld"
 
     name: build on linux
     runs-on: ubuntu-22.04
