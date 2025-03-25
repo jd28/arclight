@@ -32,29 +32,28 @@ jobs:
         run: |
           echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: install non-vcpkg dependencies
+      - name: install dependencies
         run: |
           sudo apt install software-properties-common
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+          # Import LLVM repository key
+          wget https://apt.llvm.org/llvm-snapshot.gpg.key
+          sudo apt-key add llvm-snapshot.gpg.key
+
+          # Add LLVM repository for latest Clang (Clang-19)
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main"
+
           sudo apt-get update
-          sudo apt-get install -y ccache clang-14 lld-14 libc++-14-dev libc++abi-14-dev gperf build-essential libgl1-mesa-dev libxkbcommon-x11-0 \
-            libpulse-dev libxcb-util1 libxcb-glx0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-            libxcb-randr0 libxcb-render-util0 libxcb-render0 libxcb-shape0 libxcb-shm0 \
-            libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb1 \
-            at curl unzip tar libxt-dev libxaw7-dev cifs-utils \
-            zip libx11-dev libxkbcommon-x11-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev libxinerama-dev libxxf86vm-dev \
-            libxcursor-dev yasm libnuma1 libnuma-dev python-six python3-six python3-yaml \
-            flex libbison-dev autoconf libudev-dev libncurses5-dev libtool libxrandr-dev \
-            xutils-dev dh-autoreconf autoconf-archive libgles2-mesa-dev ruby-full \
-            pkg-config meson libxext-dev libxfixes-dev libxrender-dev \
-            libxcb1-dev libx11-xcb-dev libxcb-glx0-dev libxcb-util0-dev \
-            libxkbcommon-dev libxcb-keysyms1-dev \
-            libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev libxcb-sync0-dev \
-            libxcb-xfixes0-dev libxcb-shape0-dev libxcb-randr0-dev \
-            libxcb-render-util0-dev libxcb-xinerama0-dev libxcb-xkb-dev libxcb-xinput-dev libkrb5-dev \
-            libxcb-res0-dev python3-setuptools python3-mako python3-pip libxcb-cursor0
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 110
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 110
+          sudo apt-get install -y ccache ninja-build cmake clang-19 \
+            clang++-19 lldb-19 lld-19 clangd-19 clang-tidy-19 clang-format-19 \
+            libc++-19-dev libc++abi-19-dev
+
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 110
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 110
+
+          clang --version
+          clang++ --version
       - name: setup ccache
         run: |
           ccache --set-config=cache_dir=${{ github.workspace }}/.ccache
