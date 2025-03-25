@@ -71,7 +71,10 @@ target_link_libraries(arclight PUBLIC
     VariableTableView
     WaitingSpinnerWidget
     WaypointView
+
+    Qt6::Core
     Qt6::Widgets
+    Qt6::Concurrent
     Qt6::Multimedia
 
     Diligent-GraphicsEngine
