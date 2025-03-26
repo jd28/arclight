@@ -45,7 +45,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ccache ninja-build cmake clang-19 \
             clang++-19 lldb-19 lld-19 clangd-19 clang-tidy-19 clang-format-19 \
-            libc++-19-dev libc++abi-19-dev
+            libc++-19-dev libc++abi-19-dev libxcb-cursor-dev
 
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 110
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 110
