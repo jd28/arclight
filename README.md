@@ -3,6 +3,8 @@
 [![macos](https://github.com/jd28/arclight/actions/workflows/macos.yml/badge.svg)](https://github.com/jd28/arclight/actions?query=workflow%3Amacos)
 [![windows](https://github.com/jd28/arclight/actions/workflows/windows.yml/badge.svg)](https://github.com/jd28/arclight/actions?query=workflow%3Awindows)
 
+**All Future Work Has Transitioned to [`rollnw | client`](https://github.com/jd28/rollnw/tree/main/tools/client)**
+
 # Arclight Tools
 
 Tools subproject of something referred to as Arclight
@@ -87,7 +89,7 @@ Camera Controls:
 
 A view of NWN containers.  See erfheder above.
 
-### Creature View 
+### Creature View
 
 A widget for creatures
 
